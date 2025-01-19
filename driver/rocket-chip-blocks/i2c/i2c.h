@@ -81,11 +81,9 @@ Status i2c_master_receive(I2C_Type *I2Cx, uint16_t device_addr, uint8_t *buffer,
 
 Status i2c_master_transmit(I2C_Type *I2Cx, uint16_t device_addr, uint8_t *buffer, uint16_t size, uint64_t timeout);
 
-Status i2c_master_transmit_recieve(I2C_Type *I2Cx, uint16_t device_addr, uint8_t *wr_buffer, uint16_t wr_size, uint8_t *rd_buffer, uint16_t rd_size, uint64_t timeout);
+Status i2c_read_memory(I2C_Type *I2Cx, uint16_t device_addr, uint8_t mem_addr, uint8_t *buffer, uint16_t size, uint64_t timeout);
 
-// Status i2c_read_memory(I2C_Type *I2Cx, uint16_t device_addr, uint8_t mem_addr, uint8_t *buffer, uint16_t size, uint64_t timeout);
-
-// Status i2c_write_memory(I2C_Type *I2Cx, uint16_t device_addr, uint8_t mem_addr, uint8_t *buffer, uint16_t size, uint32_t timeout);
+Status i2c_write_memory(I2C_Type *I2Cx, uint16_t device_addr, uint8_t mem_addr, uint8_t *buffer, uint16_t size, uint32_t timeout);
 
 
 #ifdef __cplusplus

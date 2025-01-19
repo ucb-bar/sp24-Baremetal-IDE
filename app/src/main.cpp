@@ -17,10 +17,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "chip_config.h"
+#include "bmi088.h"
 #include <math.h>
 
 int motor_speeds[8];
 int motor_positions[8];
+
+static BMI088_IMU imu;
 
 void app_init() {
 
@@ -107,7 +110,7 @@ void setup_pll() {
  * @brief  The application entry point.
  * @retval int
  */
-int main(int argc, char **argv) {
+extern "C" int main(int argc, char **argv) {
   /* MCU Configuration--------------------------------------------------------*/
   // Initialize UART0 for Serial Monitor
   UART_InitType UART0_init_config;

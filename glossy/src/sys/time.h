@@ -1,5 +1,12 @@
 #include <unistd.h>
 
+#ifndef TIME_H
+#define TIME_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "chip_config.h"
 
 /**
@@ -40,3 +47,9 @@ __attribute__((weak)) int msleep(useconds_t msec);
  * @return 0 on success. On error, -1 is returned, with errno set to indicate the error.
  */
 __attribute__((weak)) int usleep(useconds_t usec);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* TIME_H */
