@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
   /* Configure the system clock */
   
   /* USER CODE BEGIN SysInit */
-  pll_setup();
+  // pll_setup();
   UART_InitType UART_init_config;
   UART_init_config.baudrate = 115200;
   UART_init_config.mode = UART_MODE_TX_RX;
