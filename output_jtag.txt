@@ -8,12 +8,13 @@ Freq: 100, Voltage: 0.8500000000000001, Output: Valid, Power: 0.014160296347
 Freq: 100, Voltage: 0.9000000000000001, Output: Valid, Power: 0.01660552295257143
 Freq: 100, Voltage: 0.9500000000000002, Output: Valid, Power: 0.018591652342714288
 Freq: 100, Voltage: 1.0000000000000002, Output: Valid, Power: 0.020401195307428573
-Freq: 100, Voltage: 1.0500000000000003, Output: Valid, Power: 0.12934644436675
-Freq: 100, Voltage: 1.1000000000000003, Output: Valid, Power: 0.14397974231625002
-Freq: 100, Voltage: 1.1500000000000004, Output: Valid, Power: 0.15994808261475002
-Freq: 100, Voltage: 1.2000000000000004, Output: Valid, Power: 0.17723324954775
+Freq: 100, Voltage: 1.05, Output: Valid, Power: 0.0293808439095
+Freq: 100, Voltage: 1.1, Output: Valid, Power: 0.032540463101
+Freq: 100, Voltage: 1.1500000000000001, Output: Valid, Power: 0.036047002504
+Freq: 100, Voltage: 1.2000000000000002, Output: Valid, Power: 0.040063498551
 Freq: 100, Voltage: 1.25, Output: Valid, Power: 0.046158647424
 Freq: 100, Voltage: 1.3, Output: Valid, Power: 0.048283967973999996
+Freq: 100, Voltage: 1.35, Output: Valid, Power: 0.058070371241249995
 Freq: 150, Voltage: 0.55, Output: Valid, Power: 0.008932675637500002
 Freq: 150, Voltage: 0.6000000000000001, Output: Valid, Power: 0.01053838115875
 Freq: 150, Voltage: 0.65, Output: Valid, Power: 0.012372206804999999
@@ -30,6 +31,7 @@ Freq: 150, Voltage: 1.1500000000000004, Output: Valid, Power: 0.039763846875
 Freq: 150, Voltage: 1.2000000000000004, Output: Valid, Power: 0.044251704314250004
 Freq: 150, Voltage: 1.25, Output: Valid, Power: 0.049094697664
 Freq: 150, Voltage: 1.3, Output: Valid, Power: 0.054920120796749995
+Freq: 150, Voltage: 1.35, Output: Valid, Power: 0.062056158689250004
 Freq: 200, Voltage: 0.55, Output: Invalid, Power: 0.011448658443928573
 Freq: 200, Voltage: 0.6000000000000001, Output: Valid, Power: 0.012867362345000001
 Freq: 200, Voltage: 0.65, Output: Valid, Power: 0.015107322645
@@ -46,6 +48,7 @@ Freq: 200, Voltage: 1.1500000000000004, Output: Valid, Power: 0.0496626572475000
 Freq: 200, Voltage: 1.2000000000000004, Output: Valid, Power: 0.055171458614250005
 Freq: 200, Voltage: 1.25, Output: Valid, Power: 0.061245164224
 Freq: 200, Voltage: 1.3, Output: Valid, Power: 0.06825775762299999
+Freq: 200, Voltage: 1.35, Output: Valid, Power: 0.0766784763095
 Freq: 250, Voltage: 0.55, Output: Invalid, Power: 0.011616336957142858
 Freq: 250, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.0151467013925
 Freq: 250, Voltage: 0.65, Output: Valid, Power: 0.017831713815
@@ -62,6 +65,7 @@ Freq: 250, Voltage: 1.1500000000000004, Output: Valid, Power: 0.059149676051
 Freq: 250, Voltage: 1.2000000000000004, Output: Valid, Power: 0.06584430448675
 Freq: 250, Voltage: 1.25, Output: Valid, Power: 0.073029054208
 Freq: 250, Voltage: 1.3, Output: Valid, Power: 0.08114945226025
+Freq: 250, Voltage: 1.35, Output: Valid, Power: 0.09070535617075
 Freq: 300, Voltage: 0.55, Output: Invalid, Power: 0.011620166130357143
 Freq: 300, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.01810866805446429
 Freq: 300, Voltage: 0.65, Output: Valid, Power: 0.02044999575
@@ -78,6 +82,7 @@ Freq: 300, Voltage: 1.1500000000000004, Output: Valid, Power: 0.0690042335035
 Freq: 300, Voltage: 1.2000000000000004, Output: Valid, Power: 0.07646407951949999
 Freq: 300, Voltage: 1.25, Output: Valid, Power: 0.08458887308799999
 Freq: 300, Voltage: 1.3, Output: Valid, Power: 0.09393486184225
+Freq: 300, Voltage: 1.35, Output: Valid, Power: 0.10460025407974999
 Freq: 350, Voltage: 0.55, Output: Invalid, Power: 0.011602944112500001
 Freq: 350, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.018270792380714284
 Freq: 350, Voltage: 0.65, Output: Valid, Power: 0.023057553015
@@ -94,6 +99,7 @@ Freq: 350, Voltage: 1.1500000000000004, Output: Valid, Power: 0.078346315013
 Freq: 350, Voltage: 1.2000000000000004, Output: Valid, Power: 0.08691434438325
 Freq: 350, Voltage: 1.25, Output: Valid, Power: 0.09608681459200001
 Freq: 350, Voltage: 1.3, Output: Valid, Power: 0.10646642240849999
+Freq: 350, Voltage: 1.35, Output: Valid, Power: 0.11834055420324999
 Freq: 400, Voltage: 0.55, Output: Invalid, Power: 0.01162399530357143
 Freq: 400, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.01826243656107143
 Freq: 400, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -110,6 +116,7 @@ Freq: 400, Voltage: 1.1500000000000004, Output: Valid, Power: 0.08766222685725
 Freq: 400, Voltage: 1.2000000000000004, Output: Valid, Power: 0.09714981408
 Freq: 400, Voltage: 1.25, Output: Valid, Power: 0.107422249856
 Freq: 400, Voltage: 1.3, Output: Valid, Power: 0.1187226819295
+Freq: 400, Voltage: 1.35, Output: Valid, Power: 0.13188305017325
 Freq: 450, Voltage: 0.55, Output: Invalid, Power: 0.011599743873214287
 Freq: 450, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.018279148200357143
 Freq: 450, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -126,6 +133,7 @@ Freq: 450, Voltage: 1.1500000000000004, Output: Valid, Power: 0.0970151694130000
 Freq: 450, Voltage: 1.2000000000000004, Output: Valid, Power: 0.107348875063
 Freq: 450, Voltage: 1.25, Output: Valid, Power: 0.11805578316799999
 Freq: 450, Voltage: 1.3, Output: Valid, Power: 0.131211013406
+Freq: 450, Voltage: 1.35, Output: Valid, Power: 0.14522706689025
 Freq: 500, Voltage: 0.55, Output: Invalid, Power: 0.011602296655357143
 Freq: 500, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.01829634339982143
 Freq: 500, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -142,6 +150,7 @@ Freq: 500, Voltage: 1.1500000000000004, Output: Valid, Power: 0.10624207311325
 Freq: 500, Voltage: 1.2000000000000004, Output: Valid, Power: 0.11648432882225
 Freq: 500, Voltage: 1.25, Output: Valid, Power: 0.129868424256
 Freq: 500, Voltage: 1.3, Output: Valid, Power: 0.14338178983974997
+Freq: 500, Voltage: 1.35, Output: Valid, Power: 0.1585936994405
 Freq: 550, Voltage: 0.55, Output: Invalid, Power: 0.011638035605357143
 Freq: 550, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.0182680071075
 Freq: 550, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -158,6 +167,7 @@ Freq: 550, Voltage: 1.1500000000000004, Output: Valid, Power: 0.1147449893573999
 Freq: 550, Voltage: 1.2000000000000004, Output: Valid, Power: 0.12735847504824999
 Freq: 550, Voltage: 1.25, Output: Valid, Power: 0.14079603136000002
 Freq: 550, Voltage: 1.3, Output: Valid, Power: 0.1553198442565
+Freq: 550, Voltage: 1.35, Output: Valid, Power: 0.17189417223975
 Freq: 600, Voltage: 0.55, Output: Invalid, Power: 0.011630377258928572
 Freq: 600, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.018295859839642856
 Freq: 600, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -174,6 +184,7 @@ Freq: 600, Voltage: 1.1500000000000004, Output: Valid, Power: 0.1238074830015
 Freq: 600, Voltage: 1.2000000000000004, Output: Valid, Power: 0.13729686041824998
 Freq: 600, Voltage: 1.25, Output: Valid, Power: 0.15176332748799998
 Freq: 600, Voltage: 1.3, Output: Valid, Power: 0.16732095463875
+Freq: 600, Voltage: 1.35, Output: Valid, Power: 0.18422142159979998
 Freq: 650, Voltage: 0.55, Output: Invalid, Power: 0.011635482823214287
 Freq: 650, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.018285202306964288
 Freq: 650, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -190,6 +201,7 @@ Freq: 650, Voltage: 1.1500000000000004, Output: Valid, Power: 0.13326768995125
 Freq: 650, Voltage: 1.2000000000000004, Output: Valid, Power: 0.1472508504725
 Freq: 650, Voltage: 1.25, Output: Valid, Power: 0.162711560384
 Freq: 650, Voltage: 1.3, Output: Valid, Power: 0.1792161049965
+Freq: 650, Voltage: 1.35, Output: Valid, Power: 0.19787807689525
 Freq: 700, Voltage: 0.55, Output: Invalid, Power: 0.011645693951785715
 Freq: 700, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.018298645112857143
 Freq: 700, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -206,6 +218,7 @@ Freq: 700, Voltage: 1.1500000000000004, Output: Valid, Power: 0.1420548727932500
 Freq: 700, Voltage: 1.2000000000000004, Output: Valid, Power: 0.15717216354675
 Freq: 700, Voltage: 1.25, Output: Valid, Power: 0.17344693906550002
 Freq: 700, Voltage: 1.3, Output: Valid, Power: 0.1910177292195
+Freq: 700, Voltage: 1.35, Output: Valid, Power: 0.2107599880045
 Freq: 750, Voltage: 0.55, Output: Invalid, Power: 0.011646970342857142
 Freq: 750, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.018322319935178574
 Freq: 750, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -222,6 +235,7 @@ Freq: 750, Voltage: 1.1500000000000004, Output: Valid, Power: 0.1509429182747499
 Freq: 750, Voltage: 1.2000000000000004, Output: Valid, Power: 0.164688916922
 Freq: 750, Voltage: 1.25, Output: Valid, Power: 0.18419894796800002
 Freq: 750, Voltage: 1.3, Output: Valid, Power: 0.202773683695
+Freq: 750, Voltage: 1.35, Output: Valid, Power: 0.22370839641450002
 Freq: 800, Voltage: 0.55, Output: Invalid, Power: 0.011629100867857142
 Freq: 800, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.018319534661964287
 Freq: 800, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -238,6 +252,7 @@ Freq: 800, Voltage: 1.1500000000000004, Output: Valid, Power: 0.1597810092029999
 Freq: 800, Voltage: 1.2000000000000004, Output: Valid, Power: 0.1765946355985
 Freq: 800, Voltage: 1.25, Output: Valid, Power: 0.194963423808
 Freq: 800, Voltage: 1.3, Output: Valid, Power: 0.214499493032
+Freq: 800, Voltage: 1.35, Output: Valid, Power: 0.23647992875549997
 Freq: 850, Voltage: 0.55, Output: Invalid, Power: 0.011639311996428573
 Freq: 850, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.01828750402
 Freq: 850, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -254,6 +269,7 @@ Freq: 850, Voltage: 1.1500000000000004, Output: Valid, Power: 0.1684756170599999
 Freq: 850, Voltage: 1.2000000000000004, Output: Valid, Power: 0.1862340096405
 Freq: 850, Voltage: 1.25, Output: Valid, Power: 0.205564768384
 Freq: 850, Voltage: 1.3, Output: Valid, Power: 0.225885970266
+Freq: 850, Voltage: 1.35, Output: Valid, Power: 0.24900943792575
 Freq: 900, Voltage: 0.55, Output: Invalid, Power: 0.011662287035714286
 Freq: 900, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.01829725247625
 Freq: 900, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -270,6 +286,7 @@ Freq: 900, Voltage: 1.1500000000000004, Output: Valid, Power: 0.1771466218979999
 Freq: 900, Voltage: 1.2000000000000004, Output: Valid, Power: 0.195637068101
 Freq: 900, Voltage: 1.25, Output: Valid, Power: 0.21594708247000002
 Freq: 900, Voltage: 1.3, Output: Valid, Power: 0.23727677745325
+Freq: 900, Voltage: 1.35, Output: Valid, Power: 0.261605106847
 Freq: 950, Voltage: 0.55, Output: Invalid, Power: 0.011655905080357144
 Freq: 950, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.01831117884232143
 Freq: 950, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -286,6 +303,7 @@ Freq: 950, Voltage: 1.1500000000000004, Output: Valid, Power: 0.1858100942122499
 Freq: 950, Voltage: 1.2000000000000004, Output: Valid, Power: 0.205166246696
 Freq: 950, Voltage: 1.25, Output: Valid, Power: 0.2264872096105
 Freq: 950, Voltage: 1.3, Output: Valid, Power: 0.24874310769824998
+Freq: 950, Voltage: 1.35, Output: Valid, Power: 0.27406845626625
 Freq: 1000, Voltage: 0.55, Output: Invalid, Power: 0.011657220745
 Freq: 1000, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.018313964115535715
 Freq: 1000, Voltage: 0.65, Output: Invalid, Power: 0.026492233043571428
@@ -302,6 +320,7 @@ Freq: 1000, Voltage: 1.1500000000000004, Output: Valid, Power: 0.19442926030875
 Freq: 1000, Voltage: 1.2000000000000004, Output: Valid, Power: 0.21449607779824997
 Freq: 1000, Voltage: 1.25, Output: Valid, Power: 0.23694034816
 Freq: 1000, Voltage: 1.3, Output: Valid, Power: 0.26017216396049997
+Freq: 1000, Voltage: 1.35, Output: Valid, Power: 0.28664184690399996
 Freq: 1050, Voltage: 0.55, Output: Invalid, Power: 0.004806235851875
 Freq: 1050, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.007435886750535714
 Freq: 1050, Voltage: 0.6500000000000001, Output: Invalid, Power: 0.006473013982105263
@@ -312,12 +331,13 @@ Freq: 1050, Voltage: 0.8500000000000003, Output: Invalid, Power: 0.0843264663391
 Freq: 1050, Voltage: 0.9000000000000004, Output: Invalid, Power: 0.09581858658800001
 Freq: 1050, Voltage: 0.9500000000000004, Output: Invalid, Power: 0.11184963926092858
 Freq: 1050, Voltage: 1.0000000000000004, Output: Invalid, Power: 0.12209490646339285
-Freq: 1050, Voltage: 1.05, Output: Valid, Power: 0.04213595566857142
-Freq: 1050, Voltage: 1.1, Output: Valid, Power: 0.05062686903216667
-Freq: 1050, Voltage: 1.1500000000000001, Output: Valid, Power: 0.04684301152666667
-Freq: 1050, Voltage: 1.2000000000000002, Output: Valid, Power: 0.05758139010385714
+Freq: 1050, Voltage: 1.05, Output: Valid, Power: 0.1678874414105
+Freq: 1050, Voltage: 1.1, Output: Valid, Power: 0.18653070654675002
+Freq: 1050, Voltage: 1.1500000000000001, Output: Valid, Power: 0.20691119987849999
+Freq: 1050, Voltage: 1.2000000000000002, Output: Valid, Power: 0.228916143723
 Freq: 1050, Voltage: 1.25, Output: Valid, Power: 0.24721543020800002
 Freq: 1050, Voltage: 1.3, Output: Valid, Power: 0.27128187736775
+Freq: 1050, Voltage: 1.35, Output: Valid, Power: 0.29646319442999997
 Freq: 1100, Voltage: 0.55, Output: Invalid, Power: 0.004806235851875
 Freq: 1100, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.007435886750535714
 Freq: 1100, Voltage: 0.6500000000000001, Output: Invalid, Power: 0.006473013982105263
@@ -334,6 +354,7 @@ Freq: 1100, Voltage: 1.1500000000000001, Output: Valid, Power: 0.21052933251475
 Freq: 1100, Voltage: 1.2000000000000002, Output: Valid, Power: 0.23296785810525
 Freq: 1100, Voltage: 1.25, Output: Valid, Power: 0.2574874728105
 Freq: 1100, Voltage: 1.3, Output: Valid, Power: 0.282648040323
+Freq: 1100, Voltage: 1.35, Output: Valid, Power: 0.31119420306975
 Freq: 1150, Voltage: 0.55, Output: Invalid, Power: 0.004806235851875
 Freq: 1150, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.007435886750535714
 Freq: 1150, Voltage: 0.6500000000000001, Output: Invalid, Power: 0.006473013982105263
@@ -350,6 +371,7 @@ Freq: 1150, Voltage: 1.1500000000000001, Output: Valid, Power: 0.21913749608025
 Freq: 1150, Voltage: 1.2000000000000002, Output: Valid, Power: 0.24229370036275
 Freq: 1150, Voltage: 1.25, Output: Valid, Power: 0.267724655232
 Freq: 1150, Voltage: 1.3, Output: Valid, Power: 0.29365260642575
+Freq: 1150, Voltage: 1.35, Output: Valid, Power: 0.323174181247
 Freq: 1200, Voltage: 0.55, Output: Invalid, Power: 0.004806235851875
 Freq: 1200, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.007435886750535714
 Freq: 1200, Voltage: 0.6500000000000001, Output: Invalid, Power: 0.006473013982105263
@@ -366,6 +388,7 @@ Freq: 1200, Voltage: 1.1500000000000001, Output: Valid, Power: 0.22711972469325
 Freq: 1200, Voltage: 1.2000000000000002, Output: Valid, Power: 0.251531424967
 Freq: 1200, Voltage: 1.25, Output: Valid, Power: 0.2777242020685
 Freq: 1200, Voltage: 1.3, Output: Valid, Power: 0.30452426584549996
+Freq: 1200, Voltage: 1.35, Output: Valid, Power: 0.34321214705625
 Freq: 1250, Voltage: 0.55, Output: Invalid, Power: 0.004806235851875
 Freq: 1250, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.007435886750535714
 Freq: 1250, Voltage: 0.6500000000000001, Output: Invalid, Power: 0.006473013982105263
@@ -382,6 +405,7 @@ Freq: 1250, Voltage: 1.1500000000000001, Output: Invalid, Power: 0.2386363822705
 Freq: 1250, Voltage: 1.2000000000000002, Output: Invalid, Power: 0.26043713866475
 Freq: 1250, Voltage: 1.25, Output: Invalid, Power: 0.287383127366
 Freq: 1250, Voltage: 1.3, Output: Valid, Power: 0.31542869158349995
+Freq: 1250, Voltage: 1.35, Output: Valid, Power: 0.34724181597174997
 Freq: 1300, Voltage: 0.55, Output: Invalid, Power: 0.004806235851875
 Freq: 1300, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.007435886750535714
 Freq: 1300, Voltage: 0.6500000000000001, Output: Invalid, Power: 0.006473013982105263
@@ -398,6 +422,7 @@ Freq: 1300, Voltage: 1.1500000000000001, Output: Invalid, Power: 0.2386363822705
 Freq: 1300, Voltage: 1.2000000000000002, Output: Invalid, Power: 0.27154084080835716
 Freq: 1300, Voltage: 1.25, Output: Invalid, Power: 0.296227920508
 Freq: 1300, Voltage: 1.3, Output: Invalid, Power: 0.32592425953174997
+Freq: 1300, Voltage: 1.35, Output: Invalid, Power: 0.35863745477974995
 Freq: 1350, Voltage: 0.55, Output: Invalid, Power: 0.004806235851875
 Freq: 1350, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.007435886750535714
 Freq: 1350, Voltage: 0.6500000000000001, Output: Invalid, Power: 0.006473013982105263
@@ -414,6 +439,7 @@ Freq: 1350, Voltage: 1.1500000000000001, Output: Invalid, Power: 0.2386363822705
 Freq: 1350, Voltage: 1.2000000000000002, Output: Invalid, Power: 0.27154084080835716
 Freq: 1350, Voltage: 1.25, Output: Invalid, Power: 0.30942390166428574
 Freq: 1350, Voltage: 1.3, Output: Invalid, Power: 0.33404515282049996
+Freq: 1350, Voltage: 1.35, Output: Invalid, Power: 0.36924946552649995
 Freq: 1400, Voltage: 0.55, Output: Invalid, Power: 0.004806235851875
 Freq: 1400, Voltage: 0.6000000000000001, Output: Invalid, Power: 0.007435886750535714
 Freq: 1400, Voltage: 0.6500000000000001, Output: Invalid, Power: 0.006473013982105263
@@ -430,3 +456,4 @@ Freq: 1400, Voltage: 1.1500000000000001, Output: Invalid, Power: 0.2386363822705
 Freq: 1400, Voltage: 1.2000000000000002, Output: Invalid, Power: 0.27154084080835716
 Freq: 1400, Voltage: 1.25, Output: Invalid, Power: 0.30942390166428574
 Freq: 1400, Voltage: 1.3, Output: Invalid, Power: 0.3499997515138928
+Freq: 1400, Voltage: 1.35, Output: Invalid, Power: 0.38498897076239286
