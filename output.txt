@@ -238,3 +238,5 @@ Freq: 850, Voltage: 1.0500000000000005, Output: Valid, Power: 0.041837098435875
 Freq: 850, Voltage: 1.1000000000000005, Output: Valid, Power: 0.046631187623625
 Freq: 850, Voltage: 1.1500000000000006, Output: Invalid, Power: 0.16037853544221428
 Freq: 850, Voltage: 1.2000000000000006, Output: Valid, Power: 0.05658714295462499
+Freq: 100, Voltage: 0.7, Output: Invalid, Power 0.009664259275
+Freq: 150, Voltage: 0.7, Output: Valid, Power 0.01401037572875

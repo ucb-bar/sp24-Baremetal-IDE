@@ -50,9 +50,6 @@ void pll_setup() {
   PLL->POWERGOOD_VNN = 1;
   PLL->PLLFWEN_B = 1;
   CLOCK_SELECTOR->SEL = 1; // Switch to PLL
-  // // printf("PLLEN: %d\r\n", reg_read8(0x10000060));
-  // // Write the index of the clock you want to use to the base address
-  // // Ref: https://bwrcrepo.eecs.berkeley.edu/ee290c_ee194_intech22/sp24-chips/-/blob/main/generators/chipyard/src/main/scala/BearlyChipTop.scala#L52
 }
 
 void app_main() {
@@ -131,7 +128,7 @@ int main(int argc, char **argv) {
   /* Configure the system clock */
   
   /* USER CODE BEGIN SysInit */
-  // pll_setup();
+  pll_setup();
   UART_InitType UART_init_config;
   UART_init_config.baudrate = 115200;
   UART_init_config.mode = UART_MODE_TX_RX;
