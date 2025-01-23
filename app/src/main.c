@@ -35,8 +35,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define PI 3.14159265359
-#define HEIGHT 24
-#define WIDTH 32
+#define HEIGHT 240
+#define WIDTH 320
 #define MAX_KERNEL_SIZE 31  // This will support sigma up to 5.0
 
 #define INPUT_ADDR      0x08800000
@@ -74,32 +74,74 @@ void app_init() {
   // torch::executor::runtime_init();
 }
 
+void calculate_pwm_to_center(
+    int32_t cx,
+    int32_t cy
+) {
+    
+
+    // Define duty cycle ranges for idx (x-axis) and idy (y-axis)
+    const uint32_t duty_x_min = 40;
+    const uint32_t duty_x_max = 60;
+    const uint32_t duty_y_min = 27;
+    const uint32_t duty_y_max = 50;
+
+    // Screen center
+    const int32_t screen_center_x = 160;
+    const int32_t screen_center_y = 120;
+
+    // Calculate offsets from center
+    int32_t offset_x = cx - screen_center_x;
+    int32_t offset_y = cy - screen_center_y;
+
+    // Map offsets to duty cycle ranges
+    // X-axis: Scale offset to 40%-60% range (center is 50%)
+    uint32_t duty_x = 50 + (offset_x * 10) / screen_center_x;
+
+    // Y-axis: Scale offset to 27%-50% range (center is 38.5%)
+    uint32_t duty_y = 38.5 + (offset_y * 11.5) / screen_center_y;
+
+    // Clamp the duty cycles to their valid ranges
+    if (duty_x < duty_x_min) duty_x = duty_x_min;
+    if (duty_x > duty_x_max) duty_x = duty_x_max;
+
+    if (duty_y < duty_y_min) duty_y = duty_y_min;
+    if (duty_y > duty_y_max) duty_y = duty_y_max;
+
+    // Apply the calculated duty cycles
+    pwm_set_duty_cycle(PWM0_BASE, 1, duty_x, 400, 0);
+    pwm_set_duty_cycle(PWM0_BASE, 2, duty_y, 400, 0);
+    return;
+}
+
+
 int my_strcmp(const char *str1, const char *str2) {
-    // Loop through each character of both strings
     while (*str1 && *str2) {
         if (*str1 != *str2) {
-            // Return the difference if characters don't match
             return (unsigned char)*str1 - (unsigned char)*str2;
         }
         str1++;
         str2++;
     }
-
-    // If we exit the loop, check the remaining characters
     return (unsigned char)*str1 - (unsigned char)*str2;
 }
 
 void read_pixels(uint8_t* image_data) { 
-    // Pixel data transfer
-    for (int i = 0; i < WIDTH * HEIGHT; i++) {
-        uart_receive(UART0, &image_data[i], sizeof(char), 100000);
-    }
+    uart_receive(UART1, image_data, WIDTH*HEIGHT, 100000);
 
+    for (int i = 0; i < WIDTH * HEIGHT; i++) {
+        image_data[i] = (int) image_data[i];
+    }
 }
+
 void capture_image(uint8_t* image_data) {
 
-    printf("r\n");
-    printf("x\n");
+    // printf("r\n");
+    char* r = "r\n";
+    uart_transmit(UART1, (const uint8_t *) r, 2*sizeof(char), 1000);
+    // printf("x\n");
+    char* x = "x\n";
+    uart_transmit(UART1, (const uint8_t *) x, 2*sizeof(char), 1000);
 
     int index = 0;
     int start_found = 0; // false
@@ -107,16 +149,17 @@ void capture_image(uint8_t* image_data) {
     char buffer[60];
 
     while (1) {
-        uart_receive(UART0, &received, sizeof(char), 100000);
+        uart_receive(UART1, &received, sizeof(char), 100000);
         if (received == '\n' || index >= sizeof(buffer) - 1) {
             buffer[index] = '\0';
             index = 0;
 
             if (my_strcmp(buffer, "START\r") == 0) {
+                uint64_t cpu_start_cycles = READ_CSR("mcycle");
                 read_pixels(image_data);
-            }
-            
-            if (my_strcmp(buffer, "END\r") == 0) {
+                uint64_t cpu_end_cycles = READ_CSR("mcycle");
+                volatile uint64_t diff = cpu_end_cycles - cpu_start_cycles;
+            } else if (my_strcmp(buffer, "END\r") == 0) {
                 break;
             }
         } else {
@@ -342,6 +385,41 @@ void hysteresis(uint8_t* src, uint8_t* dst) {
     } while (changed);
 }
 
+void subjectIdentification(unsigned char* src, int* position) {
+    float xSums[HEIGHT] = {0};
+    float xIndices[HEIGHT] = {0};
+    float ySums[WIDTH] = {0};
+    float yIndices[HEIGHT] = {0};
+
+    for (int y = 1; y < HEIGHT - 1; y++) {
+        for (int x = 1; x < WIDTH - 1; x++) {
+            if (src[y * WIDTH + x] == 255) {
+                xSums[y] += x;
+                xIndices[y] += 1;
+                ySums[x] += y;
+                yIndices[x] += 1;
+            }
+        }
+    }
+
+    float xSum = 0;
+    for (int i = 0; i < HEIGHT; i++) {
+        if (xIndices[i] != 0) {
+            xSum += xSums[i] / xIndices[i];
+        }
+    }
+
+    float ySum = 0;
+    for (int i = 0; i < WIDTH; i++) {
+        if (yIndices[i] != 0) {
+            ySum += ySums[i] / yIndices[i];
+        }
+    }
+
+    position[0] = (int) (xSum / HEIGHT);
+    position[1] = (int) (ySum / WIDTH);
+}
+
 /* USER CODE END PUC */
 
 /**
@@ -359,12 +437,40 @@ int main(int argc, char **argv) {
   UART_init_config.baudrate = 115200;
   UART_init_config.mode = UART_MODE_TX_RX;
   UART_init_config.stopbits = UART_STOPBITS_2;
-  uart_init(UART0, &UART_init_config);
+  uart_init(UART1, &UART_init_config);
+
+  PWM_InitType PWM_init_config;
+  PWM_init_config.pwmscale = 0;
+  PWM_init_config.RESERVED = 0;
+  PWM_init_config.pwmsticky = 0;
+  PWM_init_config.pwmzerocmp = 0;
+  PWM_init_config.pwmdeglitch = 0;
+  PWM_init_config.RESERVED1 = 0;
+  PWM_init_config.pwmenalways = 0;
+  PWM_init_config.pwmenoneshot = 0;
+  PWM_init_config.RESERVED2 = 0;
+  PWM_init_config.pwmcmp0center = 0;
+  PWM_init_config.pwmcmp1center = 0;
+  PWM_init_config.pwmcmp2center = 0;
+  PWM_init_config.pwmcmp3center = 0;
+  PWM_init_config.RESERVED3 = 0;
+  PWM_init_config.pwmcmp0gang = 0;
+  PWM_init_config.pwmcmp1gang = 0;
+  PWM_init_config.pwmcmp2gang = 0;
+  PWM_init_config.pwmcmp3gang = 0;
+  PWM_init_config.pwmcmp0ip = 0;
+  PWM_init_config.pwmcmp1ip = 0;
+  PWM_init_config.pwmcmp2ip = 0;
+  PWM_init_config.pwmcmp3ip = 0;
+  pwm_init(PWM0_BASE, &PWM_init_config);
+  *((uint32_t*) (PWM0_BASE+0x08)) = 0;
+
+  pwm_enable(PWM0_BASE);
+
+  pwm_set_frequency(PWM0_BASE, 0, 400);
+  pwm_set_duty_cycle(PWM0_BASE, 0, 1, 400, 0);
 
   /* USER CODE END SysInit */
-
-    
-
 
   /* Initialize all configured peripherals */  
   /* USER CODE BEGIN Init */
@@ -378,10 +484,7 @@ int main(int argc, char **argv) {
   //   return 0;
   // }
 
-
-  uint8_t image_data[WIDTH * HEIGHT]; // Stack array for image data
-
-  capture_image(image_data);
+  uint8_t image_data[WIDTH * HEIGHT]; 
   
   uint8_t blurred[WIDTH * HEIGHT] = {0};
   uint8_t gradientMagnitude[WIDTH * HEIGHT] = {0};
@@ -389,16 +492,32 @@ int main(int argc, char **argv) {
   uint8_t nms[WIDTH * HEIGHT] = {0};
   uint8_t threshold[WIDTH * HEIGHT] = {0};
   uint8_t output[WIDTH * HEIGHT] = {0};
+  int position[2] = {0,0};
+  int test = 0;
 
-  gaussian_blur(image_data, blurred);
-  sobelOperator(blurred, gradientMagnitude, gradientDirection);
-  nonMaxSuppression(gradientMagnitude, gradientDirection, nms);
-  doubleThreshold_opt(nms, threshold, WIDTH * HEIGHT, 0.2, 0.1);  // High threshold = 0.2, Low threshold = 0.1
-  hysteresis(threshold, output);
-
-  for (size_t x = 0; x < sizeof(output) / sizeof(output[0]); x++) {
-    printf("%c", (unsigned char)output[x]); // Send exactly 1 byte
+  while (1) {
+    // capture_image(image_data);
+    // gaussian_blur(image_data, blurred);
+    // sobelOperator(blurred, gradientMagnitude, gradientDirection);
+    // nonMaxSuppression(gradientMagnitude, gradientDirection, nms);
+    // doubleThreshold_opt(nms, threshold, WIDTH * HEIGHT, 0.2, 0.1);  // High threshold = 0.2, Low threshold = 0.1
+    // hysteresis(threshold, output);
+    // subjectIdentification(output, position);
+    if (test) {
+        position[0] = 320;
+        position[1] = 240;
+        test = 0;
+    } else{ 
+        position[0] = 0;
+        position[1] = 0;
+        test = 1;
+    }
+    calculate_pwm_to_center(position[0], position[1]);
   }
+
+//   for (size_t x = 0; x < sizeof(output) / sizeof(output[0]); x++) {
+//     printf("%c", (unsigned char)output[x]); // Send exactly 1 byte
+//   }
 
   return 0;
   /* USER CODE END WHILE */

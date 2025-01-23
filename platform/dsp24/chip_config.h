@@ -10,6 +10,7 @@ extern "C" {
 #include "spi.h"
 #include "i2c.h"
 #include "uart.h"
+#include "pwm.h"
 
 
 // ================================
@@ -35,6 +36,7 @@ extern "C" {
 #define UART_BASE               0x10020000U
 #define QSPI_FLASH_BASE         0x20000000U
 #define DRAM_BASE               0x80000000U
+#define PWM_BASE                0x10060000U
 
 #define FFT_BASE                0x08700000U
 #define CONV_BASE               0x08800000U
@@ -46,6 +48,9 @@ extern "C" {
 
 #define UART1_BASE              (0x10021000U)
 
+#define GPIOC_BASE              (GPIO_BASE)
+#define PWM0_BASE               (0x10060000U)
+
 /* Peripheral Structure Definition */
 #define RCC                     ((RCC_Type *)RCC_BASE)
 #define PLL                     ((PLL_Type *)PLL_BASE)
@@ -54,6 +59,7 @@ extern "C" {
 #define PLIC_CC                 ((PLIC_ContextControl_Type *)(PLIC_BASE + 0x00200000U))
 #define UART0                   ((UART_Type *)UART0_BASE)
 #define UART1                   ((UART_Type *)UART1_BASE)
+#define PWM0                    ((PWM_Type *)PWM0_BASE)
 
 
 
