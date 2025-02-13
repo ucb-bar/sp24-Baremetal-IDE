@@ -131,6 +131,8 @@ endif()
 
 add_executable(app
   app/src/main.c
+  app/src/test_dma.c
+  app/src/test_conv.c
 )
 
 target_include_directories(app PUBLIC app/include)
