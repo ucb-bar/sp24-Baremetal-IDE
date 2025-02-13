@@ -20,7 +20,7 @@ void read_conv_dma(int dma_num, int length, uint64_t* write_addr) {
 }
 
 void read_conv_dma_p(int dma_num, int length, uint64_t* write_addr) {
-    set_DMAP(dma_num, CONV_OUTPUT_ADDR, write_addr, READ_CHECK_ADDR, 0, 8, length/4, 3, 0);
+    set_DMAP(dma_num, CONV_OUTPUT_ADDR, write_addr, READ_CHECK_ADDR, 0, 8, length/4, 3, 100000);
     start_DMA(dma_num);
 }
 

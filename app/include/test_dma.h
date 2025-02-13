@@ -24,6 +24,8 @@ extern "C" {
 
 int checkval(int i, long unsigned int  poll, long unsigned int ref, long unsigned int addr);
 
+test_dma_all();
+
 int test_basic();
 int test_combined();
 int test_stride();

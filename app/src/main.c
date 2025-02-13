@@ -15,6 +15,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "test_dma.h"
 #include "chip_config.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -61,9 +62,15 @@ void app_init() {
 void app_main() {
   uint64_t mhartid = READ_CSR("mhartid");
 
+  // test_conv_basic();
+  // test_conv_dma();
+  test_conv_dma_P();
+
   while(1) {
-    printf("Hello from hart : %d\r\n", mhartid);
+
   }
+  
+
 }
 /* USER CODE END PUC */
 
