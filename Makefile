@@ -69,5 +69,6 @@ dump:
 tsi:
 	uart_tsi +tty=$(TTY) +baudrate=921600 $(BINARY)
 
-.PHONY fpga
+.PHONY: fpga
+fpga:
 	openFPGALoader -b arty_a7_100t -f GeorgeFPGAHarness.bit
