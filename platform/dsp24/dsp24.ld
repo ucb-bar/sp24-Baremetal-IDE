@@ -50,7 +50,7 @@ MEMORY {
   SCRATCH  (rwx): ORIGIN = 0x08000000, LENGTH = 32K
   FLASH    (rwx): ORIGIN = 0x20000000, LENGTH = 128M
   PSRAM    (rwx): ORIGIN = 0x40000000, LENGTH = 64M
-  DRAM     (rwx): ORIGIN = 0x80000000, LENGTH = 16384M
+  DRAM     (rwx): ORIGIN = 0x90000000, LENGTH = 256K
 }
 
 SECTIONS {
@@ -144,7 +144,7 @@ SECTIONS {
     KEEP(*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
     KEEP(*(.fini_array EXCLUDE_FILE(*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
     PROVIDE_HIDDEN(__fini_array_end = .);
-  }> SCRATCH AT> FLASH
+  }> DRAM AT> FLASH
   
   PROVIDE(__data_load_start = LOADADDR(.data));
 
@@ -153,7 +153,7 @@ SECTIONS {
     PROVIDE(__global_pointer$ = . + 0x800);
     *(.sdata .sdata.*)
     *(.gnu.linkonce.s.*)
-  }> SCRATCH AT> FLASH
+  }> DRAM AT> FLASH
 
   /* Section for initialized thread-local small data */
   .tdata : {
@@ -162,7 +162,7 @@ SECTIONS {
     *(.gnu.linkonce.td.*)
     PROVIDE_HIDDEN(__tdata_end = .);
     PROVIDE(__data_end = .);
-  }> SCRATCH AT> FLASH
+  }> DRAM AT> FLASH
 
   PROVIDE(__tdata_size = SIZEOF(.tdata));
 
@@ -174,7 +174,7 @@ SECTIONS {
     *(.gnu.linkonce.tb.*)
     *(.tcommon)
     PROVIDE_HIDDEN(__tbss_end = .);
-  }> SCRATCH
+  }> DRAM
   
   PROVIDE(__tbss_size = SIZEOF(.tbss));
 
@@ -183,7 +183,7 @@ SECTIONS {
     PROVIDE_HIDDEN(__bss_start = .);
     *(.sbss .sbss.*)
     *(.gnu.linkonce.sb.*)
-  }> SCRATCH
+  }> DRAM
   
   /* Section for uninitialized data */
   .bss (NOLOAD) : ALIGN(8) {
@@ -191,7 +191,7 @@ SECTIONS {
     *(.gnu.linkonce.b.*)
     *(COMMON)
     PROVIDE_HIDDEN(__bss_end = .);
-  }> SCRATCH
+  }> DRAM
 
   . = ALIGN(8);
   PROVIDE(__end = .);
@@ -202,7 +202,7 @@ SECTIONS {
     . += __heap_size;
     . = ALIGN(4K);
     PROVIDE_HIDDEN(__heap_end = .);
-  }> SCRATCH
+  }> DRAM
   
   /* Reserve stack space */
   .stack (NOLOAD) : ALIGN(16) {
@@ -210,7 +210,7 @@ SECTIONS {
     . += __stack_size * 5; /* Hart 0 */
     PROVIDE(_sp = .);
     PROVIDE_HIDDEN(__stack_end = .);
-  }> SCRATCH
+  }> DRAM
 
   PROVIDE(__stack_shift = LOG2CEIL(__stack_size));
 

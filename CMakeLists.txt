@@ -96,11 +96,11 @@ add_executable(app
   app/src/controller.c
   app/src/home.c
   app/src/joints.c
-  app/src/main.cpp
+  app/src/main.c
   app/src/switch.c
   app/src/uart_tsi.c
-  app/src/bmi088.cpp
-  app/src/madgwick_ahrs.cpp
+  # app/src/bmi088.cpp
+  # app/src/madgwick_ahrs.cpp
 )
 
 target_include_directories(app PUBLIC app/include)

@@ -23,7 +23,6 @@
 int motor_speeds[8];
 int motor_positions[8];
 
-static BMI088_IMU imu;
 
 void app_init() {
 
@@ -31,14 +30,14 @@ void app_init() {
   // | Initialize the controller
   // +------------------------------------------------+
   printf("[START INIT]\n");
-  switches_init();
-  joints_init();
+  // switches_init();
+  // joints_init();
 
   // +------------------------------------------------+
   // | Start initial homing sequence
   // +------------------------------------------------+
   printf("[START HOME]\n");
-  home_motors();    
+  // home_motors();    
 
   sleep(1);
   
@@ -46,15 +45,15 @@ void app_init() {
 
 void app_main() {
   uint64_t mhartid = READ_CSR("mhartid");
-  motor_set_state(1);
-  motor_set_en(1);
+  // motor_set_state(1);
+  // motor_set_en(1);
 
   while (1) {
-    step();
+    // step();
     // print_home_buttons();
     // print_encoders();
-    // printf("sadly unalive myself from hart : %d\r\n", mhartid);
-    // msleep(1000);
+    printf("sadly unalive myself from hart : %d\r\n", mhartid);
+    msleep(1000);
 
   }
 }
@@ -110,7 +109,7 @@ void setup_pll() {
  * @brief  The application entry point.
  * @retval int
  */
-extern "C" int main(int argc, char **argv) {
+int main(int argc, char **argv) {
   /* MCU Configuration--------------------------------------------------------*/
   // Initialize UART0 for Serial Monitor
   UART_InitType UART0_init_config;
