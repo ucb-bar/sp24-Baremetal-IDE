@@ -64,9 +64,12 @@ void app_main() {
 
   // test_conv_basic();
   // test_conv_dma();
-  test_conv_dma_P();
+  // test_conv_dma_P();
+
+  test_MPM();
 
   while(1) {
+    printf("Hello world from hart %d\n", mhartid);
 
   }
   

@@ -1,16 +1,15 @@
-PREFIX = riscv64-elf-
-
-CC = $(PREFIX)gcc
-CXX = $(PREFIX)g++
-CP = $(PREFIX)objcopy
-OD = $(PREFIX)objdump
-DG = $(PREFIX)gdb
-SIZE = $(PREFIX)size
 
 # Can be used to change HART for gdb debugging
 PORT = 3333
 
+ifeq ($(UNAME), Linux)
+PREFIX = riscv64-unknown-elf-
+endif
+
+ifeq ($(UNAME), Darwin)
 PREFIX = riscv64-elf-
+endif
+
 
 CC = $(PREFIX)gcc
 CXX = $(PREFIX)g++

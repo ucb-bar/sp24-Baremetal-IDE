@@ -31,6 +31,8 @@ int test_combined();
 int test_stride();
 int test_width();
 
+int test_MPM();
+
 #ifdef __cplusplus
 }
 #endif

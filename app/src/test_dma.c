@@ -353,3 +353,78 @@ int test_width() {
   printf("[All tests passed]!\n\n");
   return 0;
 }
+
+
+
+
+
+
+#define LB_SET        0x6000
+#define LB_SET_REQ    LB_SET+0x4
+#define LB_READ       LB_SET+0x8
+#define LB_READ_REQ   LB_SET+0xC
+
+int test_MPM() {
+  printf("\n[STARTING TEST: MPM]\n\n");
+
+  long unsigned int REFVAL1[60] = {   0xAAAAAAAAAAAAAAAA, 0xBBBBBBBBBBBBBBBB, 0xCCCCCCCCCCCCCCCC, 0xDDDDDDDDDDDDDDDD, 0xEEEEEEEEEEEEEEEE, 
+                                      0xAAABAAABAAABAAAB, 0xAAACAAACAAACAAAC, 0xAAADAAADAAADAAAD, 0xAAAEAAAEAAAEAAAE, 0xAAAFAAAFAAAFAAAF,
+                                      0xFFFFFFFFFFFFFFFF, 0xABABABABABABABAB, 0xCDCDCDCDCDCDCDCD, 0xEFEFEFEFEFEFEFEF, 0xACACACACACACACAC, 
+                                      0xBBBABBBABBBABBBA, 0xBBBCBBBCBBBCBBBC, 0xBBBDBBBDBBBDBBBD, 0xBBBEBBBEBBBEBBBE, 0xBBBFBBBFBBBFBBBF,
+                                      0xADADADADADADADAD, 0xAEAEAEAEAEAEAEAE, 0xAFAFAFAFAFAFAFAF, 0xBCBCBCBCBCBCBCBC, 0xBDBDBDBDBDBDBDBD, 
+                                      0xCCCACCCACCCACCCA, 0xCCCBCCCBCCCBCCCB, 0xCCCDCCCDCCCDCCCD, 0xCCCECCCECCCECCCE, 0xCCCFCCCFCCCFCCCF,
+                                      0xAAAAAAAAAAAAAAAA, 0xBBBBBBBBBBBBBBBB, 0xCCCCCCCCCCCCCCCC, 0xDDDDDDDDDDDDDDDD, 0xEEEEEEEEEEEEEEEE, 
+                                      0xAAABAAABAAABAAAB, 0xAAACAAACAAACAAAC, 0xAAADAAADAAADAAAD, 0xAAAEAAAEAAAEAAAE, 0xAAAFAAAFAAAFAAAF,
+                                      0xFFFFFFFFFFFFFFFF, 0xABABABABABABABAB, 0xCDCDCDCDCDCDCDCD, 0xEFEFEFEFEFEFEFEF, 0xACACACACACACACAC, 
+                                      0xBBBABBBABBBABBBA, 0xBBBCBBBCBBBCBBBC, 0xBBBDBBBDBBBDBBBD, 0xBBBEBBBEBBBEBBBE, 0xBBBFBBBFBBBFBBBF,
+                                      0xADADADADADADADAD, 0xAEAEAEAEAEAEAEAE, 0xAFAFAFAFAFAFAFAF, 0xBCBCBCBCBCBCBCBC, 0xBDBDBDBDBDBDBDBD, 
+                                      0xCCCACCCACCCACCCA, 0xCCCBCCCBCCCBCCCB, 0xCCCDCCCDCCCDCCCD, 0xCCCECCCECCCECCCE, 0xCCCFCCCFCCCFCCCF};
+  long unsigned int RETVAL[60];
+
+  long unsigned int poll, ref;
+  uint32_t size = 8;
+  uint32_t logd = 6; // We need the log of the depth of the memory transaction: log2(8) = 3, log2(16) = 4
+
+  // Write some reference data
+  for (int i=0; i<60; i++) {
+      reg_write64(DMA_ADDR1 + 8*i, REFVAL1[i]);
+  }
+
+  printf("DONE Setting Initial Values \n");
+
+  set_DMAP(3, DMA_ADDR1, LB_SET, LB_SET_REQ, 4, 0, 200, 2, 0);
+  set_DMAP(4, LB_READ, RETVAL, LB_READ_REQ, 0, 4, 200, 2, 0);
+  printf("DONE Prepping Addresses \n");
+
+
+
+
+  
+  start_DMA(4);
+  printf("DONE Queueing DMA (read)\n");
+
+
+  printf("     ... Allow Read to cook\n");
+  printf("     ... Allow Read to cook\n");
+
+
+
+  start_DMA(3);
+  printf("DONE Starting DMA (write)\n");
+
+  // Check DMA
+  printf("CHECK RESULT 1\n");
+  for(int i=0; i<60; i++) {
+      poll = reg_read32(RETVAL + i*8);
+      ref = REFVAL1[i] & 0xFFFFFFFF;
+      if (checkval(i, poll, ref, RETVAL + i*8))
+          return 1;
+
+      poll = reg_read32(RETVAL + (i*8) + 4);
+      ref = REFVAL1[i]>>32;
+      if (checkval(i, poll, ref, RETVAL + (i*8) + 4))
+          return 1;
+  }
+  printf("[All tests passed]!\n\n");
+  return 0;
+}
