@@ -93,11 +93,11 @@ add_link_options(-T ${LINKER_SCRIPT})
 # Build
 #################################
 
-add_executable(shmoo_bench
-  shmoo_bench/dsp_conv_bench/src/main.c
-)
+# add_executable(shmoo_bench
+#   shmoo_bench/dsp_conv_bench/src/main.c
+# )
 
-target_include_directories(shmoo_bench PUBLIC shmoo_bench/dsp_conv_bench/include)
+# target_include_directories(shmoo_bench PUBLIC shmoo_bench/dsp_conv_bench/include)
 
 
 #################################
@@ -107,11 +107,12 @@ target_include_directories(shmoo_bench PUBLIC shmoo_bench/dsp_conv_bench/include
 add_subdirectory(driver)
 add_subdirectory(glossy)
 add_subdirectory(lib)
+add_subdirectory(shmoo_bench)
 # add_subdirectory(examples)
 
-target_link_libraries(shmoo_bench PRIVATE 
-  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
-)
+# target_link_libraries(shmoo_bench PRIVATE 
+#   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+# )
 
 
 #################################
