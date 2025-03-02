@@ -76,12 +76,12 @@ void app_main() {
   gpio_write_pin(GPIOA, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, 1);
 
   sleep(1);
-  // printf("Hello world from hart %d: %d\n", mhartid, counter);
+  printf("Hello world from hart %d: %d\n", mhartid, counter);
 
   
   gpio_write_pin(GPIOA, GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3, 0);
   sleep(1);
-  // printf("Hello world from hart %d: %d\n", mhartid, counter);
+  printf("Hello world from hart %d: %d\n", mhartid, counter);
 
 }
 /* USER CODE END PUC */

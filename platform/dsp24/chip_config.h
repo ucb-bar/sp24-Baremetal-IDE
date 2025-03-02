@@ -10,6 +10,8 @@ extern "C" {
 #include "spi.h"
 #include "i2c.h"
 #include "uart.h"
+#include "gpio.h"
+#include "pwm.h"
 
 
 // ================================
@@ -35,11 +37,19 @@ extern "C" {
 #define UART_BASE               0x10020000U
 #define QSPI_FLASH_BASE         0x20000000U
 #define DRAM_BASE               0x80000000U
+#define GPIO_BASE               0x10012000U
+#define PWM_BASE                0x10060000U
+#define PLL_BASE                0x00140000U
+#define CLOCK_SELECTOR_BASE     0x00130000U
 
 #define FFT_BASE                0x08700000U
 #define CONV_BASE               0x08800000U
 #define DMA_BASE                0x08810000U
 #define I2S_BASE                0x10042000U
+#define UART0_BASE              (UART_BASE)
+#define UART1_BASE              (0x10021000U)
+#define GPIOC_BASE              (0x10012000U)
+#define PWM0_BASE               (PWM_BASE)
 
 /* Peripheral Pointer Definition */
 #define UART0_BASE              (UART_BASE)
@@ -51,7 +61,10 @@ extern "C" {
 #define PLIC                    ((PLIC_Type *)PLIC_BASE)
 #define PLIC_CC                 ((PLIC_ContextControl_Type *)(PLIC_BASE + 0x00200000U))
 #define UART0                   ((UART_Type *)UART0_BASE)
-
+#define GPIOC                   ((GPIO_Type *)GPIOC_BASE)
+#define PWM0                    ((PWM_Type *)PWM0_BASE)
+#define UART1                   ((UART_Type *)UART1_BASE)
+#define CLOCK_SELECTOR          ((ClockSel_Type*)CLOCK_SELECTOR_BASE)
 
 
 

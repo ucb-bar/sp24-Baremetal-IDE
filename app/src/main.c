@@ -16,7 +16,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "chip_config.h"
-#include <math.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -76,9 +75,7 @@ uint8_t data_buffer[11] = "v 0 0.0000\n";
 uint8_t long_data_buffer[34] = "w axis0.controller.input_pos 0.00\n";
 uint8_t clear_errors[3]= {'s', 'v', '\n'};
 uint8_t state_control[26]= "w axis0.requested_state 8\n";
-uint8_t mode_control[41]= "w axis0.controller.config.control_mode 2\n";
-uint8_t read_state[24]= "r axis0.requested_state\n";
-uint8_t read_state2[24]= "00000000000000000000000\n";
+uint8_t state_control_idle[26]= "w axis0.requested_state 1\n";
 
 /* USER CODE END PV */
 
@@ -111,32 +108,37 @@ void app_init() {
     motorPositionBuffer[i] = 0;
     angleStepCountBuffer[i] = 0;
   }
-  //uart_transmit(UART1, clear_errors, 3, 100000);
-  //uart_transmit(UART1, read_state, 24, 100000);
-  //uart_receive(UART1, read_state2, 24, 100000);
-  //printf(read_state2);
-  //uart_transmit(UART1, mode_control, 41, 100000);
-  //msleep(300);
-  //uart_transmit(UART1, clear_errors, 3, 1000000);
+  uart_transmit(UART1, clear_errors, 3, 100000);
+  uart_transmit(UART1, state_control, 26, 100000);
+  msleep(300);
+  uart_transmit(UART1, clear_errors, 3, 1000000);
   pwm_enable(PWM0_BASE);
   pwm_set_frequency(PWM0_BASE, 0, 1000);
   pwm_get_frequency(PWM0_BASE, 0);
   //pwm_set_duty_cycle(PWM0_BASE, 0, 50, 1000, 0);
   pwm_set_duty_cycle(PWM0_BASE, 1, 50, 1000, 0);
 
-  // CLOCK_SELECTOR->SEL = 0;
-  // PLL->PLLEN = 0;
-  // PLL->MDIV_RATIO = 1;
-  // PLL->RATIO = 10;  // 500MHz
-  // PLL->FRACTION = 0;
-  // PLL->ZDIV0_RATIO = 1;
-  // PLL->ZDIV1_RATIO = 1;
-  // PLL->LDO_ENABLE = 1;
-  // PLL->PLLEN = 1;
-  // PLL->POWERGOOD_VNN = 1;
-  // PLL->PLLFWEN_B = 1;
-  // CLOCK_SELECTOR->SEL = 1;
+  CLOCK_SELECTOR->SEL = 0;
+  PLL->PLLEN = 0;
+  PLL->MDIV_RATIO = 1;
+  PLL->RATIO = 10;  // 500MHz
+  PLL->FRACTION = 0;
+  PLL->ZDIV0_RATIO = 1;
+  PLL->ZDIV1_RATIO = 1;
+  PLL->LDO_ENABLE = 1;
+  PLL->POWERGOOD_VNN = 1;
+  PLL->PLLEN = 1;
+  PLL->PLLFWEN_B = 1;
+  CLOCK_SELECTOR->SEL = 1;
   
+}
+
+void handle_sigint(int sig) {
+  //uart_transmit(UART1, zero_buffer, 11, 10000);
+  //uart_transmit(UART1, state_control_idle, 26, 100000);
+  //msleep(300);
+  printf("\nCaught signal %d, exiting...\n", sig);
+  //exit(0);
 }
 
 uint8_t readGPIO(int pin) {
@@ -299,7 +301,7 @@ void set_motor(float speed) {
 void app_main() {
   last_time = CLINT->MTIME;
   while (1) {
-    gpio_write_pin(GPIOA, GPIO_PIN_1, 0);
+    //gpio_write_pin(GPIOA, GPIO_PIN_1, 1);
     readMotorEncoder();
     readAngleEncoder();
     counter++;
@@ -313,6 +315,7 @@ void app_main() {
     if ((ang < 0.0 && ang > -0.75)) {
       set_motor(0);
       motor_speed = 0;
+      gpio_write_pin(GPIOA, GPIO_PIN_1, 0);
       //fmotorPosition = 0.0;
       //target = 0;
       //motorPosition = 0;
@@ -390,6 +393,7 @@ int main(int argc, char **argv) {
   /* Initialize all configured peripherals */
   /* USER CODE BEGIN Init */
   app_init();
+  signal(SIGINT, handle_sigint);
   /* USER CODE END Init */
 
   /* Infinite loop */
