@@ -28,6 +28,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "pll.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -41,7 +42,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define ENABLE_BORAVOICE_INTEG
+// #define ENABLE_BORAVOICE_INTEG
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -918,7 +919,7 @@ void app_main() {
   int steps = 512;            // number of steps to run for
   char *prompt = NULL;        // prompt string (I have it set up to ask screen if not given)
   unsigned long long rng_seed = CLINT->MTIME; // seed rng with time by default
-  GenMode mode = CHAT;    // generate|chat
+  GenMode mode = GENERATE;    // generate|chat
   char *system_prompt = NULL; // the (optional) system prompt to use in chat mode (I have it set up to ask screen if not given)
 
   // Parameter validation and overrides
@@ -963,7 +964,19 @@ void app_main() {
   */
 int main(int argc, char **argv) {
   /* MCU Configuration--------------------------------------------------------*/
-  
+  CLOCK_SELECTOR->SEL = 0;
+  PLL->PLLEN = 0;
+  PLL->MDIV_RATIO = 1;
+  PLL->RATIO = 10;  // 500MHz
+  PLL->FRACTION = 0;
+  PLL->ZDIV0_RATIO = 1;
+  PLL->ZDIV1_RATIO = 1;
+  PLL->LDO_ENABLE = 1;
+  PLL->PLLEN = 1;
+  PLL->POWERGOOD_VNN = 1;
+  PLL->PLLFWEN_B = 1;
+  CLOCK_SELECTOR->SEL = 1; // Switch to PLL
+
   /* USER CODE BEGIN SysInit */
   // Initialize UART0 for Serial Monitor
   UART_InitType UART0_init_config;
@@ -972,20 +985,22 @@ int main(int argc, char **argv) {
   UART0_init_config.stopbits = UART_STOPBITS_2;
   uart_init(UART0, &UART0_init_config);
 
-#ifdef ENABLE_BORAVOICE_INTEG
-  // Initialize UART1 for BoraVoice
-  UART_InitType UART1_init_config;
-  UART1_init_config.baudrate = 115200;
-  UART1_init_config.mode = UART_MODE_TX_RX;
-  UART1_init_config.stopbits = UART_STOPBITS_2;
-  uart_init(UART1, &UART1_init_config);
-#endif
+// #ifdef ENABLE_BORAVOICE_INTEG
+//   // Initialize UART1 for BoraVoice
+//   UART_InitType UART1_init_config;
+//   UART1_init_config.baudrate = 115200;
+//   UART1_init_config.mode = UART_MODE_TX_RX;
+//   UART1_init_config.stopbits = UART_STOPBITS_2;
+//   uart_init(UART1, &UART1_init_config);
+// #endif
 
   // Initialize heap storage
   // init_heap(((volatile void*)DRAM_BASE), 0x04000000U);
   // printf("Initialized heap memory from %x to %x.\r\n", heap_ptr, heap_end);
   /* USER CODE END SysInit */
 
+  printf("Hello World!!!!\r\n");
+//   while(1);
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   app_main();
