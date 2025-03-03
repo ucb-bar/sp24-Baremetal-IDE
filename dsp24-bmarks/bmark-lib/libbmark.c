@@ -18,9 +18,11 @@ test_info init_test(UART_Type *UARTx) {
   uart_receive(debug_uart, &(t.testid), 1, 0);
 
   chip_mtime_freq = chip_freq / 1000;
-  if (packet_size > 0) {
+  if (packet_size > 8) {
     t.payload_buffer = malloc(packet_size);
     uart_receive(debug_uart, t.payload_buffer, packet_size, 0);
+  } else if (packet_size > 0) {
+    uart_receive(debug_uart, &t.payload, packet_size, 0);
   } else {
     t.payload_buffer = NULL;
   }
@@ -41,5 +43,11 @@ void xmit_payload_packet(void* data, size_t size) {
   uart_transmit(debug_uart, &size, 4, 0);
   if (size != 0 && data != NULL) {
     uart_transmit(debug_uart, data, size, 0);
+  }
+}
+
+void clean_test(test_info t) {
+  if (t.payload_buffer != NULL) {
+    free(t.payload_buffer);
   }
 }
