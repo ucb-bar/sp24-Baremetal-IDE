@@ -16,23 +16,31 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+void idle_test() {
+    start_roi();
+    uint64_t target_tick = clint_get_time((CLINT_Type *)CLINT_BASE) + 500000000L;
+    while (clint_get_time((CLINT_Type *)CLINT_BASE) < target_tick) {
+      asm volatile("nop");
+    }
+
+    end_roi();
+    char* payload = "Hello World!";
+    sleep(2);
+    xmit_payload_packet(payload, sizeof(payload));
+
+}
 /**
   * @brief  The application entry point.
   * @retval int
   */
 int main(int argc, char **argv) {
-  init_test(UART0);
-  start_roi();
-
-  uint64_t target_tick = clint_get_time((CLINT_Type *)CLINT_BASE) + 500000000L;
-  while (clint_get_time((CLINT_Type *)CLINT_BASE) < target_tick) {
-    asm volatile("nop");
+  while (1) {
+    test_info t = init_test(UART0);
+    switch (t.testid) {
+      default:
+        idle_test();
+    }
   }
-
-  end_roi();
-  char* payload = "Hello World!";
-  sleep(2);
-  xmit_payload_packet(payload, sizeof(payload));
 
 
   /* USER CODE END WHILE */

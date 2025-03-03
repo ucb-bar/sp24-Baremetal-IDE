@@ -4,8 +4,10 @@ long chip_freq;
 long chip_mtime_freq;
 UART_Type *debug_uart;
 
-void* init_test(UART_Type *UARTx) {
+test_info init_test(UART_Type *UARTx) {
   int packet_size;
+  test_info t;
+
   debug_uart = UARTx;
   // Enable UART Receive and Transmit without setting baudrate
   SET_BITS(debug_uart->TXCTRL, UART_TXCTRL_TXEN_MSK);
@@ -13,14 +15,16 @@ void* init_test(UART_Type *UARTx) {
 
   uart_receive(debug_uart, &packet_size, 4, 0);
   uart_receive(debug_uart, &chip_freq, 8, 0);
+  uart_receive(debug_uart, &(t.testid), 1, 0);
 
   chip_mtime_freq = chip_freq / 1000;
   if (packet_size > 0) {
-    void* buf = malloc(packet_size);
-    uart_receive(debug_uart, buf, packet_size, 0);
-    return buf;
+    t.payload_buffer = malloc(packet_size);
+    uart_receive(debug_uart, t.payload_buffer, packet_size, 0);
+  } else {
+    t.payload_buffer = NULL;
   }
-  return NULL;
+  return t;
 }
 
 void start_roi() {

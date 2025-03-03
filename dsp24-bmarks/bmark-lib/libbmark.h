@@ -12,7 +12,12 @@ extern long chip_freq;
 extern long chip_mtime_freq;
 extern UART_Type *debug_uart;
 
-void* init_test(UART_Type *UARTx);
+typedef struct {
+    void* payload_buffer;
+    char testid;
+} test_info;
+
+test_info init_test(UART_Type *UARTx);
 
 void start_roi();
 
