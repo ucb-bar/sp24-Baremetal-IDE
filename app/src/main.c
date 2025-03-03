@@ -70,6 +70,8 @@ volatile float x_dot;
 volatile float theta_dot;
 volatile float target;
 volatile float motor_speed = 0.0;
+volatile int x_error = 0;
+volatile float error_time = 0.0;
 uint8_t zero_buffer[11] = "v 0 0.0000\n";
 uint8_t data_buffer[11] = "v 0 0.0000\n";
 uint8_t long_data_buffer[34] = "w axis0.controller.input_pos 0.00\n";
@@ -118,18 +120,18 @@ void app_init() {
   //pwm_set_duty_cycle(PWM0_BASE, 0, 50, 1000, 0);
   pwm_set_duty_cycle(PWM0_BASE, 1, 50, 1000, 0);
 
-  CLOCK_SELECTOR->SEL = 0;
-  PLL->PLLEN = 0;
-  PLL->MDIV_RATIO = 1;
-  PLL->RATIO = 10;  // 500MHz
-  PLL->FRACTION = 0;
-  PLL->ZDIV0_RATIO = 1;
-  PLL->ZDIV1_RATIO = 1;
-  PLL->LDO_ENABLE = 1;
-  PLL->POWERGOOD_VNN = 1;
-  PLL->PLLEN = 1;
-  PLL->PLLFWEN_B = 1;
-  CLOCK_SELECTOR->SEL = 1;
+  // CLOCK_SELECTOR->SEL = 0;
+  // PLL->PLLEN = 0;
+  // PLL->MDIV_RATIO = 1;
+  // PLL->RATIO = 10;  // 500MHz
+  // PLL->FRACTION = 0;
+  // PLL->ZDIV0_RATIO = 1;
+  // PLL->ZDIV1_RATIO = 1;
+  // PLL->LDO_ENABLE = 1;
+  // PLL->POWERGOOD_VNN = 1;
+  // PLL->PLLEN = 1;
+  // PLL->PLLFWEN_B = 1;
+  // CLOCK_SELECTOR->SEL = 1;
   
 }
 
@@ -248,32 +250,37 @@ void update_state() {
 
 float pd_controller(float curr_theta, float curr_x, float curr_dtheta,
                     float curr_dx) {
-  const float kp_theta = 15;
+  const float kp_theta = 2.62; //15;
   // const float kd_theta = -0.015;
-  const float kd_theta = 2;
-  const float kp_x = 0.001; //0.001;
-  // const float kd_x = -0.01;
-  const float kd_x = 0.00001;
-  //const float ki_x = -0.05;
+  const float kd_theta = 0.2; //2;
+  const float kp_x = 0.0001; //0.01;
+  // const float kd_x = 0.05;
+  const float kd_x = 0.3; //0.005;
+  const float ki_x = 0.000002;
 
   float p_term_theta = kp_theta * (-curr_theta);
-  float d_term_theta = kd_theta * curr_dtheta;
+  float d_term_theta = kd_theta * curr_dtheta * dt;
 
   float p_term_x = kp_x * (-curr_x);
-  //float i_term_x = ki_x * (motorPosition);
-  float d_term_x = kd_x * curr_dx;
+  x_error = motorPosition + x_error;
+  error_time = error_time + dt;
+  float i_term_x = -ki_x * (x_error) / error_time;
+  float d_term_x = kd_x * curr_dx * dt;
 
   float control_output_theta = p_term_theta - d_term_theta;
-  float control_output_x = p_term_x - d_term_x;
+  float control_output_x = p_term_x - d_term_x + i_term_x;
 
   if (counter == 1000) {
     printf("p_theta is %4.2f \r\n", p_term_theta);
     printf("p_err is %7.5f \r\n", (motor_speed-curr_dx));
-    //printf("d_theta is %7.6f \r\n", d_term_theta);
+    printf("d_theta is %6.4f \r\n", d_term_theta);
+    printf("dt is %7.6f \r\n", dt);
     printf("p_x is %4.2f \r\n", p_term_x);
-    //printf("d_x is %7.6f \r\n", d_term_x);
-    //printf("theta_control is %4.2f \r\n", control_output_theta);
-    //printf("x_control is %4.2f \r\n", control_output_x);
+    printf("error_time is %7.2f \r\n", error_time);
+    printf("i_x is %4.2f \r\n", i_term_x);
+    printf("d_x is %6.4f \r\n", d_term_x);
+    printf("theta_control is %4.2f \r\n", control_output_theta);
+    printf("x_control is %4.2f \r\n", control_output_x);
   }
 
   return control_output_theta + control_output_x;
@@ -307,18 +314,28 @@ void app_main() {
     counter++;
     ang = calculateAngle(angleStepCount);
     update_state();
+    //ang = ang - 0.001*motor_speed;
     float fmotorPosition = (float) motorPosition;
+
+    if (counter==1000) {
+      printf("prior motor speed is %7.4f \r\n", motor_speed);
+    }
     target = pd_controller(ang, fmotorPosition, theta_dot, x_dot);
     //printf("motor speed is %7.4f \r\n", motor_speed);
-    motor_speed = motor_speed + dt * target;
+    //motor_speed = motor_speed + dt * target;
+    motor_speed = target;
 
-    if ((ang < 0.0 && ang > -0.75)) {
+    if ((ang < 0.1 && ang > -0.1) && (motorPosition < 300 && motorPosition > -300)) {
       set_motor(0);
       motor_speed = 0;
-      gpio_write_pin(GPIOA, GPIO_PIN_1, 0);
+      //gpio_write_pin(GPIOA, GPIO_PIN_1, 0);
       //fmotorPosition = 0.0;
       //target = 0;
       //motorPosition = 0;
+      // if ((motorPosition < 20 && motorPosition > -20)) {
+      //   x_error = 0;
+      //   error_time = 0.0;
+      // }
     } else {
       set_motor(motor_speed);
     }
@@ -327,7 +344,7 @@ void app_main() {
       printf("motor encoder is %d \r\n", motorPosition);
       //printf("angle encoder is %d \r\n", angleStepCount);
       printf("angle is %7.4f \r\n", ang);
-      //printf("pid target is %4.2f \r\n", target);
+      printf("pid target is %4.2f \r\n", target);
       //printf("dt is %8.7f \r\n", dt);
       printf("motor speed is %7.4f \r\n", motor_speed);
       counter = 0;
