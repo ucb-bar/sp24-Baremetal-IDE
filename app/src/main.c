@@ -74,9 +74,11 @@ volatile int x_error = 0;
 volatile float error_time = 0.0;
 uint8_t zero_buffer[11] = "v 0 0.0000\n";
 uint8_t data_buffer[11] = "v 0 0.0000\n";
+uint8_t pos_estimate[34] = "00000000000000000000000000000000\n";
 uint8_t long_data_buffer[34] = "w axis0.controller.input_pos 0.00\n";
 uint8_t clear_errors[3]= {'s', 'v', '\n'};
 uint8_t state_control[26]= "w axis0.requested_state 8\n";
+uint8_t pos_cmd[21]= "r axis0.pos_estimate\n";
 uint8_t state_control_idle[26]= "w axis0.requested_state 1\n";
 
 /* USER CODE END PV */
@@ -252,18 +254,18 @@ void update_state() {
 
 float pd_controller(float curr_theta, float curr_x, float curr_dtheta,
                     float curr_dx) {
-  const float kp_theta = 4; //15;
+  const float kp_theta = 2.7; //2.5; //15;
   // const float kd_theta = -0.015;
-  const float kd_theta = 0.2; //2;
-  const float kp_x = 0.0;//-0.0001; //0.01;
+  const float kd_theta = 0.2;//0.2; //2;
+  const float kp_x = 0.026;//0.0025; //0.01;
   // const float kd_x = 0.05;
-  const float kd_x = 0.03; //0.005;
-  const float ki_x = 0.000002;
+  const float kd_x = 0.03;//0.03; //0.005;
+  const float ki_x = 0.0;//-0.000002;
 
   float p_term_theta = kp_theta * (-curr_theta);
   float d_term_theta = kd_theta * curr_dtheta * dt;
 
-  float p_term_x = kp_x * (-curr_x);
+  float p_term_x = kp_x * (curr_x);
   x_error = motorPosition + x_error;
   error_time = error_time + dt;
   float i_term_x = -ki_x * (x_error) / error_time;
@@ -275,7 +277,7 @@ float pd_controller(float curr_theta, float curr_x, float curr_dtheta,
   float control_output_theta = p_term_theta - d_term_theta;
   float control_output_x = p_term_x - d_term_x + i_term_x;
 
-  if (counter == 1000) {
+  if (counter > 997) {
     printf("p_theta is %4.2f \r\n", p_term_theta);
     printf("p_err is %7.5f \r\n", (motor_speed-curr_dx));
     printf("d_theta is %6.4f \r\n", d_term_theta);
@@ -315,6 +317,9 @@ void app_main() {
   while (1) {
     //gpio_write_pin(GPIOA, GPIO_PIN_1, 1);
     readMotorEncoder();
+    //uart_transmit(UART1, pos_cmd, 21, 100000);
+    //msleep(300);
+    //uart_receive(UART1, pos_estimate, 32, 1000000);
     readAngleEncoder();
     counter++;
     ang = calculateAngle(angleStepCount);
@@ -346,6 +351,8 @@ void app_main() {
     }
 
     if (counter == 1000) { //5000
+      //printf("Position Estimate \n");
+      //printf(pos_estimate);
       printf("motor encoder is %d \r\n", motorPosition);
       //printf("angle encoder is %d \r\n", angleStepCount);
       printf("angle is %7.4f \r\n", ang);
