@@ -111,27 +111,29 @@ void app_init() {
     angleStepCountBuffer[i] = 0;
   }
   uart_transmit(UART1, clear_errors, 3, 100000);
+  msleep(300);
   uart_transmit(UART1, state_control, 26, 100000);
   msleep(300);
   uart_transmit(UART1, clear_errors, 3, 1000000);
+  msleep(300);
   pwm_enable(PWM0_BASE);
   pwm_set_frequency(PWM0_BASE, 0, 1000);
   pwm_get_frequency(PWM0_BASE, 0);
   //pwm_set_duty_cycle(PWM0_BASE, 0, 50, 1000, 0);
   pwm_set_duty_cycle(PWM0_BASE, 1, 50, 1000, 0);
 
-  // CLOCK_SELECTOR->SEL = 0;
-  // PLL->PLLEN = 0;
-  // PLL->MDIV_RATIO = 1;
-  // PLL->RATIO = 10;  // 500MHz
-  // PLL->FRACTION = 0;
-  // PLL->ZDIV0_RATIO = 1;
-  // PLL->ZDIV1_RATIO = 1;
-  // PLL->LDO_ENABLE = 1;
-  // PLL->POWERGOOD_VNN = 1;
-  // PLL->PLLEN = 1;
-  // PLL->PLLFWEN_B = 1;
-  // CLOCK_SELECTOR->SEL = 1;
+  CLOCK_SELECTOR->SEL = 0;
+  PLL->PLLEN = 0;
+  PLL->MDIV_RATIO = 1;
+  PLL->RATIO = 9;  // 450MHz
+  PLL->FRACTION = 0;
+  PLL->ZDIV0_RATIO = 1;
+  PLL->ZDIV1_RATIO = 1;
+  PLL->LDO_ENABLE = 1;
+  PLL->POWERGOOD_VNN = 1;
+  PLL->PLLEN = 1;
+  PLL->PLLFWEN_B = 1;
+  CLOCK_SELECTOR->SEL = 1;
   
 }
 
@@ -250,12 +252,12 @@ void update_state() {
 
 float pd_controller(float curr_theta, float curr_x, float curr_dtheta,
                     float curr_dx) {
-  const float kp_theta = 2.62; //15;
+  const float kp_theta = 4; //15;
   // const float kd_theta = -0.015;
   const float kd_theta = 0.2; //2;
-  const float kp_x = 0.0001; //0.01;
+  const float kp_x = 0.0;//-0.0001; //0.01;
   // const float kd_x = 0.05;
-  const float kd_x = 0.3; //0.005;
+  const float kd_x = 0.03; //0.005;
   const float ki_x = 0.000002;
 
   float p_term_theta = kp_theta * (-curr_theta);
@@ -266,6 +268,9 @@ float pd_controller(float curr_theta, float curr_x, float curr_dtheta,
   error_time = error_time + dt;
   float i_term_x = -ki_x * (x_error) / error_time;
   float d_term_x = kd_x * curr_dx * dt;
+  if (d_term_x > 0.3) {
+    printf("d_x is %6.4f \r\n", d_term_x);
+  }
 
   float control_output_theta = p_term_theta - d_term_theta;
   float control_output_x = p_term_x - d_term_x + i_term_x;
@@ -325,7 +330,7 @@ void app_main() {
     //motor_speed = motor_speed + dt * target;
     motor_speed = target;
 
-    if ((ang < 0.1 && ang > -0.1) && (motorPosition < 300 && motorPosition > -300)) {
+    if ((ang < 0.5 && ang > -0.5) && (motorPosition < 300 && motorPosition > -300)) {
       set_motor(0);
       motor_speed = 0;
       //gpio_write_pin(GPIOA, GPIO_PIN_1, 0);
