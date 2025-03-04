@@ -1,7 +1,12 @@
 #include "libbmark.h"
+#include "pll.h"
+#include <stdbool.h>
 
 long chip_freq;
 long chip_mtime_freq;
+
+bool first_iteration = true;
+
 UART_Type *debug_uart;
 
 test_info init_test(UART_Type *UARTx) {
@@ -9,9 +14,16 @@ test_info init_test(UART_Type *UARTx) {
   test_info t;
 
   debug_uart = UARTx;
+
+  if (first_iteration) {
+    UART_InitType UART_init_config;
+    UART_init_config.baudrate = 115200;
+    UART_init_config.mode = UART_MODE_TX_RX;
+    UART_init_config.stopbits = UART_STOPBITS_2;
+    uart_init(debug_uart, &UART_init_config);
+  }
+
   // Enable UART Receive and Transmit without setting baudrate
-  SET_BITS(debug_uart->TXCTRL, UART_TXCTRL_TXEN_MSK);
-  SET_BITS(debug_uart->RXCTRL, UART_RXCTRL_RXEN_MSK);
 
   uart_receive(debug_uart, &packet_size, 4, 0);
   uart_receive(debug_uart, &chip_freq, 8, 0);
@@ -26,6 +38,25 @@ test_info init_test(UART_Type *UARTx) {
   } else {
     t.payload_buffer = NULL;
   }
+
+  int clkmult = chip_freq / 50000000;
+  int uart_divisor = (chip_freq / 115200) - 1;
+
+  CLOCK_SELECTOR->SEL = 0;
+  PLL->PLLEN = 0;
+  PLL->MDIV_RATIO = 1;
+  PLL->RATIO = clkmult;  // 500MHz
+  PLL->FRACTION = 0;
+  PLL->ZDIV0_RATIO = 1;
+  PLL->ZDIV1_RATIO = 1;
+  PLL->LDO_ENABLE = 1;
+  PLL->PLLEN = 1;
+  PLL->POWERGOOD_VNN = 1;
+  PLL->PLLFWEN_B = 1;
+  CLOCK_SELECTOR->SEL = 1; // Switch to PLL
+
+  debug_uart->DIV = uart_divisor;
+
   return t;
 }
 
