@@ -1,0 +1,6 @@
+pyserial
+pyftdi
+numpy
+pyvisa
+matplotlib
+# openocd library from github
