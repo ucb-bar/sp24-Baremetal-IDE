@@ -1,5 +1,6 @@
 #include "libbmark.h"
 #include "pll.h"
+#include "chip_config.h"
 #include <stdbool.h>
 
 long chip_freq;
