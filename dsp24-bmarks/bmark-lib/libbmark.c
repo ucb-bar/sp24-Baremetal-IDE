@@ -16,11 +16,13 @@ test_info init_test(UART_Type *UARTx) {
   debug_uart = UARTx;
 
   if (first_iteration) {
+    CLOCK_SELECTOR->SEL = 0; //Ensure we are using the non PLL clock
     UART_InitType UART_init_config;
     UART_init_config.baudrate = 115200;
     UART_init_config.mode = UART_MODE_TX_RX;
     UART_init_config.stopbits = UART_STOPBITS_2;
     uart_init(debug_uart, &UART_init_config);
+    first_iteration = false;
   }
 
   // Enable UART Receive and Transmit without setting baudrate

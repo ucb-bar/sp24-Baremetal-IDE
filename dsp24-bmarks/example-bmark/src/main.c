@@ -26,7 +26,7 @@ void idle_test() {
     end_roi();
     char* payload = "Hello World!";
     sleep(2);
-    xmit_payload_packet(payload, sizeof(payload));
+    xmit_payload_packet(payload, strlen(payload));
 
 }
 /**
