@@ -38,6 +38,7 @@ test_info init_test(UART_Type *UARTx) {
     uart_receive(debug_uart, t.payload_buffer, packet_size, 0);
   } else if (packet_size > 0) {
     uart_receive(debug_uart, &t.payload, packet_size, 0);
+    t.payload_buffer = NULL;
   } else {
     t.payload_buffer = NULL;
   }

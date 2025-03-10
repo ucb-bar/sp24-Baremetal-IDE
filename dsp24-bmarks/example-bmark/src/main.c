@@ -18,7 +18,7 @@
 
 void idle_test() {
     start_roi();
-    uint64_t target_tick = clint_get_time((CLINT_Type *)CLINT_BASE) + 500000000L;
+    uint64_t target_tick = clint_get_time((CLINT_Type *)CLINT_BASE) + 50000L;
     while (clint_get_time((CLINT_Type *)CLINT_BASE) < target_tick) {
       asm volatile("nop");
     }
@@ -35,7 +35,7 @@ void idle_test() {
   */
 int main(int argc, char **argv) {
   while (1) {
-    test_info t = init_test(UART0);
+    test_info t = init_test(UART1);
     switch (t.testid) {
       default:
         idle_test();
