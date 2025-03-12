@@ -15,6 +15,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "chip_config.h"
+#include "dataset2.h"
+#define DMA_ADDR1 0x87000000L
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -62,9 +65,41 @@ void app_init() {
 void app_main() {
   uint64_t mhartid = READ_CSR("mhartid");
 
-  printf("Hello world from hart %d: %d\n", mhartid, counter);
+    printf("\n[STARTING TEST]\n\n");
 
-  // sleep(1);
+    reset_fft();
+    enable_Crack();
+
+    write_fft_dma(1, 128, fft_data);
+    uint64_t start_time = READ_CSR("mcycle");
+    uint64_t start_instructions = READ_CSR("minstret");
+
+    while(fft_busy() || fft_count_left()){
+      continue;
+        printf("pain:%d, %d \n", fft_busy(), fft_count_left());
+    }; // This is needed since fft is blocking and is not a very good block
+
+    uint64_t end_time = READ_CSR("mcycle");
+    uint64_t end_instructions = READ_CSR("minstret");
+
+    read_fft_real_dma(1, 128, DMA_ADDR1);
+    printf("[DONE] Waiting Write\n");
+    printf("mcycle = %lu\r\n", end_time - start_time);
+    printf("minstret = %lu\r\n", end_instructions - start_instructions);
+    uint32_t poll, real, imag;
+    // for(int i=0; i<512; i++) {
+    //     poll = reg_read32(DMA_ADDR1 + i*8);
+    //     real = poll & 0xFFFF; 
+    //     imag = (poll >> 16);
+    //     printf("[%d]real: (%hd), imag: (%hd)\n", i, real, imag);
+    // }
+    for(int i=0; i<256; i++) {
+        poll = reg_read16(DMA_ADDR1 + i*4);
+        printf("[%d]real: (%hd)\n", i, poll);
+    }
+    
+    printf("[DONE] Test\n");
+
 }
 /* USER CODE END PUC */
 

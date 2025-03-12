@@ -12,7 +12,7 @@ set(PLATFORM_INCLUDE
   ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 target_include_directories(chip-config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${PLATFORM_INCLUDE})
 
-
 target_link_libraries(chip-config PUBLIC rocketcore)
 target_link_libraries(chip-config PUBLIC clint)
 target_link_libraries(chip-config PUBLIC uart)
+target_link_libraries(chip-config PUBLIC gpio)

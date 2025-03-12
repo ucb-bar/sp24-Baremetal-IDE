@@ -8,16 +8,17 @@ extern "C" {
 #include "riscv.h"
 #include "clint.h"
 #include "uart.h"
+#include "gpio.h"
 
 
 // ================================
 //  System Clock
 // ================================
 // system clock frequency in Hz
-#define SYS_CLK_FREQ   16000000
+#define SYS_CLK_FREQ   40000000
 
 // CLINT time base frequency in Hz
-#define MTIME_FREQ     16000
+#define MTIME_FREQ     40000
 
 
 // ================================
@@ -44,6 +45,17 @@ extern "C" {
 #define PLIC_CC                 ((PLIC_ContextControl_Type *)(PLIC_BASE + 0x00200000U))
 #define UART0                   ((UART_Type *)UART0_BASE)
 
+/* GPIO Definition */
+#define GPIO_BASE               0x10010000U
+#define GPIOA_BASE              (GPIO_BASE)
+#define GPIOA                   ((GPIO_Type *)GPIOA_BASE)
+// #define GPIOB_BASE              (GPIO_BASE + 0x1000U)
+// #define GPIOC_BASE              (GPIO_BASE + 0x2000U)
+// #define GPIOD_BASE              (GPIO_BASE + 0x3000U)
+// #define GPIOA                   ((GPIO_Type *)GPIOA_BASE)
+// #define GPIOB                   ((GPIO_Type *)GPIOB_BASE)
+// #define GPIOC                   ((GPIO_Type *)GPIOC_BASE)
+// #define GPIOD                   ((GPIO_Type *)GPIOD_BASE)
 
 
 #ifdef __cplusplus

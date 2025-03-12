@@ -51,7 +51,7 @@ set(CMAKE_EXECUTABLE_SUFFIX            ".elf")
 #################################
 
 # CPU architecture
-set(ARCH                "rv64imafd")
+set(ARCH                "rv64gcv_zfh_zvfh")
 set(ABI                 "lp64d")
 set(CMODEL              "medany")
 set(ARCH_FLAGS          -march=${ARCH} -mabi=${ABI} -mcmodel=${CMODEL})
@@ -133,7 +133,42 @@ add_executable(app
   app/src/main.c
 )
 
+add_executable(shazam_demo
+  shazam_demo/src/main.c
+  shazam_demo/src/kiss_fft.c
+)
+
+add_executable(dsp-saturn
+  dsp-saturn/src/fft2_main.c
+  dsp-saturn/common/syscalls.c
+)
+
+add_executable(dsp-sgemm
+  benchmarks/vec-sgemm/vec-sgemm_main.c
+  benchmarks/vec-sgemm/vec-sgemm.S
+)
+
+add_executable(dsp-igemm
+  benchmarks/vec-igemm/vec-igemm_main.c
+  benchmarks/vec-igemm/vec-igemm.S
+)
+
+add_executable(dsp-strcmp
+  benchmarks/vec-strcmp/vec-strcmp_main.c
+  benchmarks/vec-strcmp/vec-strcmp.S
+)
+
 target_include_directories(app PUBLIC app/include)
+
+target_include_directories(shazam_demo PUBLIC shazam_demo/include)
+
+target_include_directories(dsp-saturn PUBLIC dsp-saturn/common)
+
+target_include_directories(dsp-sgemm PUBLIC benchmarks/common)
+
+target_include_directories(dsp-igemm PUBLIC benchmarks/common)
+
+target_include_directories(dsp-strcmp PUBLIC benchmarks/common)
 
 #################################
 # Dependencies
@@ -142,15 +177,58 @@ target_include_directories(app PUBLIC app/include)
 add_subdirectory(driver)
 add_subdirectory(glossy)
 add_subdirectory(lib)
-add_subdirectory(examples)
+add_subdirectory(lab)
+
+target_link_libraries(shazam_demo PRIVATE m)
 
 target_link_libraries(app PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(shazam_demo PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(dsp-saturn PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(dsp-sgemm PRIVATE
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(dsp-igemm PRIVATE
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(dsp-strcmp PRIVATE
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(shazam_demo PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(dsp-saturn PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(dsp-sgemm PRIVATE
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(dsp-igemm PRIVATE
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(dsp-strcmp PRIVATE
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
 )
 
 if (PROF_COV)
   target_link_libraries(app PRIVATE gcov)
 endif()
+
 
 #################################
 # Library Installation
