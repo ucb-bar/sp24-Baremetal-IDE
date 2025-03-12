@@ -7,13 +7,13 @@ long chip_freq;
 long chip_mtime_freq;
 
 bool first_iteration = true;
+const char header_ack = 0x06;
 
 UART_Type *debug_uart;
 
 test_info init_test(UART_Type *UARTx) {
   int packet_size;
   char header_start;
-  char header_ack = 0x06;
   test_info t;
 
   debug_uart = UARTx;
@@ -29,7 +29,7 @@ test_info init_test(UART_Type *UARTx) {
   }
 
   // Enable UART Receive and Transmit without setting baudrate
-  
+
   while (1) {
     // Waits for SOH (Start of Header) 0x01 or UART ENQ (Enquiry) 0x05
     uart_receive(debug_uart, &header_start, 1, 0);
