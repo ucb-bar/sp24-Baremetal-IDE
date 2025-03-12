@@ -12,6 +12,8 @@ UART_Type *debug_uart;
 
 test_info init_test(UART_Type *UARTx) {
   int packet_size;
+  char header_start;
+  char header_ack = 0x06;
   test_info t;
 
   debug_uart = UARTx;
@@ -27,6 +29,19 @@ test_info init_test(UART_Type *UARTx) {
   }
 
   // Enable UART Receive and Transmit without setting baudrate
+  
+  while (1) {
+    // Waits for SOH (Start of Header) 0x01 or UART ENQ (Enquiry) 0x05
+    uart_receive(debug_uart, &header_start, 1, 0);
+    
+    if (header_start == 0x05) {
+      // If ENQ (Enquiry), send back Acknowledge (0x06) to say we are valid.
+      uart_transmit(debug_uart, &header_ack, 1, 0);
+    } else if (header_start == 0x01) {
+      // If SOH (Start of Header), prepare to read a header.
+      break;
+    }
+  }
 
   uart_receive(debug_uart, &packet_size, 4, 0);
   uart_receive(debug_uart, &chip_freq, 8, 0);
