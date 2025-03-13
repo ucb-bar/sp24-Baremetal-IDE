@@ -1,0 +1,7 @@
+pyserial
+pyvisa-py
+numpy
+matplotlib
+colorama
+pyopenocd @ git+https://github.com/cdleonard/pyopenocd
+pyftdi

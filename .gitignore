@@ -3,4 +3,7 @@ build/
 *.log
 *.afdo
 dump.txt
-
+__pycache__/
+.venv/
+.conda/
+data_*/
