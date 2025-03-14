@@ -1,7 +1,10 @@
 #include "libbmark.h"
 #include "pll.h"
+#include "gpio.h"
 #include "chip_config.h"
 #include <stdbool.h>
+
+#define BMARK_GPIO_PIN GPIO_PIN_1
 
 long chip_freq;
 long chip_mtime_freq;
@@ -17,6 +20,15 @@ test_info init_test(UART_Type *UARTx) {
   test_info t;
 
   debug_uart = UARTx;
+
+  GPIO_InitType gpio_init_config;
+  gpio_init_config.mode = GPIO_MODE_OUTPUT;
+  gpio_init_config.pull = GPIO_PULL_NONE;
+  gpio_init_config.drive_strength = GPIO_DS_STRONG;
+
+  gpio_init(GPIOC, &gpio_init_config, BMARK_GPIO_PIN);
+  gpio_write_pin(GPIOC, BMARK_GPIO_PIN, 1);
+  
 
   if (first_iteration) {
     CLOCK_SELECTOR->SEL = 0; //Ensure we are using the non PLL clock
@@ -82,9 +94,11 @@ test_info init_test(UART_Type *UARTx) {
 void start_roi() {
   char start_char = 7;
   uart_transmit(debug_uart, &start_char, 1, 0);
+  gpio_write_pin(GPIOC, BMARK_GPIO_PIN, 0);
 }
 
 void end_roi() {
+  gpio_write_pin(GPIOC, BMARK_GPIO_PIN, 1);
   char end_char = 23;
   uart_transmit(debug_uart, &end_char, 1, 0);
 }

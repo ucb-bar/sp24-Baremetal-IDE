@@ -39,7 +39,7 @@ if __name__ == '__main__':
     parser.add_argument('--min-freq', dest='min_freq', type=int, default=100, help='Frequency lower bound (in MHz)')
     parser.add_argument('--max-freq', dest='max_freq', type=int, default=151, help='Frequency upper bound (in MHz, exclusive)')
     parser.add_argument('--step-freq', dest='step_freq', type=int, default=50, help='Frequency step size (in MHz, only defined for 50MHz increments)')
-    parser.add_argument('-f', '--force', type=str, default=None, help='Force start without a confirmation of limits.')
+    parser.add_argument('-f', '--force', action='store_true', default=None, help='Force start without a confirmation of limits.')
     parser.add_argument("--log", dest="log_level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="INFO",

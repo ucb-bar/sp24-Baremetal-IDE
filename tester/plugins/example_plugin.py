@@ -17,6 +17,7 @@ LOGGER = logging.getLogger(__name__)
 
 # Define the tests here:
 ShmooTestHarness.register_test_suite("hello", TestSuite(
+    "build/dsp24-bmarks/example-bmark/example-bmark.elf",
     ShmooConstantTest("Hello World Test", 0x1,
                       b'Hello, Chip!', b'Hello World!')
 ))
