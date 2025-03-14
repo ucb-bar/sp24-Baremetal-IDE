@@ -311,13 +311,14 @@ class ShmooTest:
         self.id = id
 
     def create_payload(self) -> tuple[bytes, dict]:
-        """_summary_
-
-        Args:
-            context (_type_): _description_
+        """
+        Creates a byte array payload to be sent to the chip.
 
         Returns:
-            tuple[bytes, dict]: _description_
+            tuple[bytes, dict]: Tuple containing a byte array of data to send
+                to the chip, as well as a context dictionary to maintain info for
+                future test output verification. This dictionary will be passed
+                into a future `check_output` call.
         """
         return b'Hello, Chip!', {}
 
@@ -330,7 +331,7 @@ class ShmooTest:
         Args:
             context (dict): Dictionary containing test-specific information to
                 be maintained for output verification (i.e., a seed or expected
-                result). 
+                result).
             value (bytes): The payload returned from the chip.
 
         Returns:
