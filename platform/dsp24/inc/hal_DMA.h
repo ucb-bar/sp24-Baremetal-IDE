@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 #include "chip_config.h"
-#include  "hal_mmio.h"
+#include "hal_mmio.h"
 
 // Address for general DMA registers
 #define DMA_CLOCKGATE       DMA_BASE + 0x3
@@ -29,7 +29,6 @@ extern "C" {
 #define DMA_SET_D           DMA_SET + 0x2
 
 int DMA_count(int num);
-
 
 void set_DMAC(uint32_t num, uint64_t addr_r, uint64_t addr_w, uint16_t inc_r, uint16_t inc_w, uint16_t len, uint16_t logd);
 
