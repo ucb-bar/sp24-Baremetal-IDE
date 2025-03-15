@@ -29,4 +29,4 @@ typedef struct {
 }
 #endif
 
-#endif __HAL_RCC_H__
+#endif // __HAL_RCC_H__
