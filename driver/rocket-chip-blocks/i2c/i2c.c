@@ -28,9 +28,10 @@ Status i2c_wait_for_flag(I2C_Type *I2Cx, I2C_Flag flag, State state, uint32_t ti
     if (timeout == 0UL) {
       continue;
     }
-    if (clint_get_time(CLINT) > (timestart + timeout)) {
-      return TIMEOUT;
-    }
+    // FIXME
+    // if (clint_get_time(CLINT) > (timestart + timeout)) {
+    //   return TIMEOUT;
+    // } 
   }
   return OK;
 }
@@ -51,7 +52,8 @@ Status i2c_wait_for_transaction(I2C_Type *I2Cx, uint32_t timestart, uint32_t tim
 }
 
 Status i2c_master_receive(I2C_Type *I2Cx, uint16_t device_addr, uint8_t *buffer, uint16_t size, uint64_t timeout) {
-  uint64_t timestart = clint_get_time(CLINT);
+  // FIXME
+  uint64_t timestart = 0; // clint_get_time(CLINT);
   Status status;
 
   if (i2c_wait_for_flag(I2Cx, I2C_FLAG_BUSY, RESET, timestart, timeout) != OK) {
@@ -101,7 +103,8 @@ Status i2c_master_receive(I2C_Type *I2Cx, uint16_t device_addr, uint8_t *buffer,
 }
 
 Status i2c_master_transmit(I2C_Type *I2Cx, uint16_t device_addr, uint8_t *buffer, uint16_t size, uint64_t timeout) {
-  uint64_t timestart = clint_get_time(CLINT);
+  // FIXME
+  uint64_t timestart = 0; // clint_get_time(CLINT);
   Status status;
 
   if (i2c_wait_for_flag(I2Cx, I2C_FLAG_BUSY, RESET, timestart, timeout) != OK) {
@@ -147,7 +150,8 @@ Status i2c_master_transmit(I2C_Type *I2Cx, uint16_t device_addr, uint8_t *buffer
 }
 
 Status i2c_read_memory(I2C_Type *I2Cx, uint16_t device_addr, uint8_t mem_addr, uint8_t *buffer, uint16_t size, uint64_t timeout) {
-  uint64_t timestart = clint_get_time(CLINT);
+  // FIXME
+  uint64_t timestart = 0; // clint_get_time(CLINT);
   Status status;
 
   if (i2c_wait_for_flag(I2Cx, I2C_FLAG_BUSY, RESET, timestart, timeout) != OK) {
@@ -216,7 +220,8 @@ Status i2c_read_memory(I2C_Type *I2Cx, uint16_t device_addr, uint8_t mem_addr, u
 }
 
 Status i2c_write_memory(I2C_Type *I2Cx, uint16_t device_addr, uint8_t mem_addr, uint8_t *buffer, uint16_t size, uint32_t timeout) {
-  uint64_t timestart = clint_get_time(CLINT);
+  // FIXME
+  uint64_t timestart = 0; // clint_get_time(CLINT);
   Status status;
 
   if (i2c_wait_for_flag(I2Cx, I2C_FLAG_BUSY, RESET, timestart, timeout) != OK) {
