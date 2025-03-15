@@ -38,17 +38,18 @@ if __name__ == '__main__':
     parser.add_argument('--step-v', dest='step_v', type=float, default='0.05', help='Voltage step size')
     parser.add_argument('--min-freq', dest='min_freq', type=int, default=100, help='Frequency lower bound (in MHz)')
     parser.add_argument('--max-freq', dest='max_freq', type=int, default=151, help='Frequency upper bound (in MHz, exclusive)')
-    parser.add_argument('--step-freq', dest='step_freq', type=int, default=50, help='Frequency step size (in MHz, only defined for 50MHz increments)')
-    parser.add_argument("--max-freq-cmul-fail", dest="log_level", default=1,
-        help="Maximum number of cumulative failures permitted for a voltage. "
+    parser.add_argument('--step-freq', dest='step_freq', type=int, default=50, help='Frequency step size (in MHz)')
+    parser.add_argument("--max-cmul-fail", dest="max_cmul_fail", default=1,
+        help="Maximum number of cumulative failures until the tester changes to a new voltage."
     )
     parser.add_argument('-f', '--force', action='store_true', default=None, help='Force start without a confirmation of limits.')
+    parser.add_argument('--no-smu', action='store_true', default=None, help='Initialize a dummy software-side SMU to test SMU commands without equipment access. Note that power measurements cannot be made if this setting is enabled.')
     parser.add_argument("--log", dest="log_level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="INFO",
         help="Set the logging level"
     )
-    parser.add_argument('--logfile', type=str, default=None, help='Path to an optional log file for terminal capture.')
+    parser.add_argument('--logfile', type=str, default=None, help='Path to an optional log file for terminal capture. If this setting is used, STDOUT will only be used for user prompts.')
 
     args = parser.parse_args()
     logging.basicConfig(filename=args.logfile, level=args.log_level)
@@ -73,4 +74,6 @@ if __name__ == '__main__':
         if not args.force and \
             not ShmooTestHarness.terminal_confirm_params(voltages, frequencies):
             exit()
-        ShmooTestHarness.run_suite(args.suite, voltages, frequencies)
+        ShmooTestHarness.run_suite(args.suite, voltages, frequencies,
+                                   max_cmul_freq_fails=args.max_cmul_fail,
+                                   use_smu=not args.no_smu)

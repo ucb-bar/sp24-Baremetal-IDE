@@ -100,8 +100,27 @@ class SMU:
     """
     Defines the default path to use for communication with the SourceMeter.
     """
+
+    DUMMMY_LOG_PREFIX = f'{Fore.LIGHTBLUE_EX}{Style.BRIGHT}[Dummy SMU]{Style.RESET_ALL}'
     
-    def __init__(self):
+    def __init__(self, dummy=False):
+        """
+        SMU Initialization
+
+        Args:
+            dummy (bool, optional): Whether to create a fake simulation SMU to
+                test the command flow. This will cause all `SMU.write` commands
+                to be output to the log rather than over LAN. Any `SMU.query`
+                commands will return an empty string. Defaults to False.
+
+        Raises:
+            Exception: _description_
+        """
+        self.dummy = dummy
+        if self.dummy:
+            self.dummy_log('Dummy SMU has been created.')
+            return
+        
         self.rm = pyvisa.ResourceManager("@py")
         self._smu = self.rm.open_resource(self.VISA_PATH)
 
@@ -115,6 +134,9 @@ class SMU:
         # Reset with our defaults
         self.reset()
 
+    def dummy_log(self, val):
+        LOGGER.info(f'{self.DUMMMY_LOG_PREFIX} {val}')
+
     def query(self, querystr: str) -> str:
         """
         Sends a query over GPIB to the SMU, expecting a result. This can be a
@@ -126,7 +148,15 @@ class SMU:
         Returns:
             str: Data returned by the SMU.
         """
-        return self._smu.query(querystr)
+        if self.dummy:
+            self.dummy_log(f'QUERY: {querystr}')
+
+            if querystr == "*IDN?":
+                return self.SMU_IDN
+
+            return ""
+        else:
+            return self._smu.query(querystr)
 
     def write(self, cmdstr: str) -> str:
         """
@@ -138,7 +168,33 @@ class SMU:
         Returns:
             str: Data returned by the SMU.
         """
-        return self._smu.write(cmdstr)
+        if self.dummy:
+            self.dummy_log(f'QUERY: {cmdstr}')
+            return ""
+        else:
+            return self._smu.write(cmdstr)
+        
+    def set_timeout(self, timeout: int):
+        """
+        Sets a command timeout for a query response from the SMU.
+
+        Args:
+            timeout (int): Millisecond timeout duration
+        """
+        if self.dummy:
+            self.dummy_log(f'Host<-->SMU timeout set to {timeout} ms')
+        else:
+            self._smu.timeout = timeout
+
+    def get_timeout(self):
+        """
+        Gets a command timeout for a query response from the SMU.
+        """
+        if self.dummy:
+            return 5000
+        else:
+            return self._smu.timeout
+
 
     def set_voltage_limit(self, voltage: Union[str, int, float]):
         """
@@ -165,7 +221,7 @@ class SMU:
         self.write(f"smub.measure.rangei = {current}")
         self.write(f"smub.source.limiti = {current}")
 
-    def clear_buffer(self, idx, src_vals=True, timestamps=True, append=True):
+    def clear_buffers(self, src_vals=True, timestamps=True, append=True):
         """
         Clear SMU buffers and set data collection settings.
 
@@ -181,10 +237,14 @@ class SMU:
         src_vals = '1' if src_vals else '0'
         timestamps = '1' if timestamps else '0'
         append = '1' if append else '0'
-        self.write(f"smub.nvbuffer{idx}.clear()")
-        self.write(f"smub.nvbuffer{idx}.collectsourcevalues = {src_vals}")
-        self.write(f"smub.nvbuffer{idx}.collecttimestamps = {timestamps}")
-        self.write(f"smub.nvbuffer{idx}.appendmode = {append}")
+        self.write(f"smub.nvbuffer1.clear()")
+        self.write(f"smub.nvbuffer1.collectsourcevalues = {src_vals}")
+        self.write(f"smub.nvbuffer1.collecttimestamps = {timestamps}")
+        self.write(f"smub.nvbuffer1.appendmode = {append}")
+        self.write(f"smub.nvbuffer2.clear()")
+        self.write(f"smub.nvbuffer2.collectsourcevalues = {src_vals}")
+        self.write(f"smub.nvbuffer2.collecttimestamps = {timestamps}")
+        self.write(f"smub.nvbuffer2.appendmode = {append}")
 
     def set_nplc(self, nplc: Union[str, int, float]):
         """
@@ -218,8 +278,7 @@ class SMU:
 
         # Clear and reset buffers
         if reset_buffers:
-            self.clear_buffer(1)
-            self.clear_buffer(2)
+            self.clear_buffers()
 
         # Capture count / integration aperture
         self.write("smub.measure.count = 1")
@@ -249,7 +308,6 @@ class SMU:
                 chip failure and quits.
         """
         timeout_str = str(timeout)
-        buffer = f'smub.nvbuffer{buffer_idx}'
         gpib_cmd = f'''
         errorqueue.clear()
         display.clear()
@@ -273,7 +331,7 @@ class SMU:
         self.write(gpib_cmd)
         
 
-    def retrieve_buffer(self, idx: int, shape=(-1, 3)) -> np.ndarray:
+    def retrieve_buffer(self, idx: int) -> np.ndarray:
         """
         Retrieves content from a data capture buffer on the SMU.
 
@@ -284,26 +342,27 @@ class SMU:
 
         Args:
             idx (int): 1 or 2 depending on the buffer you wish to read from.
-            shape (tuple[int, int]): Shape to form the data using `np.reshape`.
             
         Returns:
             str: Buffer contents
         """
-        old_timeout = self._smu.timeout
-        self._smu.timeout = 5000
-        # self.write(f"rb1_s = smub.nvbuffer{idx}")
+        if self.dummy:
+            return np.array([])
+
+        old_timeout = self.get_timeout()
+        self.set_timeout(5000)
         try:
-            values_i = self.query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1, smub.nvbuffer1.timestamps)')
-            values_v = self.query('printbuffer(1, smub.nvbuffer2.n, smub.nvbuffer2)')
+            values_i = self.query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1)')
+            values_v = self.query('printbuffer(1, smub.nvbuffer2.n, smub.nvbuffer2, smub.nvbuffer1.timestamps)')
         except Exception:
             return None
         
-        data_v = np.fromstring(values_v, dtype=float, sep=",")
+        data_v = np.fromstring(values_v, dtype=float, sep=",").reshape((-1, 2))
         data_i = np.fromstring(values_i, dtype=float, sep=",")
-        data = np.concat(data_v, data_i, axis=1)
-        self._smu.timeout = old_timeout
+        data = np.column_stack((data_v, data_i))
+        self.set_timeout(old_timeout)
 
-        return data.reshape(shape)
+        return data
     
     def enable(self):
         """
@@ -683,7 +742,7 @@ class ShmooTestHarness:
 
     @staticmethod
     def run_suite(suite_name: str, voltages: list, frequencies: list,
-                  max_cmul_freq_fails: int = 1):
+                  max_cmul_freq_fails: int = 1, use_smu: bool = True):
         """
         Runs a test with the full flow, along with serial instantiation, for
         a given test harness.
@@ -699,9 +758,9 @@ class ShmooTestHarness:
                 this value to 0 disables the check overall. Defaults to 1.
         """
         LOGGER.info(f'{Style.BRIGHT}{Fore.YELLOW}--- Starting enumeration for test suite "{suite_name}" ---{Style.RESET_ALL}')
-        # Initialize hardware connections
-        smu = SMU()
-        # ser = None
+        
+        ### Hardware Initialization ###
+        smu = SMU(dummy=not use_smu)
         
         # Retrieve the correct test suite to run.
         suite = ShmooTestHarness.TEST_SUITES[suite_name]
@@ -769,7 +828,7 @@ class ShmooTestHarness:
                         raise Exception('Unable to establish a UART serial connection handshake.')
 
                     # SMU Setup
-                    smu.clear_buffer(1, append=True)
+                    smu.clear_buffers(append=True)
                     smu.write(f"smub.measure.count = 1")
                     smu.set_nplc('0.1')
 
