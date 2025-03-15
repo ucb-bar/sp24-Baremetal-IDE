@@ -15,14 +15,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 /* Power virus designed to stress test the saturn core and achieve maximum power consumption
-   Expects a payload of 1 64-bit uint specifying how many cycles to run the power virus for, automatically rounded down to a multiple
-   of 1000. Returns no payload
+   Expects a payload of 1 64-bit uint specifying how many milliseconds to run the power virus for.
+   Returns no payload
 */
 
 #include "main.h"
 #include <riscv_vector.h>
 
-void mac_pv(uint64_t cycles) {
+void mac_pv_intrinsics(uint64_t mt_cycles) {
   int32_t op1[32];
   int32_t op2[32];
 
@@ -37,7 +37,7 @@ void mac_pv(uint64_t cycles) {
   vint8m4_t fac2 = __riscv_vle8_v_i8m4((int8_t*) &op2, vl);
 
   uint64_t start_time = clint_get_time(CLINT);
-  uint64_t target_cycles = start_time + (cycles/1000);
+  uint64_t target_cycles = start_time + mt_cycles;
 
   start_roi();
   while(clint_get_time(CLINT) < target_cycles) {
@@ -54,10 +54,14 @@ void mac_pv(uint64_t cycles) {
 int main(int argc, char **argv) {
   while (1) {
     test_info t = init_test(UART1);
-    uint64_t cycles = *((uint64_t*) &t.payload);
+    uint64_t cycles = (*((uint64_t*) &t.payload)) * chip_mtime_freq / 1000;
+
     switch (t.testid) {
       case 0:
-        mac_pv(cycles);
+        mac_pv_intrinsics(cycles);
+        break;
+      // case 1:
+      //   mac_pv_asm(cycles);
     }
   }
 
