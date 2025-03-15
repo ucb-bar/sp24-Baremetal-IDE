@@ -125,6 +125,9 @@ if (PROF_COV)
   add_link_options(-lgcov)
 endif()
 
+# Downgrade some required diagnostics about nonconformant code from errors to warnings.
+add_compile_options(-fpermissive)
+
 #################################
 # Build
 #################################
