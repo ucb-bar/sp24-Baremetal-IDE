@@ -54,7 +54,7 @@ void mac_pv_intrinsics(uint64_t mt_cycles) {
 int main(int argc, char **argv) {
   while (1) {
     test_info t = init_test(UART1);
-    uint64_t cycles = (*((uint64_t*) &t.payload)) * chip_mtime_freq / 1000;
+    uint64_t cycles = (*((uint64_t*) &t.payload)) * chip_mtime_freq / 500;
 
     switch (t.testid) {
       case 0:
