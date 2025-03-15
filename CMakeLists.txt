@@ -51,7 +51,7 @@ set(CMAKE_EXECUTABLE_SUFFIX            ".elf")
 #################################
 
 # CPU architecture
-set(ARCH                "rv64gcv_zfh_zvfh")
+set(ARCH                "rv64imafdv_zvl256b")
 set(ABI                 "lp64d")
 set(CMODEL              "medany")
 set(ARCH_FLAGS          -march=${ARCH} -mabi=${ABI} -mcmodel=${CMODEL})
@@ -178,8 +178,9 @@ add_subdirectory(driver)
 add_subdirectory(glossy)
 add_subdirectory(lib)
 add_subdirectory(lab)
-
+add_subdirectory(examples) # bmarks branch
 target_link_libraries(shazam_demo PRIVATE m)
+add_subdirectory(dsp24-bmarks) 
 
 target_link_libraries(app PRIVATE 
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
