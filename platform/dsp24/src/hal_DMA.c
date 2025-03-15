@@ -21,9 +21,10 @@ void set_DMAC(uint32_t num, uint64_t addr_r, uint64_t addr_w, uint16_t inc_r, ui
 
 
 void set_DMAP(uint32_t num, uint64_t* addr_r, uint64_t* addr_w, uint64_t* addr_c, uint16_t inc_r, uint16_t inc_w, uint16_t len, uint8_t logd, uint32_t count) {
-    reg_write64(DMA_SET_READ + num*DMA_MMIO_Offset, addr_r);
-    reg_write64(DMA_SET_WRITE + num*DMA_MMIO_Offset, addr_w);
-    reg_write64(DMA_SET_C + num*DMA_MMIO_Offset, addr_c);
+    // Dereference pointer, untested
+    reg_write64(DMA_SET_READ + num*DMA_MMIO_Offset, *addr_r);
+    reg_write64(DMA_SET_WRITE + num*DMA_MMIO_Offset, *addr_w);
+    reg_write64(DMA_SET_C + num*DMA_MMIO_Offset, *addr_c);
 
     reg_write16(DMA_INC_READ + num*DMA_MMIO_Offset, inc_r);
     reg_write16(DMA_INC_WRITE + num*DMA_MMIO_Offset, inc_w);
