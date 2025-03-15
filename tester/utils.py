@@ -113,7 +113,7 @@ class SMU:
             raise Exception(f'Attempt to connect to `{self.SMU_IDN}` at {self.VISA_PATH} failed, IDN returned `{smu_verification}` instead.')
 
         # Reset with our defaults
-        # self.reset()
+        self.reset()
 
     def query(self, querystr: str) -> str:
         """
@@ -224,9 +224,10 @@ class SMU:
         # Capture count / integration aperture
         self.write("smub.measure.count = 1")
         self.set_nplc('0.1')
+        self.enable()
 
     def start_continuous_capture(self, gpio: Union[int, str], buffer_idx: int,
-                                 timeout: int):
+                                 timeout: int, voltage: float, freq: float):
         """
         Performs a GPIO-interrupted continuous capture routine on the SMU
         through a looping routine running on the SMU itself. Once the GPIO pin
@@ -255,18 +256,18 @@ class SMU:
         display.setcursor(1, 1)
         display.settext("Waiting..")
         display.setcursor(2, 1)
-        display.settext("LimV: " .. smub.source.limitv)
+        display.settext("LimV: {str.format("%.2f"%voltage)} V | Freq: {freq} MHz")
         start_time = os.clock()
         end_time = start_time + {timeout_str}
         while (digio.readbit({gpio}) == 1.00000e+00 and os.clock() < end_time) do  end
         display.setcursor(1, 1)
         display.settext("Measuring")
-        while (digio.readbit({gpio}) == 0.00000e+00 and os.clock() < end_time) do smub.measure.v({buffer}) end
+        while (digio.readbit({gpio}) == 0.00000e+00 and os.clock() < end_time) do smub.measure.overlappediv(smub.nvbuffer1, smub.nvbuffer2) waitcomplete() end
         display.clear()
         display.setcursor(1, 1)
         display.settext("Done!")
         display.setcursor(2, 1)
-        display.settext("LimV: " .. smub.source.limitv)'''
+        display.settext("LimV: {str.format("%.2f"%voltage)} V | Freq: {freq} MHz")'''
         self.write(f"display.screen = display.USER")
         self.write('display.clear()')
         self.write(gpib_cmd)
@@ -291,10 +292,17 @@ class SMU:
         old_timeout = self._smu.timeout
         self._smu.timeout = 5000
         # self.write(f"rb1_s = smub.nvbuffer{idx}")
-        values = self.query('rb1 = smub.nvbuffer1  printbuffer(1, rb1.n, rb1, rb1.timestamps, rb1.sourcevalues)')
+        try:
+            values_i = self.query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1, smub.nvbuffer1.timestamps)')
+            values_v = self.query('printbuffer(1, smub.nvbuffer2.n, smub.nvbuffer2)')
+        except Exception:
+            return None
+        
+        data_v = np.fromstring(values_v, dtype=float, sep=",")
+        data_i = np.fromstring(values_i, dtype=float, sep=",")
+        data = np.concat(data_v, data_i, axis=1)
         self._smu.timeout = old_timeout
 
-        data = np.fromstring(values, dtype=float, sep=",")
         return data.reshape(shape)
     
     def enable(self):
@@ -444,10 +452,10 @@ class TestArtifact:
 
     def __str__(self):
         return '\t'.join([
-            self.status.name,
+            str(self.status.name),
             str(self.context),
-            self.host_payload.hex(),
-            self.check_data
+            self.host_payload.hex() if self.host_payload else 'None',
+            str(self.check_data)
         ])
 
 
@@ -661,7 +669,7 @@ class ShmooTestHarness:
 
     @staticmethod
     def save_data_as_csv(data: np.ndarray, status: TestStatus, dir: str,
-                         testid: int, voltage: str, freq: str) -> str:
+                         testid: int, voltage: float, freq: str) -> str:
         """
         Saves a NumPy array containing SMU-acquired data to a standardized CSV
         file.
@@ -669,8 +677,7 @@ class ShmooTestHarness:
         Returns:
             str: Path to the created output file.
         """
-        status_str = 'PASS' if status == TestStatus.PASS else 'FAIL'
-        filename = f'{dir}/test_{testid}_{voltage}v_{freq}MHz_{status_str}.csv'
+        filename = f'{dir}/test_{testid}_{str.format("%.2f"%voltage)}v_{freq}MHz.csv'
         np.savetxt(filename, data, delimiter=",")
         return filename
 
@@ -740,7 +747,7 @@ class ShmooTestHarness:
                         while pending_freqs_stack:
                             freq_skipped = pending_freqs_stack.popleft()
                             results.add_result(
-                                cur_v, freq_skipped,
+                                cur_v, freq_skipped * 1000000,
                                 TestArtifact(TestStatus.SKIP_MAX_FREQ_FAIL))
 
                 while pending_freqs_stack:
@@ -769,8 +776,8 @@ class ShmooTestHarness:
                     ser.flushInput()
                     ser.flushOutput()
 
-                    smu.start_continuous_capture(
-                        gpio='1', buffer_idx=1, timeout=test.timeout)
+                    smu.start_continuous_capture(gpio='1', buffer_idx=1, timeout=test.timeout,
+                                                 voltage=cur_v, freq=cur_clk)
                     
                     ### Begin Host<-->Chip Communication ###
 
@@ -848,7 +855,7 @@ class ShmooTestHarness:
                     
                     ShmooTestHarness.log_as_chip(
                         f'Sent ETB (23, 0x17) test completion acknowledgment!')
-                    smu_data = smu.retrieve_buffer(1)
+
                     # Chip sends size of payload packet (in bytes) (32-bit int)
                     ShmooTestHarness.log_as_host(
                         f'Awaiting chip payload packet size...')
@@ -870,6 +877,13 @@ class ShmooTestHarness:
                     ### Post-Processing ###
 
                     # Check the output against the ShmooTest function.
+                    smu_data = smu.retrieve_buffer(1)
+                    if not isinstance(smu_data, np.ndarray):
+                        ShmooTestHarness.log_as_misc(
+                            f'SMU buffer reading failed. Retrying test with {cur_clk}.')
+                        pending_freqs_stack.appendleft(cur_clk)
+                        continue
+
                     passed, check_data = test.check_output(context, chip_payload)
                     if passed:
                         artifact.status = TestStatus.PASS

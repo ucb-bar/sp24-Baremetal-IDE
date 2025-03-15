@@ -27,9 +27,7 @@ class BufferTest(ShmooTest):
 # Define the tests here:
 ShmooTestHarness.register_test_suite(TestSuite("memcpy",
     "build/dsp24-bmarks/bandwidth-bmarks/membw-bmark.elf",
-
     BufferTest("Memcpy", 0x2),
-
 ))
 
 # Exports (if necessary)
