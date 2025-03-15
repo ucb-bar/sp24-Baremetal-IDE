@@ -65,7 +65,6 @@ extern "C" {
 #define GPIOC                   ((GPIO_Type *)GPIOC_BASE)
 #define PWM0                    ((PWM_Type *)PWM0_BASE)
 #define UART1                   ((UART_Type *)UART1_BASE)
-#define CLOCK_SELECTOR          ((ClockSel_Type*)CLOCK_SELECTOR_BASE)
 
 
 #ifdef __cplusplus

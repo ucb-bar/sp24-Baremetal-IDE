@@ -32,11 +32,11 @@ test_info init_test(UART_Type *UARTx) {
 
   if (first_iteration) {
     CLOCK_SELECTOR->UNCORE = 0;
-  CLOCK_SELECTOR->TILE0 = 0;
-  CLOCK_SELECTOR->TILE1 = 0;
-  CLOCK_SELECTOR->TILE2 = 0;
-  CLOCK_SELECTOR->TILE3 = 0;
-  CLOCK_SELECTOR->CLKTAP = 0; //Ensure we are using the non PLL clock
+    CLOCK_SELECTOR->TILE0 = 0;
+    CLOCK_SELECTOR->TILE1 = 0;
+    CLOCK_SELECTOR->TILE2 = 0;
+    CLOCK_SELECTOR->TILE3 = 0;
+    CLOCK_SELECTOR->CLKTAP = 0; //Ensure we are using the non PLL clock
     UART_InitType UART_init_config;
     UART_init_config.baudrate = 115200;
     UART_init_config.mode = UART_MODE_TX_RX;
@@ -86,7 +86,7 @@ test_info init_test(UART_Type *UARTx) {
   CLOCK_SELECTOR->CLKTAP = 0;
   PLL->PLLEN = 0;
   PLL->MDIV_RATIO = 1;
-  PLL->RATIO = clkmult;  // 500MHz
+  PLL->RATIO = clkmult;
   PLL->FRACTION = 0;
   PLL->ZDIV0_RATIO = 1;
   PLL->ZDIV1_RATIO = 1;
