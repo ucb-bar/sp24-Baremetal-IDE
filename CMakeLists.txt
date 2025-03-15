@@ -92,7 +92,7 @@ add_link_options(-T ${LINKER_SCRIPT})
 # Build
 #################################
 
-add_executable(app
+add_executable(app_interface
   app/src/main.c
 )
 

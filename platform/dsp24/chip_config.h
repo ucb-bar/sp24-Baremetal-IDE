@@ -16,10 +16,10 @@ extern "C" {
 //  System Clock
 // ================================
 // system clock frequency in Hz
-#define SYS_CLK_FREQ   100000000
+#define SYS_CLK_FREQ   50000000
 
 // CLINT time base frequency in Hz
-#define MTIME_FREQ     100000000
+#define MTIME_FREQ     50000
 
 
 // ================================
@@ -51,9 +51,6 @@ extern "C" {
 #define PLIC                    ((PLIC_Type *)PLIC_BASE)
 #define PLIC_CC                 ((PLIC_ContextControl_Type *)(PLIC_BASE + 0x00200000U))
 #define UART0                   ((UART_Type *)UART0_BASE)
-
-
-
 
 #ifdef __cplusplus
 }

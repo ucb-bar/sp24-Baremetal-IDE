@@ -89,78 +89,85 @@ void app_main(uint32_t* data) {
 
     printf("\n[STARTING TEST]\n\n");
 
-    // reset_fft();
-    // reset_DMA();
-    // // enable_Crack();
+    /* START DMA FFT TEST */
 
-    // write_fft_dma(1, 128, data);
-    // uint64_t start_time = READ_CSR("mcycle");
-    // uint64_t start_instructions = READ_CSR("minstret");
+    printf("Starting DMA FFT\r\n");
 
-    // while(fft_busy() || fft_count_left()) {
-    //   continue;
-    //     printf("pain:%d, %d \n", fft_busy(), fft_count_left());
-    // }; // This is needed since fft is blocking and is not a very good block
+    reset_fft();
+    reset_DMA();
+    // enable_Crack();
 
-    // read_fft_dma(1, 128, 0x08000000U);
-
-    // uint64_t end_time = READ_CSR("mcycle");
-    // uint64_t end_instructions = READ_CSR("minstret");
-
-    // printf("[DONE] Waiting Write\n");
-    // printf("mcycle = %lu\r\n", end_time - start_time);
-    // printf("minstret = %lu\r\n", end_instructions - start_instructions);
-
-    
-    // for (int i = 0; i < 128; i++) {
-    //   printf("Imag: %d  Real: %d\r\n", (*((uint32_t*) (0x08000000U + 4*i)) >> 16), (*((uint32_t*) (0x08000000U + 4*i)) && 0xFFFF));
-    // }
-
-    printf("Starting CPU FFT\r\n");
-
+    write_fft_dma(1, 128, data);
     uint64_t start_time = READ_CSR("mcycle");
     uint64_t start_instructions = READ_CSR("minstret");
 
-    kiss_fft_cfg cfg = kiss_fft_alloc(512 , 0, 0, 0);
-    int nfft = 512;
+    while(fft_busy() || fft_count_left()) {
+      continue;
+        printf("pain:%d, %d \n", fft_busy(), fft_count_left());
+    }; // This is needed since fft is blocking and is not a very good block
 
-    kiss_fft_cpx* fftbuf = (kiss_fft_cpx*) malloc(nfft * sizeof(kiss_fft_cpx) );
-    kiss_fft_cpx* fftoutbuf = (kiss_fft_cpx*) malloc(nfft * sizeof(kiss_fft_cpx) );
-
-    for(int i = 0; i < nfft; i += 1) {
-        fftbuf[i].r = B3_samples_512[i];
-        fftbuf[i].i = 0;
-    }
-
-    kiss_fft(cfg, fftbuf, fftoutbuf);
+    read_fft_dma(1, 128, 0x08000000U);
 
     uint64_t end_time = READ_CSR("mcycle");
     uint64_t end_instructions = READ_CSR("minstret");
 
+    printf("[DONE] Waiting Write\n");
     printf("mcycle = %lu\r\n", end_time - start_time);
     printf("minstret = %lu\r\n", end_instructions - start_instructions);
 
-    printf("Finished CPU FFT\r\n");
-    int index = 0;
-    float max = 0;
-    for (int i = 0; i < nfft; i++) {
-      if (fabs(fftoutbuf[i].i) > max) {
-        max = fabs(fftoutbuf[i].i);
-        index = i;
-      }
-      printf("Imag: %f  Real: %f\r\n", fftoutbuf[i].i, fftoutbuf[i].r);
+    
+    for (int i = 0; i < 128; i++) {
+      printf("Imag: %d  Real: %d\r\n", (*((uint32_t*) (0x08000000U + 4*i)) >> 16), (*((uint32_t*) (0x08000000U + 4*i)) && 0xFFFF));
     }
 
-    printf("Resulting frequency is about %f\r\n", (880.0) * index / nfft);
+    /* END DMA FFT TEST */
 
-    free(cfg);
-    free(fftbuf);
-    free(fftoutbuf);
+    /* START CPU TEST */
+
+    // printf("Starting CPU FFT\r\n");
+
+    // uint64_t start_time = READ_CSR("mcycle");
+    // uint64_t start_instructions = READ_CSR("minstret");
+
+    // kiss_fft_cfg cfg = kiss_fft_alloc(512 , 0, 0, 0);
+    // int nfft = 512;
+
+    // kiss_fft_cpx* fftbuf = (kiss_fft_cpx*) malloc(nfft * sizeof(kiss_fft_cpx) );
+    // kiss_fft_cpx* fftoutbuf = (kiss_fft_cpx*) malloc(nfft * sizeof(kiss_fft_cpx) );
+
+    // for(int i = 0; i < nfft; i += 1) {
+    //     fftbuf[i].r = B3_samples_512[i];
+    //     fftbuf[i].i = 0;
+    // }
+
+    // kiss_fft(cfg, fftbuf, fftoutbuf);
+
+    // uint64_t end_time = READ_CSR("mcycle");
+    // uint64_t end_instructions = READ_CSR("minstret");
+
+    // printf("mcycle = %lu\r\n", end_time - start_time);
+    // printf("minstret = %lu\r\n", end_instructions - start_instructions);
+
+    // printf("Finished CPU FFT\r\n");
+    // int index = 0;
+    // float max = 0;
+    // for (int i = 0; i < nfft; i++) {
+    //   if (fabs(fftoutbuf[i].i) > max) {
+    //     max = fabs(fftoutbuf[i].i);
+    //     index = i;
+    //   }
+    //   printf("Imag: %f  Real: %f\r\n", fftoutbuf[i].i, fftoutbuf[i].r);
+    // }
+    
+    // printf("Resulting frequency is about %f\r\n", (880.0) * index / nfft);
+    // free(cfg);
+    // free(fftbuf);
+    // free(fftoutbuf);
+
+    /* END CPU TEST */
+    
     kiss_fft_cleanup();
 
-
-    
-    
     // uint32_t poll, real, imag;
     // for(int i=0; i<512; i++) {
     //     poll = reg_read32(DMA_ADDR1 + i*8);
