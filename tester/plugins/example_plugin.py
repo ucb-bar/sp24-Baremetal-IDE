@@ -20,7 +20,7 @@ class HelloTest(ShmooTest):
         return b'Hey, Chip!', {}
     
     def check_output(self, context, value):
-        return value == b'Hello World!'
+        return value == b'Hello World!', value
 
 
 # Define the tests here:

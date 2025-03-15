@@ -51,11 +51,12 @@ class SerialDebug(serial.Serial):
             if port.manufacturer == 'FTDI' and port.location.endswith('1.1'):
                 LOGGER.debug(f'Testing for valid handshake.')
                 # Ping to find if it is the correct FTDI
-                tmp = SerialDebug(port.device, baud_rate, timeout=timeout)
+                tmp = SerialDebug(port.device, baud_rate, timeout=0.5)
                 tmp.write(b'\x05')
                 recv = tmp.read()
                 if recv == b'\x06':
                     LOGGER.debug(f'Valid handshake received at {port.device}.')
+                    tmp.timeout = timeout
                     return tmp
             else:
                 LOGGER.debug(f'Not a valid FTDI UART device.')
@@ -257,7 +258,7 @@ class SMU:
         display.settext("LimV: " .. smub.source.limitv)
         start_time = os.clock()
         end_time = start_time + {timeout_str}
-        while (digio.readbit({gpio}) == 1.00000e+00 and os.clock() < end_time) do display.setcursor(1, 1) display.settext("Waiting..") end
+        while (digio.readbit({gpio}) == 1.00000e+00 and os.clock() < end_time) do  end
         display.setcursor(1, 1)
         display.settext("Measuring")
         while (digio.readbit({gpio}) == 0.00000e+00 and os.clock() < end_time) do smub.measure.v({buffer}) end
@@ -289,7 +290,7 @@ class SMU:
         """
         old_timeout = self._smu.timeout
         self._smu.timeout = 5000
-        self.write(f"rb1_s = smub.nvbuffer{idx}")
+        # self.write(f"rb1_s = smub.nvbuffer{idx}")
         values = self.query('rb1 = smub.nvbuffer1  printbuffer(1, rb1.n, rb1, rb1.timestamps, rb1.sourcevalues)')
         self._smu.timeout = old_timeout
 
@@ -334,7 +335,7 @@ class ShmooTest:
         """
         return b'Hello, Chip!', {}
 
-    def check_output(self, context: dict, value: bytes) -> bool:
+    def check_output(self, context: dict, value: bytes) -> tuple[bool, str]:
         """
         Checks the output from the chip against an arbitrary result.
         This function is called after the ETB and chip payload has been sent
@@ -347,10 +348,11 @@ class ShmooTest:
             value (bytes): The payload returned from the chip.
 
         Returns:
-            bool: True if the test has "passed" according to the test output,
-                False otherwise.
+            tuple[bool, str]: True if the test has "passed" according to the
+                test output, False otherwise. Second parameter contains the
+                printable string that will be output to the `result.tsv` file.
         """
-        return value == "Hey, Host!"
+        return value == "Hey, Host!", value
 
 
 class ShmooConstantTest(ShmooTest):
@@ -367,8 +369,8 @@ class ShmooConstantTest(ShmooTest):
     def create_payload(self) -> tuple[bytes, dict]:
         return self.to_chip, {}
 
-    def check_output(self, context: dict, value: bytes) -> bool:
-        return value == self.expect
+    def check_output(self, context: dict, value: bytes) -> tuple[bool, str]:
+        return value == self.expect, value
 
 
 class TestSuite:
@@ -423,7 +425,7 @@ class TestStatus(enum.Enum):
     Test was skipped due to the lowest tested frequency failing for the given
     voltage.
     """
-
+    
 
 class TestArtifact:
     """
@@ -432,12 +434,21 @@ class TestArtifact:
     """
 
     def __init__(self, status: TestStatus=None, context=None, host_payload=None,
-                 chip_payload=None, csv_path=None):
+                 chip_payload=None, check_data=None, csv_path=None):
         self.status = status
         self.context = context
         self.host_payload = host_payload
         self.chip_payload = chip_payload
+        self.check_data = check_data
         self.csv_path = csv_path
+
+    def __str__(self):
+        return '\t'.join([
+            self.status.name,
+            str(self.context),
+            self.host_payload.hex(),
+            self.check_data
+        ])
 
 
 class ShmooSuiteResults:
@@ -452,9 +463,10 @@ class ShmooTestResults:
     statuses and voltage/frequency parameters.
     """
 
-    def __init__(self, test):
+    def __init__(self, test, result_csv_path):
         # Results stored as {Voltage: {Freq: (PassFail, CSV Path), ...}, ...}
         self.suite = test
+        self.result_csv_path = result_csv_path
         self.results = OrderedDict()
 
     def add_result(self, voltage, freq,
@@ -463,16 +475,19 @@ class ShmooTestResults:
             self.results[voltage] = OrderedDict()
         self.results[voltage][freq] = artifact
 
+        with open(self.result_csv_path, 'a', encoding='utf-8') as f:
+            f.write('\t'.join([str(voltage), str(freq), str(artifact)]) + '\n')
+
     def log_summary(self):
-#        data = []
-        log = ''
-#        log += f'{Fore.MAGENTA}{Style.BRIGHT}--- Test Summary for Test "{self.test.name}" [Test ID {self.test.id}] ---{Style.RESET_ALL}\n'
-#        log += f'{Fore.MAGENTA}{Style.BRIGHT}--- Test Summary for Test Suite "{self.suite.name}" ---{Style.RESET_ALL}'
+        data = []
+        # log = ''
+        # log += f'{Fore.MAGENTA}{Style.BRIGHT}--- Test Summary for Test "{self.test.name}" [Test ID {self.test.id}] ---{Style.RESET_ALL}\n'
+        # log += f'{Fore.MAGENTA}{Style.BRIGHT}--- Test Summary for Test Suite "{self.suite.name}" ---{Style.RESET_ALL}'
         # for voltage, freqs in self.results.items():
         #     for freq, artifact in freqs.items():
                 
 
-        LOGGER.info(log)
+        # LOGGER.info(log)
 
 
 class ShmooTestHarness:
@@ -687,6 +702,10 @@ class ShmooTestHarness:
         output_dir = f'data_{suite_name}_{datetime.now().isoformat()}'
         os.mkdir(output_dir)
         ShmooTestHarness.log_as_misc(f'Output will be stored within "{output_dir}/"')
+        result_csv_path = f'{output_dir}/result.tsv'
+
+        with open(result_csv_path, 'a', encoding='utf-8') as f:
+            f.write('\t'.join(['Voltage', 'Frequency', 'Status', 'Context', 'Host Payload', 'Compare Check Data']) + '\n')
 
         suite_results = ShmooSuiteResults(suite)
 
@@ -694,7 +713,7 @@ class ShmooTestHarness:
         # can re-attempt at will. 
         for _, test in suite.tests.items():
 
-            results = ShmooTestResults(suite)
+            results = ShmooTestResults(suite, result_csv_path)
             pending_voltages_stack = deque(voltages)
             while pending_voltages_stack:
                 cur_v = float(pending_voltages_stack.popleft())
@@ -733,6 +752,7 @@ class ShmooTestHarness:
                     ### Serial Port Evaluation / FTDI Reset / SMU Setup ###
                     
                     smu.set_voltage_limit(str(cur_v))
+                    
                     ShmooTestHarness.reset_and_program_elf(suite.elf)
 
                     ser = SerialDebug.create(ShmooTestHarness.UART_BAUD_RATE,
@@ -828,7 +848,7 @@ class ShmooTestHarness:
                     
                     ShmooTestHarness.log_as_chip(
                         f'Sent ETB (23, 0x17) test completion acknowledgment!')
-
+                    smu_data = smu.retrieve_buffer(1)
                     # Chip sends size of payload packet (in bytes) (32-bit int)
                     ShmooTestHarness.log_as_host(
                         f'Awaiting chip payload packet size...')
@@ -850,13 +870,15 @@ class ShmooTestHarness:
                     ### Post-Processing ###
 
                     # Check the output against the ShmooTest function.
-                    if test.check_output(context, chip_payload):
+                    passed, check_data = test.check_output(context, chip_payload)
+                    if passed:
                         artifact.status = TestStatus.PASS
                     else:
                         artifact.status = TestStatus.FAIL_CHECK
+                    artifact.check_data = check_data
                     
                     # Parse the data from the SMU and form it into a matrix.
-                    smu_data = smu.retrieve_buffer(1)
+                    
                     LOGGER.debug(f'[SMU Buffer Output] {smu_data}')
 
                     # Generate and save a CSV of the SMU data.
