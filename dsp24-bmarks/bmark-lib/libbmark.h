@@ -2,6 +2,7 @@
 #define __LIBBMARK_H
 
 #include "uart.h"
+#include "hal_rcc.h"
 #include <stdlib.h>
 
 #ifdef __cplusplus
