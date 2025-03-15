@@ -9,6 +9,7 @@
  */
 
 #include "i2c.h"
+#include "clint.h"
 
 void i2c_init(I2C_Type *I2Cx, I2C_InitType *I2C_init) {
   // need to disable I2C before make any change to prescaler
@@ -27,7 +28,7 @@ Status i2c_wait_for_flag(I2C_Type *I2Cx, I2C_Flag flag, State state, uint32_t ti
     if (timeout == 0UL) {
       continue;
     }
-    if (CLINT_getTime() > (timestart + timeout)) {
+    if (clint_get_time() > (timestart + timeout)) {
       return TIMEOUT;
     }
   }
