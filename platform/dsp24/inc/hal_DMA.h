@@ -33,7 +33,6 @@ int DMA_count(int num);
 
 void set_DMAC(uint32_t num, uint64_t addr_r, uint64_t addr_w, uint16_t inc_r, uint16_t inc_w, uint16_t len, uint16_t logd);
 
-
 void set_DMAP(uint32_t num, uint64_t* addr_r, uint64_t* addr_w, uint64_t* addr_c, uint16_t inc_r, uint16_t inc_w, uint16_t len, uint8_t logd, uint32_t count);
 
 void start_DMA(uint32_t num);
