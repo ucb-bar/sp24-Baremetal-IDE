@@ -92,8 +92,12 @@ add_link_options(-T ${LINKER_SCRIPT})
 # Build
 #################################
 
+add_executable(app_naichen
+  app_naichen/src/main.c
+)
+
 add_executable(app_interface
-  app/src/main.c
+  app_interface/src/main.c
 )
 
 add_executable(shazam_demo

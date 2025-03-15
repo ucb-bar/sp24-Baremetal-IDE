@@ -54,13 +54,49 @@
 
 
 void app_init() {
-  UART_InitType UART_init_config;
-  UART_init_config.baudrate = 115200;
-  UART_init_config.mode = UART_MODE_TX_RX;
-  UART_init_config.stopbits = UART_STOPBITS_2;
-  uart_init(UART0, &UART_init_config);
+  // torch::executor::runtime_init();
 }
 
+
+
+// Addresses for writing data
+#define DMA_ADDR1 0x87000000L // address for FFT
+
+void app_main() {
+  uint64_t mhartid = READ_CSR("mhartid");
+  printf("sadly unalive myself from hart : %d\r\n", mhartid);
+
+  puts("\n[STARTING TEST]\n\n");
+    // Setup FFT stuff
+    puts("Setup params for FFT");
+    reset_fft();
+
+    // Start DMA
+    enable_Crack();
+    printf("Starting blocks\n");
+    write_fft_dma(1, fft_len, fft_data);
+    
+    // check if FFT is complete cause its blocking (bad)
+    printf("[Blocks are cooking]\n");
+    while(fft_busy() || fft_count_left()){
+        printf("pain:%d, %d \n", fft_busy(), fft_count_left());
+    }; // This is needed since fft is blocking and is not a very good block
+    read_fft_dma(1, fft_len, DMA_ADDR1);
+
+
+
+    // Check blocks output
+    printf("\nTest Output (FFT): \n");
+    uint32_t poll;
+    // for(int i=0; i<fft_len; i++) { // We only print the first couple points
+    for(int i=0; i<30; i++) {
+        poll = reg_read32(DMA_ADDR1 + i*8);
+        uint32_t real = poll & 0xFFFF;
+        uint32_t imag = (poll >> 16);
+        printf("[%d]real: (%hd), imag: (%hd)\n", i, real, imag);
+    }
+    printf("\n[DONE TEST]\n\n");
+}
 /* USER CODE END PUC */
 
 /**
@@ -71,8 +107,14 @@ int main(int argc, char **argv) {
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Configure the system clock */
+  /* Configure the system clock */
+  
   /* USER CODE BEGIN SysInit */
-
+  UART_InitType UART_init_config;
+  UART_init_config.baudrate = 115200;
+  UART_init_config.mode = UART_MODE_TX_RX;
+  UART_init_config.stopbits = UART_STOPBITS_2;
+  uart_init(UART0, &UART_init_config);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */  
@@ -82,19 +124,10 @@ int main(int argc, char **argv) {
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int i = 0;
-  char name[50];
-  puts("Enter your name: ");
   while (1) {
-    if (i < 50) {
-      uart_receive(UART0, &name[i], 1, 10000);
-      if (name[i] == '\r') i = 50;
-      else i = i + 1;
-    }
-    if (i == 50) printf("Hello, %s\n", name);
+    app_main();
+    return 0;
   }
-  // scanf("%s", name);
-  // printf("Hello, %s", name);
   /* USER CODE END WHILE */
 }
 
