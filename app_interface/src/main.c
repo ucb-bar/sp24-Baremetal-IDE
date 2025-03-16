@@ -89,11 +89,11 @@ void app_main() {
     //     poll = reg_read32(DMA_ADDR1 + i*8);
     //     real = poll & 0xFFFF; 
     //     imag = (poll >> 16);
-    //     printf("[%d]real: (%hd), imag: (%hd)\n", i, real, imag);
+    //     printf("[%d]real: (%hd), imag: (%hd)\r\n", i, real, imag);
     // }
     for(int i=0; i<256; i++) {
         poll = reg_read16(DMA_ADDR1 + i*4);
-        printf("[%d]real: (%hd)\n", i, poll);
+        printf("[%d]real: (%hd)\r\n", i, poll);
     }
     
     printf("[DONE] Test\n");

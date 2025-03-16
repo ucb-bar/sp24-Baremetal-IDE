@@ -18,6 +18,9 @@
 #include "fft_data.h"
 #include "chip_config.h"
 
+// Addresses for writing data
+#define DMA_ADDR1 0x87000000L // address for FFT
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -57,11 +60,6 @@ void app_init() {
   // torch::executor::runtime_init();
 }
 
-
-
-// Addresses for writing data
-#define DMA_ADDR1 0x87000000L // address for FFT
-
 void app_main() {
   uint64_t mhartid = READ_CSR("mhartid");
   printf("sadly unalive myself from hart : %d\r\n", mhartid);
@@ -83,8 +81,6 @@ void app_main() {
     }; // This is needed since fft is blocking and is not a very good block
     read_fft_dma(1, fft_len, DMA_ADDR1);
 
-
-
     // Check blocks output
     printf("\nTest Output (FFT): \n");
     uint32_t poll;
@@ -93,7 +89,7 @@ void app_main() {
         poll = reg_read32(DMA_ADDR1 + i*8);
         uint32_t real = poll & 0xFFFF;
         uint32_t imag = (poll >> 16);
-        printf("[%d]real: (%hd), imag: (%hd)\r\n", i, real, imag);
+        printf("[%d]real: (%hd), imag: (%hd)\n", i, real, imag);
     }
     printf("\n[DONE TEST]\n\n");
 }
