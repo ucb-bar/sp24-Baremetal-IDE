@@ -126,8 +126,8 @@ void app_main(uint32_t* data) {
 
     printf("Starting CPU FFT\r\n");
 
-    uint64_t start_time = READ_CSR("mcycle");
-    uint64_t start_instructions = READ_CSR("minstret");
+    uint64_t start_time_cpu = READ_CSR("mcycle");
+    uint64_t start_instructions_cpu = READ_CSR("minstret");
 
     kiss_fft_cfg cfg = kiss_fft_alloc(512 , 0, 0, 0);
     int nfft = 512;
@@ -142,11 +142,11 @@ void app_main(uint32_t* data) {
 
     kiss_fft(cfg, fftbuf, fftoutbuf);
 
-    uint64_t end_time = READ_CSR("mcycle");
-    uint64_t end_instructions = READ_CSR("minstret");
+    uint64_t end_time_cpu = READ_CSR("mcycle");
+    uint64_t end_instructions_cpu = READ_CSR("minstret");
 
-    printf("mcycle = %lu\r\n", end_time - start_time);
-    printf("minstret = %lu\r\n", end_instructions - start_instructions);
+    printf("mcycle = %lu\r\n", end_time_cpu - start_time_cpu);
+    printf("minstret = %lu\r\n", end_instructions_cpu - start_instructions_cpu);
 
     printf("Finished CPU FFT\r\n");
     int index = 0;

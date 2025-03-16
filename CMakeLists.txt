@@ -96,6 +96,10 @@ add_executable(app_naichen
   app_naichen/src/main.c
 )
 
+add_executable(app_naich_comparison
+  app_naich_comparison/src/main.c
+)
+
 add_executable(app_interface
   app_interface/src/main.c
 )
@@ -125,7 +129,11 @@ add_executable(dsp-strcmp
   benchmarks/vec-strcmp/vec-strcmp.S
 )
 
-target_include_directories(app PUBLIC app/include)
+target_include_directories(app_interface PUBLIC app_interface/include)
+
+target_include_directories(app_naich_comparison PUBLIC app_naich_comparison/include)
+
+target_include_directories(app_naichen PUBLIC app_naichen/include)
 
 target_include_directories(shazam_demo PUBLIC shazam_demo/include)
 
@@ -148,7 +156,15 @@ add_subdirectory(lab)
 
 target_link_libraries(shazam_demo PRIVATE m)
 
-target_link_libraries(app PRIVATE 
+target_link_libraries(app_naichen PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(app_naich_comparison PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(app_interface PRIVATE 
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
 )
 
