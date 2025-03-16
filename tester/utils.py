@@ -5,11 +5,15 @@ from datetime import datetime
 import logging
 import enum
 import os
+from pathlib import Path
 import shlex
 import struct
 import subprocess
 from time import sleep
 from typing import *
+from matplotlib import pyplot as plt
+import matplotlib
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from typing_extensions import Self
 from collections import OrderedDict, defaultdict, deque
 
@@ -314,7 +318,7 @@ class SMU:
         display.setcursor(1, 1)
         display.settext("Waiting..")
         display.setcursor(2, 1)
-        display.settext("LimV: {str.format("%.2f"%voltage)} V | Freq: {freq} MHz")
+        display.settext("LimV: {float_to_str(voltage)} V | Freq: {freq} MHz")
         start_time = os.clock()
         end_time = start_time + {timeout_str}
         while (digio.readbit({gpio}) == 1.00000e+00 and os.clock() < end_time) do  end
@@ -325,7 +329,7 @@ class SMU:
         display.setcursor(1, 1)
         display.settext("Done!")
         display.setcursor(2, 1)
-        display.settext("LimV: {str.format("%.2f"%voltage)} V | Freq: {freq} MHz")'''
+        display.settext("LimV: {float_to_str(voltage)} V | Freq: {freq} MHz")'''
         self.write(f"display.screen = display.USER")
         self.write('display.clear()')
         self.write(gpib_cmd)
@@ -501,12 +505,15 @@ class TestArtifact:
     """
 
     def __init__(self, status: TestStatus=None, context=None, host_payload=None,
-                 chip_payload=None, check_data=None, csv_path=None):
+                 chip_payload=None, check_data=None, csv_path=None,
+                 avg_power=None, energy=None):
         self.status = status
         self.context = context
         self.host_payload = host_payload
         self.chip_payload = chip_payload
         self.check_data = check_data
+        self.avg_power = avg_power
+        self.energy = energy
         self.csv_path = csv_path
 
     def __str__(self):
@@ -518,43 +525,178 @@ class TestArtifact:
         ])
 
 
+def float_to_str(val: float):
+    return str.format('%.2f'%val)
+
+
 class ShmooSuiteResults:
 
-    def __init__(self, suite: TestSuite):
+    def __init__(self, suite: TestSuite, output_dir: Optional[str]=None,
+                 voltage_range: list=None, freq_range: list=None,
+                 step_v=None, step_freq=None, readonly=False):
         self.suite = suite
-
-
-class ShmooTestResults:
-    """
-    Container class to store multiple test artifacts with their associated
-    statuses and voltage/frequency parameters.
-    """
-
-    def __init__(self, test, result_csv_path):
-        # Results stored as {Voltage: {Freq: (PassFail, CSV Path), ...}, ...}
-        self.suite = test
-        self.result_csv_path = result_csv_path
         self.results = OrderedDict()
+        self.results_list = []
+        self.voltage_range = voltage_range or []
+        self.freq_range = freq_range or []
+        self.step_v = step_v
+        self.step_freq = step_freq
+        self.readonly = readonly
 
-    def add_result(self, voltage, freq,
-                   artifact: TestArtifact):
-        if voltage not in self.results:
-            self.results[voltage] = OrderedDict()
-        self.results[voltage][freq] = artifact
+        if not readonly:
+            self.output_dir = output_dir or \
+                f'data_{self.suite.name}_{datetime.now().isoformat()}'
+            self.result_path = f'{self.output_dir}/result.tsv'
+            os.mkdir(self.output_dir)
 
-        with open(self.result_csv_path, 'a', encoding='utf-8') as f:
-            f.write('\t'.join([str(voltage), str(freq), str(artifact)]) + '\n')
+            with open(self.result_path, 'a', encoding='utf-8') as f:
+                f.write('\t'.join(['Suite Name', 'Test Name', 'Test ID', 'Voltage', 'Frequency', 'Status', 'Context', 'Host Payload', 'Compare Check Data']) + '\n')
 
-    def log_summary(self):
-        data = []
-        # log = ''
-        # log += f'{Fore.MAGENTA}{Style.BRIGHT}--- Test Summary for Test "{self.test.name}" [Test ID {self.test.id}] ---{Style.RESET_ALL}\n'
-        # log += f'{Fore.MAGENTA}{Style.BRIGHT}--- Test Summary for Test Suite "{self.suite.name}" ---{Style.RESET_ALL}'
-        # for voltage, freqs in self.results.items():
-        #     for freq, artifact in freqs.items():
-                
+    def add_result(self, test: ShmooTest, voltage, freq,
+                          artifact: TestArtifact):
+        self.results_list.append((test, voltage, freq, artifact))
+        if test not in self.results:
+            self.results[test] = OrderedDict()
 
-        # LOGGER.info(log)
+        if voltage not in self.results[test]:
+            self.results[test][voltage] = OrderedDict()
+
+        self.results[test][voltage][freq] = artifact
+
+        if not self.readonly:
+            with open(self.result_path, 'a', encoding='utf-8') as f:
+                f.write('\t'.join(
+                    [str(test.name), str(test.id), float_to_str(voltage), str(freq), str(artifact)]) + '\n')
+            
+    @staticmethod
+    def load_from_run(path: str):
+        path = Path(path)
+
+        res = None
+        res_path = Path.joinpath(path, 'result.tsv')
+
+        with open(res_path) as r:
+            r.readline()
+
+            voltage_range = set()
+            freq_range = set()
+
+            while line := r.readline():
+                (suite_name, _, testid, voltage, freq, status,
+                 context, host_payload, compare_data) = line.split('\t')
+                testid = int(testid)
+                voltage = float(voltage)
+                freq = int(freq)
+
+                #host_payload = bytes.fromhex(host_payload)
+
+                suite = ShmooTestHarness.TEST_SUITES[suite_name]
+                if not res:
+                    res = ShmooSuiteResults(ShmooTestHarness.TEST_SUITES[suite_name],
+                                            readonly=True)
+                    res.output_dir = path
+                    res.result_path = res_path
+
+                voltage_range.add(float(voltage))
+                freq_range.add(int(freq))
+
+                # Extract all tests and compute powers
+                artifact = TestArtifact(
+                    status=TestStatus[status],
+                    context=context,
+                    # host_payload=host_payload,
+                    check_data=compare_data,
+                    csv_path=os.path.join(path, f'test_{testid}_{float_to_str(voltage)}v_{freq // 1000000}MHz.csv')
+                )
+
+                if os.path.exists(artifact.csv_path):
+                    dat = np.genfromtxt(artifact.csv_path, delimiter=',').T
+                    powers = np.multiply(dat[0], dat[2])
+                    dt = np.diff(dat[1])
+                    energy = np.sum(np.multiply(powers[:-1], dt)) 
+                    avg_power = energy / dat[1][-1]
+                    artifact.avg_power = avg_power
+                    artifact.energy = energy
+
+                res.add_result(suite.tests[testid], voltage, freq, artifact)
+            
+            res.voltage_range = sorted(list(voltage_range))
+            res.freq_range = sorted(list(freq_range))
+            
+            if len(res.voltage_range) > 1:
+                res.step_v = res.voltage_range[1] - res.voltage_range[0]
+            else:
+                res.step_v = 0
+
+            if len(res.freq_range) > 1:
+                res.step_freq = res.freq_range[1] - res.freq_range[0]
+            else:
+                res.step_freq = 0
+        return res
+
+    def print_results(self):
+        log = ''
+        f'{Fore.MAGENTA}{Style.BRIGHT}--- Test Summary for Test Suite "{self.suite.name}" ---{Style.RESET_ALL}\n'
+        log += f'{Fore.MAGENTA}{Style.BRIGHT}Test "{self.test.name}" [Test ID {self.test.id}] ---{Style.RESET_ALL}\n'
+
+
+def annotate_heatmap(im, data=None, valfmt="{x:.2f}",
+                     textcolors=("white", "black"),
+                     threshold=None, **textkw):
+    """
+    A function to annotate a heatmap.
+
+    Parameters
+    ----------
+    im
+        The AxesImage to be labeled.
+    data
+        Data used to annotate.  If None, the image's data is used.  Optional.
+    valfmt
+        The format of the annotations inside the heatmap.  This should either
+        use the string format method, e.g. "$ {x:.2f}", or be a
+        `matplotlib.ticker.Formatter`.  Optional.
+    textcolors
+        A pair of colors.  The first is used for values below a threshold,
+        the second for those above.  Optional.
+    threshold
+        Value in data units according to which the colors from textcolors are
+        applied.  If None (the default) uses the middle of the colormap as
+        separation.  Optional.
+    **kwargs
+        All other arguments are forwarded to each call to `text` used to create
+        the text labels.
+    """
+
+    if not isinstance(data, (list, np.ndarray)):
+        data = im.get_array()
+
+    # Normalize the threshold to the images color range.
+    if threshold is not None:
+        threshold = im.norm(threshold)
+    else:
+        threshold = im.norm(data.max())/2.
+
+    # Set default alignment to center, but allow it to be
+    # overwritten by textkw.
+    kw = dict(horizontalalignment="center",
+              verticalalignment="center")
+    kw.update(textkw)
+
+    # Get the formatter in case a string is supplied
+    if isinstance(valfmt, str):
+        valfmt = matplotlib.ticker.StrMethodFormatter(valfmt)
+
+    # Loop over the data and create a `Text` for each "pixel".
+    # Change the text's color depending on the data.
+    texts = []
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            kw.update(color=textcolors[int(im.norm(data[i, j]) > threshold)])
+            text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
+            texts.append(text)
+
+    return texts
 
 
 class ShmooTestHarness:
@@ -736,13 +878,14 @@ class ShmooTestHarness:
         Returns:
             str: Path to the created output file.
         """
-        filename = f'{dir}/test_{testid}_{str.format("%.2f"%voltage)}v_{freq}MHz.csv'
+        filename = f'{dir}/test_{testid}_{float_to_str(voltage)}v_{freq}MHz.csv'
         np.savetxt(filename, data, delimiter=",")
         return filename
 
     @staticmethod
     def run_suite(suite_name: str, voltages: list, frequencies: list,
-                  max_cmul_freq_fails: int = 1, use_smu: bool = True):
+                  max_cmul_freq_fails: int = 1, use_smu: bool = True
+                  )-> ShmooSuiteResults:
         """
         Runs a test with the full flow, along with serial instantiation, for
         a given test harness.
@@ -765,21 +908,17 @@ class ShmooTestHarness:
         # Retrieve the correct test suite to run.
         suite = ShmooTestHarness.TEST_SUITES[suite_name]
 
-        output_dir = f'data_{suite_name}_{datetime.now().isoformat()}'
-        os.mkdir(output_dir)
-        ShmooTestHarness.log_as_misc(f'Output will be stored within "{output_dir}/"')
-        result_csv_path = f'{output_dir}/result.tsv'
+        results = ShmooSuiteResults(suite)
+        results.voltage_range = [float(v) for v in voltages]
+        results.freq_range = [int(f) * 1000000 for f in frequencies]
+        ShmooTestHarness.log_as_misc(f'Output will be stored within "{results.output_dir}/"')
 
-        with open(result_csv_path, 'a', encoding='utf-8') as f:
-            f.write('\t'.join(['Voltage', 'Frequency', 'Status', 'Context', 'Host Payload', 'Compare Check Data']) + '\n')
-
-        suite_results = ShmooSuiteResults(suite)
 
         # This routine treats voltages and frequencies as a stack, such that we
         # can re-attempt at will. 
         for _, test in suite.tests.items():
 
-            results = ShmooTestResults(suite, result_csv_path)
+            # test_results = ShmooTestResults(suite, suite_results.result_path)
             pending_voltages_stack = deque(voltages)
             while pending_voltages_stack:
                 cur_v = float(pending_voltages_stack.popleft())
@@ -792,7 +931,7 @@ class ShmooTestHarness:
                 pending_freqs_stack = deque(frequencies)
 
                 def max_fail_check(art):
-                    nonlocal freq_last_failed, max_cmul_freq_fails, pending_freqs_stack, results, cur_v
+                    nonlocal test, freq_last_failed, max_cmul_freq_fails, pending_freqs_stack, results, cur_v
                     # Update the cumulative failure counter
                     if art.status != TestStatus.PASS:
                         freq_last_failed += 1
@@ -805,7 +944,7 @@ class ShmooTestHarness:
                         # Clean out the rest of the frequencies
                         while pending_freqs_stack:
                             freq_skipped = pending_freqs_stack.popleft()
-                            results.add_result(
+                            results.add_result(test,
                                 cur_v, freq_skipped * 1000000,
                                 TestArtifact(TestStatus.SKIP_MAX_FREQ_FAIL))
 
@@ -882,17 +1021,13 @@ class ShmooTestHarness:
                             red=True)
                         artifact.status = TestStatus.FAIL_NO_BEL
                         ShmooTestHarness.log_test_result(test, artifact)
-                        results.add_result(cur_v, freq_hz, artifact)
+                        results.add_result(test, cur_v, freq_hz, artifact)
                         ser.close()
                         max_fail_check(artifact)
                         continue
 
                     ShmooTestHarness.log_as_chip(
                         f'Sent BEL (7) payload acknowledgment!')
-                        
-                    # Non-GPIO routine
-                    #while not ser.in_waiting:
-                    #    smu.write('smub.measure.v(smub.nvbuffer1)')
 
                     # Chip performs work. Host ignores any UART that is not ETB.
                     # Chip responds with ETB (23)
@@ -907,7 +1042,7 @@ class ShmooTestHarness:
                             red=True)
                         artifact.status = TestStatus.FAIL_NO_ETB
                         ShmooTestHarness.log_test_result(test, artifact)
-                        results.add_result(cur_v, freq_hz, artifact)
+                        results.add_result(test, cur_v, freq_hz, artifact)
                         ser.close()
                         max_fail_check(artifact)
                         continue
@@ -956,21 +1091,74 @@ class ShmooTestHarness:
 
                     # Generate and save a CSV of the SMU data.
                     csv_path = ShmooTestHarness.save_data_as_csv(
-                        smu_data, artifact.status, output_dir, test.id, cur_v, cur_clk)
+                        smu_data, artifact.status, results.output_dir,test.id,
+                        cur_v, cur_clk)
                     artifact.csv_path = csv_path
                     
                     # Output appropriate result to the log and keep track of
                     # the result in our results object.
                     ShmooTestHarness.log_test_result(test, artifact)
-                    results.add_result(cur_v, freq_hz, artifact)
+                    results.add_result(test, cur_v, freq_hz, artifact)
                     ser.close()
 
                     max_fail_check(artifact)
 
-        results.log_summary()
+        if use_smu:
+            ShmooTestHarness.make_shmoo_plot(results)
         return results
+    
+    def make_shmoo_plot(results: ShmooSuiteResults):
+        tests = {}
+        new_arr = lambda: np.zeros((len(results.voltage_range), len(results.freq_range)))
+        voltages_idxs = {v: i for i, v in enumerate(results.voltage_range)}
+        freq_idxs = {v: i for i, v in enumerate(results.freq_range)}
+
+        for res in results.results_list:
+            test, voltage, freq, artifact = res
+            if test not in tests:
+                tests[test] = new_arr()
+            tests[test][voltages_idxs[voltage], freq_idxs[freq]] = artifact.avg_power or 0
+        
+        for test in tests:
+            fig = plt.figure(figsize=(12, 8))
+            ax = plt.axes()
+            plt.xlabel('Frequency (MHz)')
+            plt.ylabel('Voltage (V)')
+            plt.title(f'Shmoo Plot - {test.name}')
+
+            # Colormap
+            colors1 = plt.cm.binary(120)
+            colors2 = plt.cm.plasma(np.linspace(0, 1, 128))
+
+            # Combine the sampled colors
+            colors = np.vstack((colors1, colors2))
+
+            # Create a new colormap
+            shmoo_cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+                "shmoo_cmap", colors)
+
+            plt.xticks(
+                np.arange(len(results.freq_range)),
+                [x // 1000000 for x in results.freq_range],
+                rotation=45)
+            plt.yticks(np.arange(len(results.voltage_range)), [str("%.2f"%x) for x in results.voltage_range])
+
+
+            im = plt.imshow(tests[test], cmap=shmoo_cmap,
+                            aspect='equal', origin='lower')
+            annotate_heatmap(im, valfmt="{x:.2f}", size=8)
+
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes("right", size="2%", pad=0.05)
+            cbar = plt.colorbar(im, cax=cax)
+            cbar.set_label('Power (W)', rotation=270)
+
+            plt.tight_layout()
+            imgpath = os.path.join(results.output_dir, f'test_{test.id}_plot.png')
+            plt.savefig(imgpath, dpi=600)
+            ShmooTestHarness.log_as_misc(f'Saved Shmoo plot for test ID {test.id} to {imgpath}')
 
 
 # Describe exports
 __all__ = ['SerialDebug', 'SMU', 'ShmooTest', 'ShmooConstantTest', 'TestSuite',
-           'ShmooTestHarness']
+           'ShmooTestHarness', 'ShmooSuiteResults']

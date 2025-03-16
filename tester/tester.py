@@ -33,6 +33,9 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--suite', help='Name of the test suite to run')
     parser.add_argument('-d', '--debug', action='store_true', help='Enables debugging mode to only mock run the test sending portion of a test suite')
     parser.add_argument('-l', '--list-suites', action='store_true', help='Ignore all other commands and print a list of test suites')
+    
+    parser.add_argument('-i', '--input', help='Path to an existing Shmoo test run to import for Shmoo plot generation. If specified, this will only generate a Shmoo plot from existing data and not run any tests.')
+
     parser.add_argument('--min-v', dest='min_v', type=float, default='0.85', help='Voltage lower bound')
     parser.add_argument('--max-v', dest='max_v', type=float, default='0.86', help='Voltage upper bound (exclusive)')
     parser.add_argument('--step-v', dest='step_v', type=float, default='0.05', help='Voltage step size')
@@ -58,6 +61,12 @@ if __name__ == '__main__':
         ShmooTestHarness.list_suites()
         exit()
 
+    if args.input:
+        # Shmoo plot only.
+        results = ShmooSuiteResults.load_from_run(args.input)
+        ShmooTestHarness.make_shmoo_plot(results)
+        exit()
+
     if not args.suite or len(args.suite) == 0:
         parser.print_help()
         exit()
@@ -74,6 +83,6 @@ if __name__ == '__main__':
         if not args.force and \
             not ShmooTestHarness.terminal_confirm_params(voltages, frequencies):
             exit()
-        ShmooTestHarness.run_suite(args.suite, voltages, frequencies,
+        results = ShmooTestHarness.run_suite(args.suite, voltages, frequencies,
                                    max_cmul_freq_fails=args.max_cmul_fail,
                                    use_smu=not args.no_smu)
