@@ -21,27 +21,28 @@
 */
 #include "main.h"
 #include <riscv_vector.h>
+#include "mtwister.h"
 
-uint32_t TEST_SIZE = 0x1000;
-void* srcbuf = 0xBFFE0000;
-void* dstbuf = 0xBFFF0000;
+uint32_t TEST_SIZE = 0x10000;
+volatile void* srcbuf = 0x8FFE0000;
+volatile void* dstbuf = 0x8FFF0000;
 
 typedef struct {
   uint64_t cycles;
   bool correct;
 } memcpy_result_t;
 
-void init_buffer(volatile uint32_t* buf, int size, int seed) {
-  srand(seed);
-  for (int i = 0; i < size; i++) {
-    buf[i] = rand();
+void init_buffer(volatile uint32_t* buf, uint32_t size, uint32_t seed) {
+  MTRand r = seedRand(seed);
+  for (int i = 0; i < size/8; i++) {
+    buf[i] = genRandLong(&r);
   }
 }
 
-bool check_buffer(volatile uint32_t* buf, int size, int seed) {
-  srand(seed);
-  for (int i = 0; i < size; i++) {
-    if(buf[i] != rand()) {
+bool check_buffer(volatile uint32_t* buf, uint32_t size, uint32_t seed) {
+  MTRand r = seedRand(seed);
+  for (int i = 0; i < size/8; i++) {
+    if(buf[i] != genRandLong(&r)) {
       return false;
     }
   }
@@ -58,21 +59,21 @@ void touch_buffer(volatile uint8_t* buf, int size) {
 void func_test(int seed) {
   memcpy_result_t result;
   uint64_t time;
-  init_buffer(srcbuf, TEST_SIZE/4, seed);
+  init_buffer(srcbuf, TEST_SIZE, seed);
   touch_buffer(dstbuf, TEST_SIZE);
 
   start_roi();
   result.cycles = 431987423;
   end_roi();
-  result.correct = check_buffer(srcbuf, TEST_SIZE/4, seed);
-   xmit_payload_packet(&result, 9);
+  result.correct = check_buffer(srcbuf, TEST_SIZE, seed);
+  xmit_payload_packet(&result, 9);
 
 }
 
 void cpu_memcpy(int seed) {
   memcpy_result_t result;
   uint64_t time;
-  init_buffer(srcbuf, TEST_SIZE/4, seed);
+  init_buffer(srcbuf, TEST_SIZE, seed);
   touch_buffer(dstbuf, TEST_SIZE);
 
   start_roi();
@@ -85,14 +86,14 @@ void cpu_memcpy(int seed) {
   }
   result.cycles = get_cycles() - time;
   end_roi();
-  result.correct = check_buffer(dstbuf, TEST_SIZE/4, seed);
-   xmit_payload_packet(&result, 9);
+  result.correct = check_buffer(dstbuf, TEST_SIZE, seed);
+  xmit_payload_packet(&result, 9);
 }
 
 void glibc_memcpy(int seed) {
   memcpy_result_t result;
   uint64_t time;
-  init_buffer(srcbuf, TEST_SIZE/4, seed);
+  init_buffer(srcbuf, TEST_SIZE, seed);
   touch_buffer(dstbuf, TEST_SIZE);
 
   start_roi();
@@ -100,19 +101,19 @@ void glibc_memcpy(int seed) {
   memcpy(dstbuf, srcbuf, TEST_SIZE);
   result.cycles = get_cycles() - time;
   end_roi();
-  result.correct = check_buffer(dstbuf, TEST_SIZE/4, seed);
-   xmit_payload_packet(&result, 9);
+  result.correct = check_buffer(dstbuf, TEST_SIZE, seed);
+  xmit_payload_packet(&result, 9);
 }
 
 void rvv_memcpy(int seed) {
   memcpy_result_t result;
   uint64_t time;
 
-  void* srcbuf_ptr = srcbuf;
-  void* dstbuf_ptr = dstbuf;
+  volatile void* srcbuf_ptr = srcbuf;
+  volatile void* dstbuf_ptr = dstbuf;
   uint32_t remaining = TEST_SIZE;
 
-  init_buffer(srcbuf, TEST_SIZE/4, seed);
+  init_buffer(srcbuf, TEST_SIZE, seed);
   touch_buffer(dstbuf, TEST_SIZE);
 
   start_roi();
@@ -127,25 +128,25 @@ void rvv_memcpy(int seed) {
   
   result.cycles = get_cycles() - time;
   end_roi();
-  result.correct = check_buffer(dstbuf, TEST_SIZE/4, seed);
-   xmit_payload_packet(&result, 9);
+  result.correct = check_buffer(dstbuf, TEST_SIZE, seed);
+  xmit_payload_packet(&result, 9);
 }
 
 void dma_memcpy(int seed) {
   memcpy_result_t result;
   uint64_t time;
-  init_buffer(srcbuf, TEST_SIZE/4, seed);
+  init_buffer(srcbuf, TEST_SIZE, seed);
   touch_buffer(dstbuf, TEST_SIZE);
 
   start_roi();
   time = get_cycles();
   enable_Crack();
-  set_DMAC(0, srcbuf, dstbuf, 64, 64, 1024, 3);
+  set_DMAC(0, srcbuf, dstbuf, 64, 64, TEST_SIZE/64, 6);
   start_DMA(0);
   while (*(volatile char*) (DMA_BASE+0x1) != 0);
   result.cycles = get_cycles() - time;
   end_roi();
-  result.correct = check_buffer(dstbuf, TEST_SIZE/4, seed);
+  result.correct = check_buffer(dstbuf, TEST_SIZE, seed);
   xmit_payload_packet(&result, 9);
 }
 /**

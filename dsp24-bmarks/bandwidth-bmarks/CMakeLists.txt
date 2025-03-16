@@ -5,6 +5,7 @@
 
 add_executable(membw-bmark
   src/main.c
+  src/mtwister.c
 )
 
 target_include_directories(membw-bmark PUBLIC include)
