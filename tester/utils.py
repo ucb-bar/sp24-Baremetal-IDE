@@ -14,6 +14,7 @@ from typing import *
 from matplotlib import pyplot as plt
 import matplotlib
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from openocd.tclrpc import TclException
 from typing_extensions import Self
 from collections import OrderedDict, defaultdict, deque
 
@@ -90,7 +91,7 @@ class SMU:
     Identification string to check for valid equipment setup.
     """
     
-    INIT_CURRENT_LIMIT = "500e-3"
+    INIT_CURRENT_LIMIT = "3"
     """
     Defines the default current limit for the SourceMeter.
     """
@@ -506,7 +507,7 @@ class TestArtifact:
 
     def __init__(self, status: TestStatus=None, context=None, host_payload=None,
                  chip_payload=None, check_data=None, csv_path=None,
-                 avg_power=None, energy=None):
+                 avg_power=None, energy=None, has_smu=None):
         self.status = status
         self.context = context
         self.host_payload = host_payload
@@ -515,6 +516,7 @@ class TestArtifact:
         self.avg_power = avg_power
         self.energy = energy
         self.csv_path = csv_path
+        self.has_smu = has_smu
 
     def __str__(self):
         return '\t'.join([
@@ -566,7 +568,8 @@ class ShmooSuiteResults:
         if not self.readonly:
             with open(self.result_path, 'a', encoding='utf-8') as f:
                 f.write('\t'.join(
-                    [str(test.name), str(test.id), float_to_str(voltage), str(freq), str(artifact)]) + '\n')
+                    [self.suite.name, test.name, str(test.id),
+                     float_to_str(voltage), str(freq), str(artifact)]) + '\n')
             
     @staticmethod
     def load_from_run(path: str):
@@ -611,12 +614,16 @@ class ShmooSuiteResults:
 
                 if os.path.exists(artifact.csv_path):
                     dat = np.genfromtxt(artifact.csv_path, delimiter=',').T
-                    powers = np.multiply(dat[0], dat[2])
-                    dt = np.diff(dat[1])
-                    energy = np.sum(np.multiply(powers[:-1], dt)) 
-                    avg_power = energy / dat[1][-1]
-                    artifact.avg_power = avg_power
-                    artifact.energy = energy
+                    if dat.size > 0:
+                        powers = np.multiply(dat[0], dat[2])
+                        dt = np.diff(dat[1])
+                        energy = np.sum(np.multiply(powers[:-1], dt)) 
+                        avg_power = energy / dat[1][-1]
+                        artifact.avg_power = avg_power
+                        artifact.energy = energy
+                        artifact.has_smu = True
+                else:
+                    artifact.has_smu = False
 
                 res.add_result(suite.tests[testid], voltage, freq, artifact)
             
@@ -814,59 +821,68 @@ class ShmooTestHarness:
         """
         
         # Reset the chip.
-        devices = UsbTools.build_dev_strings('ftdi', Ftdi.VENDOR_IDS, Ftdi.PRODUCT_IDS, Ftdi.list_devices())
-        if not devices:
-            raise Exception("No FTDI device found.")
-        LOGGER.debug('Available FTDI Devices: %s', str(devices))
-        for device in [d for d in devices if d[0].endswith('/1')]:
-            gcont = GpioMpsseController()
-            gcont.configure(device[0], direction=0x0100, frequency=10e6)
-            port = gcont.get_gpio()
-            LOGGER.debug(f"Resetting FTDI device {device}")
-            port.write(0x00)
-            sleep(.3)
-            while gcont.is_connected:
-                gcont.close()
+        success = False
+        while not success:
+            devices = UsbTools.build_dev_strings('ftdi', Ftdi.VENDOR_IDS, Ftdi.PRODUCT_IDS, Ftdi.list_devices())
+            if not devices:
+                raise Exception("No FTDI device found.")
+            LOGGER.debug('Available FTDI Devices: %s', str(devices))
+            for device in [d for d in devices if d[0].endswith('/1')]:
+                gcont = GpioMpsseController()
+                gcont.configure(device[0], direction=0x0100, frequency=10e6)
+                port = gcont.get_gpio()
+                LOGGER.debug(f"Resetting FTDI device {device}")
+                port.write(0x00)
+                sleep(.3)
+                while gcont.is_connected:
+                    gcont.close()
+
+            # Attempt to launch OpenOCD subprocess
+        
+            ocd_proc = None
+            while not ocd_proc:
+                openocd_args = shlex.split("openocd -f ./platform/dsp24/dsp24.cfg")
+                ocd_proc = subprocess.Popen(openocd_args, cwd=os.getcwd(),
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.STDOUT,
+                                            text=True)
+                sleep(0.5)
+                while ocd_proc:
+                    line = ocd_proc.stdout.readline()
+                    if not line:
+                        ShmooTestHarness.kill_process_with_fire(ocd_proc)
+                        ocd_proc = None
+                    if line.startswith('Info : TAP riscv.cpu does not have valid IDCODE (idcode=0x0)') \
+                        or line.startswith('Error:'):
+                        ShmooTestHarness.log_as_misc(
+                            "OpenOCD failed to launch. Retrying.")
+                        ShmooTestHarness.kill_process_with_fire(ocd_proc)
+                        ocd_proc = None
+                    elif 'Examination succeed' in line:
+                        break
             
+            ShmooTestHarness.log_as_misc(
+                "OpenOCD successfully connected to JTAG controller.")
 
-        # Attempt to launch OpenOCD subprocess
-        ocd_proc = None
-        while not ocd_proc:
-            openocd_args = shlex.split("openocd -f ./platform/dsp24/dsp24.cfg")
-            ocd_proc = subprocess.Popen(openocd_args, cwd=os.getcwd(),
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT,
-                                        text=True)
-            sleep(0.5)
-            while ocd_proc:
-                line = ocd_proc.stdout.readline()
-                if not line:
+            # Connect to OpenOCD via TCL
+            with OpenOcdTclRpc() as openocd:
+                # Run the program
+                try:
+                    openocd.run(f'load_image {elf} 0x0 elf')
+                    openocd.run('resume 0x80000000')
+                    success = True
+                except TclException:
+                    # The chip has not started up fast enough. Try again.
+                    ShmooTestHarness.log_as_misc('Failed to program the chip. It is likely that you need to reset/re-program the FPGA. Trying again...')
                     ShmooTestHarness.kill_process_with_fire(ocd_proc)
-                    ocd_proc = None
-                if line.startswith('Info : TAP riscv.cpu does not have valid IDCODE (idcode=0x0)') \
-                    or line.startswith('Error:'):
-                    ShmooTestHarness.log_as_misc(
-                        "OpenOCD failed to launch. Retrying.")
-                    ShmooTestHarness.kill_process_with_fire(ocd_proc)
-                    ocd_proc = None
-                elif 'Examination succeed' in line:
-                    break
-        
-        ShmooTestHarness.log_as_misc(
-            "OpenOCD successfully connected to JTAG controller.")
+                    continue
 
-        # Connect to OpenOCD via TCL
-        with OpenOcdTclRpc() as openocd:
-            # Run the program
-            openocd.run(f'load_image {elf} 0x0 elf')
-            openocd.run('resume 0x80000000')
+            ShmooTestHarness.log_as_misc(f"Uploaded program {elf} via OpenOCD.")
 
-        ShmooTestHarness.log_as_misc(f"Uploaded program {elf} via OpenOCD.")
-
-        # Try with all our might to kill OpenOCD
-        ShmooTestHarness.kill_process_with_fire(ocd_proc)
-        
-        ShmooTestHarness.log_as_misc("Killed OpenOCD process.")
+            # Try with all our might to kill OpenOCD
+            ShmooTestHarness.kill_process_with_fire(ocd_proc)
+            
+            ShmooTestHarness.log_as_misc("Killed OpenOCD process.")
 
     @staticmethod
     def save_data_as_csv(data: np.ndarray, status: TestStatus, dir: str,
@@ -1054,7 +1070,7 @@ class ShmooTestHarness:
                     ShmooTestHarness.log_as_host(
                         f'Awaiting chip payload packet size...')
                     payload_size_bytes = ser.read(4)
-                    payload_size = struct.unpack('<i', payload_size_bytes)[0]
+                    payload_size = struct.unpack('<I', payload_size_bytes)[0]
                     ShmooTestHarness.log_as_chip(
                         f'Payload packet size is {payload_size} ({payload_size_bytes})')
 
@@ -1072,6 +1088,7 @@ class ShmooTestHarness:
 
                     # Check the output against the ShmooTest function.
                     smu_data = smu.retrieve_buffer(1)
+                    artifact.has_smu = use_smu
                     if not isinstance(smu_data, np.ndarray):
                         ShmooTestHarness.log_as_misc(
                             f'SMU buffer reading failed. Retrying test with {cur_clk}.')
@@ -1090,10 +1107,11 @@ class ShmooTestHarness:
                     LOGGER.debug(f'[SMU Buffer Output] {smu_data}')
 
                     # Generate and save a CSV of the SMU data.
-                    csv_path = ShmooTestHarness.save_data_as_csv(
-                        smu_data, artifact.status, results.output_dir,test.id,
-                        cur_v, cur_clk)
-                    artifact.csv_path = csv_path
+                    if use_smu:
+                        csv_path = ShmooTestHarness.save_data_as_csv(
+                            smu_data, artifact.status, results.output_dir,test.id,
+                            cur_v, cur_clk)
+                        artifact.csv_path = csv_path
                     
                     # Output appropriate result to the log and keep track of
                     # the result in our results object.
@@ -1103,8 +1121,7 @@ class ShmooTestHarness:
 
                     max_fail_check(artifact)
 
-        if use_smu:
-            ShmooTestHarness.make_shmoo_plot(results)
+        ShmooTestHarness.make_shmoo_plot(results)
         return results
     
     def make_shmoo_plot(results: ShmooSuiteResults):
@@ -1112,12 +1129,20 @@ class ShmooTestHarness:
         new_arr = lambda: np.zeros((len(results.voltage_range), len(results.freq_range)))
         voltages_idxs = {v: i for i, v in enumerate(results.voltage_range)}
         freq_idxs = {v: i for i, v in enumerate(results.freq_range)}
+        display_numbers = True
 
         for res in results.results_list:
             test, voltage, freq, artifact = res
             if test not in tests:
                 tests[test] = new_arr()
-            tests[test][voltages_idxs[voltage], freq_idxs[freq]] = artifact.avg_power or 0
+
+            value = 0
+            if artifact.has_smu:
+                value = artifact.avg_power
+            else:
+                display_numbers = False
+                value = 1 if artifact.status == TestStatus.PASS else 0
+            tests[test][voltages_idxs[voltage], freq_idxs[freq]] = value
         
         for test in tests:
             fig = plt.figure(figsize=(12, 8))
@@ -1146,12 +1171,13 @@ class ShmooTestHarness:
 
             im = plt.imshow(tests[test], cmap=shmoo_cmap,
                             aspect='equal', origin='lower')
-            annotate_heatmap(im, valfmt="{x:.2f}", size=8)
 
-            divider = make_axes_locatable(ax)
-            cax = divider.append_axes("right", size="2%", pad=0.05)
-            cbar = plt.colorbar(im, cax=cax)
-            cbar.set_label('Power (W)', rotation=270)
+            if display_numbers:
+                annotate_heatmap(im, valfmt="{x:.2f}", size=8)
+                divider = make_axes_locatable(ax)
+                cax = divider.append_axes("right", size="2%", pad=0.05)
+                cbar = plt.colorbar(im, cax=cax)
+                cbar.set_label('Power (W)', rotation=270)
 
             plt.tight_layout()
             imgpath = os.path.join(results.output_dir, f'test_{test.id}_plot.png')

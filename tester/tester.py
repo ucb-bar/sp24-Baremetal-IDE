@@ -42,7 +42,7 @@ if __name__ == '__main__':
     parser.add_argument('--min-freq', dest='min_freq', type=int, default=100, help='Frequency lower bound (in MHz)')
     parser.add_argument('--max-freq', dest='max_freq', type=int, default=151, help='Frequency upper bound (in MHz, exclusive)')
     parser.add_argument('--step-freq', dest='step_freq', type=int, default=50, help='Frequency step size (in MHz)')
-    parser.add_argument("--max-cmul-fail", dest="max_cmul_fail", default=1,
+    parser.add_argument("--max-cmul-fail", dest="max_cmul_fail", type=int, default=1,
         help="Maximum number of cumulative failures until the tester changes to a new voltage."
     )
     parser.add_argument('-f', '--force', action='store_true', default=None, help='Force start without a confirmation of limits.')
