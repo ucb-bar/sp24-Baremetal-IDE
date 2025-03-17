@@ -139,6 +139,8 @@ add_executable(app
   app/src/iconv2d_3x3.c
   app/src/iconv2d_5x5.c
   app/src/iconv2d_7x7.c
+  app/src/imatmul.c
+  app/src/vec_imatmul_dataset.S
 )
 
 target_include_directories(app PUBLIC app/include)
