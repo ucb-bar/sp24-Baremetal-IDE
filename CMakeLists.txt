@@ -131,6 +131,14 @@ endif()
 
 add_executable(app
   app/src/main.c
+  app/src/vec_dotprod_dataset.S
+  app/src/dot_product.c
+  app/src/vec_iconv2d_3x3_dataset.S
+  app/src/vec_iconv2d_5x5_dataset.S
+  app/src/vec_iconv2d_7x7_dataset.S
+  app/src/iconv2d_3x3.c
+  app/src/iconv2d_5x5.c
+  app/src/iconv2d_7x7.c
 )
 
 target_include_directories(app PUBLIC app/include)
