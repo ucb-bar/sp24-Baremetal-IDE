@@ -1,7 +1,7 @@
 """
 Shmoo testing utilities for use with plugins.
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import enum
 import os
@@ -81,17 +81,17 @@ class SerialDebug(serial.Serial):
         super().close()
 
 
-class SMU:
+class PSU:
     """
-    Wrapper class for all PyVisa SMU commands and data acquisition management.
+    Wrapper class for all PyVisa PSU commands and data acquisition management.
     """
 
-    SMU_IDN = 'Keithley Instruments Inc., Model 2602A'
+    IDN = 'Keysight Technologies,E36312A,MY57010726,1.0.4-1.0.0-1.04'
     """
     Identification string to check for valid equipment setup.
     """
     
-    INIT_CURRENT_LIMIT = "3"
+    INIT_CURRENT_LIMIT = "2"
     """
     Defines the default current limit for the SourceMeter.
     """
@@ -101,21 +101,21 @@ class SMU:
     Defines the default voltage limit for the SourceMeter.
     """
 
-    VISA_PATH = 'TCPIP::169.254.58.10::gpib0,13::INSTR'
+    VISA_PATH = 'TCPIP::169.254.201.77::lan0::INSTR'
     """
     Defines the default path to use for communication with the SourceMeter.
     """
 
     DUMMMY_LOG_PREFIX = f'{Fore.LIGHTBLUE_EX}{Style.BRIGHT}[Dummy SMU]{Style.RESET_ALL}'
-    
+
     def __init__(self, dummy=False):
         """
-        SMU Initialization
+        PSU Initialization
 
         Args:
-            dummy (bool, optional): Whether to create a fake simulation SMU to
-                test the command flow. This will cause all `SMU.write` commands
-                to be output to the log rather than over LAN. Any `SMU.query`
+            dummy (bool, optional): Whether to create a fake simulation PSU to
+                test the command flow. This will cause all `PSU.write` commands
+                to be output to the log rather than over LAN. Any `PSU.query`
                 commands will return an empty string. Defaults to False.
 
         Raises:
@@ -123,24 +123,21 @@ class SMU:
         """
         self.dummy = dummy
         if self.dummy:
-            self.dummy_log('Dummy SMU has been created.')
+            self.dummy_log('Dummy PSU has been created.')
             return
         
         self.rm = pyvisa.ResourceManager("@py")
-        self._smu = self.rm.open_resource(self.VISA_PATH)
+        self._psu = self.rm.open_resource(self.VISA_PATH)
 
         # Verify that we have the correct equipment
-        smu_verification = self.query("*IDN?")
-        LOGGER.debug(f'SourceMeter: {smu_verification}')
+        verification = self.query("*IDN?")
+        LOGGER.debug(f'Found equipment with IDN: {verification}')
 
-        if not smu_verification.startswith(self.SMU_IDN):
-            raise Exception(f'Attempt to connect to `{self.SMU_IDN}` at {self.VISA_PATH} failed, IDN returned `{smu_verification}` instead.')
+        if not verification.startswith(self.IDN):
+            raise Exception(f'Attempt to connect to `{self.IDN}` at {self.VISA_PATH} failed, IDN returned `{verification}` instead.')
 
         # Reset with our defaults
         self.reset()
-
-    def dummy_log(self, val):
-        LOGGER.info(f'{self.DUMMMY_LOG_PREFIX} {val}')
 
     def query(self, querystr: str) -> str:
         """
@@ -157,11 +154,11 @@ class SMU:
             self.dummy_log(f'QUERY: {querystr}')
 
             if querystr == "*IDN?":
-                return self.SMU_IDN
+                return self.IDN
 
             return ""
         else:
-            return self._smu.query(querystr)
+            return self._psu.query(querystr)
 
     def write(self, cmdstr: str) -> str:
         """
@@ -177,209 +174,45 @@ class SMU:
             self.dummy_log(f'QUERY: {cmdstr}')
             return ""
         else:
-            return self._smu.write(cmdstr)
+            return self._psu.write(cmdstr)
         
-    def set_timeout(self, timeout: int):
+    def enable(self, channel=1):
         """
-        Sets a command timeout for a query response from the SMU.
-
-        Args:
-            timeout (int): Millisecond timeout duration
+        Enables PSU output on a specific channel.
         """
-        if self.dummy:
-            self.dummy_log(f'Host<-->SMU timeout set to {timeout} ms')
-        else:
-            self._smu.timeout = timeout
+        self.write(f'OUTP ON,(@{channel})')
 
-    def get_timeout(self):
+    def disable(self, channel=1):
         """
-        Gets a command timeout for a query response from the SMU.
+        Disables PSU output on a specific channel.
         """
-        if self.dummy:
-            return 5000
-        else:
-            return self._smu.timeout
-
-
-    def set_voltage_limit(self, voltage: Union[str, int, float]):
-        """
-        Sets a voltage limit for the SMU over GPIB.
-
-        Args:
-            voltage (Union[str, int, float]): The voltage limit (V) to set for
-                the SMU.
-        """
-        self.write("smub.source.func = smub.OUTPUT_DCVOLTS")
-        # smu.write("smub.source.autorangev = smub.AUTORANGE_ON")
-        self.write(f"smub.source.limitv = {voltage}")
-        self.write(f"smub.source.levelv = {voltage}")
-        self.write(f"smub.source.rangev = {voltage}")
-
-    def set_current_limit(self, current: Union[str, int, float]):
-        """
-        Sets a current limit for the SMU over GPIB.
-
-        Args:
-            current (Union[str, int, float]): The current limit (A) to set for
-                the SMU.
-        """
-        self.write(f"smub.measure.rangei = {current}")
-        self.write(f"smub.source.limiti = {current}")
-
-    def clear_buffers(self, src_vals=True, timestamps=True, append=True):
-        """
-        Clear SMU buffers and set data collection settings.
-
-        Args:
-            idx (int): 1 or 2 depending on the buffer to clear.
-            src_vals (bool, optional): Whether to collect source values in the
-                buffer during a measurement. Defaults to True.
-            timestamps (bool, optional): Whether to collect timestamps during a
-                measurement. Defaults to True.
-            append (bool, optional): Whether to append or overwrite the buffer
-                upon new measurements. Defaults to True.
-        """
-        src_vals = '1' if src_vals else '0'
-        timestamps = '1' if timestamps else '0'
-        append = '1' if append else '0'
-        self.write(f"smub.nvbuffer1.clear()")
-        self.write(f"smub.nvbuffer1.collectsourcevalues = {src_vals}")
-        self.write(f"smub.nvbuffer1.collecttimestamps = {timestamps}")
-        self.write(f"smub.nvbuffer1.appendmode = {append}")
-        self.write(f"smub.nvbuffer2.clear()")
-        self.write(f"smub.nvbuffer2.collectsourcevalues = {src_vals}")
-        self.write(f"smub.nvbuffer2.collecttimestamps = {timestamps}")
-        self.write(f"smub.nvbuffer2.appendmode = {append}")
-
-    def set_nplc(self, nplc: Union[str, int, float]):
-        """
-        Sets the integration aperture for SMU measurements.
-        
-        This setting controls the integration aperture for the integrating
-        analog-to-digital converter (ADC). The integration aperture is based on
-        the number of power line cycles (NPLC), where 1 PLC for 60 Hz is 16.67 ms
-        (1/60) and 1 PLC for 50 Hz is 20 ms (1/50).
-
-        For example, 0.5 sets the integration time for SMU channel B to 0.5/60
-        seconds.
-
-        Args:
-            nplc (Union[str, int, float]): Integration aperture [0.001, 25]
-        """
-        self.write(f"smub.measure.nplc = {nplc}")
-
-    def reset(self, reset_buffers=True):
-        """
-        Resets the SMU to default settings.
-
-        Args:
-            reset_buffers (bool, optional): If true, resets both data capture
-                buffers. Defaults to True.
-        """
-        # Initialize SMU
-        self.write("smub.reset()")
-        self.set_current_limit(self.INIT_CURRENT_LIMIT)
-        self.set_voltage_limit(self.INIT_VOLTAGE_LIMIT)
-
-        # Clear and reset buffers
-        if reset_buffers:
-            self.clear_buffers()
-
-        # Capture count / integration aperture
-        self.write("smub.measure.count = 1")
-        self.set_nplc('0.1')
-        self.enable()
-
-    def start_continuous_capture(self, gpio: Union[int, str], buffer_idx: int,
-                                 timeout: int, voltage: float, freq: float):
-        """
-        Performs a GPIO-interrupted continuous capture routine on the SMU
-        through a looping routine running on the SMU itself. Once the GPIO pin
-        specified goes high, the routine stops. This command is non-blocking,
-        and a subsequent `retrieve_buffer()` call should be made to acquire the
-        data from this capture session.
-
-        This function does not assume that buffers are set to `append` mode. It
-        is advised to clear the buffers outside of a testing context prior to
-        calling this function.
-
-        Args:
-            gpio (Union[int, str]): The index of the GPIO bit to poll. This bit
-                should be held low for the duration of the test, then pulled
-                high when finished.
-            buffer_idx (int): 1 or 2 to specify the buffer index to use for
-                data capture.
-            timeout (int): Timeout (in seconds) for when the program assumes
-                chip failure and quits.
-        """
-        timeout_str = str(timeout)
-        gpib_cmd = f'''
-        errorqueue.clear()
-        display.clear()
-        display.setcursor(1, 1)
-        display.settext("Waiting..")
-        display.setcursor(2, 1)
-        display.settext("LimV: {float_to_str(voltage)} V | Freq: {freq} MHz")
-        start_time = os.clock()
-        end_time = start_time + {timeout_str}
-        while (digio.readbit({gpio}) == 1.00000e+00 and os.clock() < end_time) do  end
-        display.setcursor(1, 1)
-        display.settext("Measuring")
-        while (digio.readbit({gpio}) == 0.00000e+00 and os.clock() < end_time) do smub.measure.overlappediv(smub.nvbuffer1, smub.nvbuffer2) waitcomplete() end
-        display.clear()
-        display.setcursor(1, 1)
-        display.settext("Done!")
-        display.setcursor(2, 1)
-        display.settext("LimV: {float_to_str(voltage)} V | Freq: {freq} MHz")'''
-        self.write(f"display.screen = display.USER")
-        self.write('display.clear()')
-        self.write(gpib_cmd)
-        
-
-    def retrieve_buffer(self, idx: int) -> np.ndarray:
-        """
-        Retrieves content from a data capture buffer on the SMU.
-
-        Content is ordered as follows:
-        ```
-        meas1, timstamp1, srcval1
-        ```
-
-        Args:
-            idx (int): 1 or 2 depending on the buffer you wish to read from.
-            
-        Returns:
-            str: Buffer contents
-        """
-        if self.dummy:
-            return np.array([])
-
-        old_timeout = self.get_timeout()
-        self.set_timeout(5000)
-        try:
-            values_i = self.query('printbuffer(1, smub.nvbuffer1.n, smub.nvbuffer1)')
-            values_v = self.query('printbuffer(1, smub.nvbuffer2.n, smub.nvbuffer2, smub.nvbuffer1.timestamps)')
-        except Exception:
-            return None
-        
-        data_v = np.fromstring(values_v, dtype=float, sep=",").reshape((-1, 2))
-        data_i = np.fromstring(values_i, dtype=float, sep=",")
-        data = np.column_stack((data_v, data_i))
-        self.set_timeout(old_timeout)
-
-        return data
+        self.write(f'OUTP OFF,(@{channel})')
     
-    def enable(self):
+    def reset(self):
+        self.set_limits(1, self.INIT_VOLTAGE_LIMIT, self.INIT_CURRENT_LIMIT)
+        self.enable()
+    
+    def set_limits(self, channel, voltage: Union[str, int, float] = None,
+                   current: Union[str, int, float] = None):
         """
-        Enables SMU output on channel B.
-        """
-        self.write('smub.source.output = smub.OUTPUT_ON')
+        Assigns limit values to a certain channel on the PSU.
 
-    def disable(self):
+        Args:
+            channel (int): Channel number to apply limits to.
+            voltage (Union[str, int, float]): Voltage limit (i.e. `0.85`)
+            current (Union[str, int, float]): Current limit (i.e. `2`)
         """
-        Disables SMU output on channel B.
-        """
-        self.write('smub.source.output = smub.OUTPUT_OFF')
+        if voltage is None:
+            voltage = self.INIT_VOLTAGE_LIMIT
+        if current is None:
+            current = self.INIT_CURRENT_LIMIT
+
+        if isinstance(voltage, float):
+            voltage = float_to_str(voltage)
+        if isinstance(current, float):
+            current = float_to_str(voltage)
+
+        self.write(f'APPL Ch{channel}, {voltage}, {current}')
 
 
 class ShmooTest:
@@ -507,7 +340,7 @@ class TestArtifact:
 
     def __init__(self, status: TestStatus=None, context=None, host_payload=None,
                  chip_payload=None, check_data=None, csv_path=None,
-                 avg_power=None, energy=None, has_smu=None):
+                 avg_power=None, energy=None, has_measurements=None):
         self.status = status
         self.context = context
         self.host_payload = host_payload
@@ -516,7 +349,7 @@ class TestArtifact:
         self.avg_power = avg_power
         self.energy = energy
         self.csv_path = csv_path
-        self.has_smu = has_smu
+        self.has_measurements = has_measurements
 
     def __str__(self):
         return '\t'.join([
@@ -621,9 +454,9 @@ class ShmooSuiteResults:
                         avg_power = energy / dat[1][-1]
                         artifact.avg_power = avg_power
                         artifact.energy = energy
-                        artifact.has_smu = True
+                        artifact.has_measurements = True
                 else:
-                    artifact.has_smu = False
+                    artifact.has_measurements = False
 
                 res.add_result(suite.tests[testid], voltage, freq, artifact)
             
@@ -846,9 +679,9 @@ class ShmooTestHarness:
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.STDOUT,
                                             text=True)
-                sleep(0.5)
                 while ocd_proc:
                     line = ocd_proc.stdout.readline()
+                    LOGGER.debug(f'[OpenOCD] {line}')
                     if not line:
                         ShmooTestHarness.kill_process_with_fire(ocd_proc)
                         ocd_proc = None
@@ -858,7 +691,7 @@ class ShmooTestHarness:
                             "OpenOCD failed to launch. Retrying.")
                         ShmooTestHarness.kill_process_with_fire(ocd_proc)
                         ocd_proc = None
-                    elif 'Examination succeed' in line:
+                    elif 'Info : Listening on port 4444 for telnet connections' in line:
                         break
             
             ShmooTestHarness.log_as_misc(
@@ -868,6 +701,8 @@ class ShmooTestHarness:
             with OpenOcdTclRpc() as openocd:
                 # Run the program
                 try:
+                    if not os.path.exists(elf):
+                        raise Exception(f'Unable to find a binary file at "{elf}".')
                     openocd.run(f'load_image {elf} 0x0 elf')
                     openocd.run('resume 0x80000000')
                     success = True
@@ -895,12 +730,14 @@ class ShmooTestHarness:
             str: Path to the created output file.
         """
         filename = f'{dir}/test_{testid}_{float_to_str(voltage)}v_{freq}MHz.csv'
+        if not isinstance(data, np.ndarray): 
+            data = np.array(data).astype(float)
         np.savetxt(filename, data, delimiter=",")
         return filename
 
     @staticmethod
     def run_suite(suite_name: str, voltages: list, frequencies: list,
-                  max_cmul_freq_fails: int = 1, use_smu: bool = True
+                  max_cmul_freq_fails: int = 1, use_equipment: bool = True
                   )-> ShmooSuiteResults:
         """
         Runs a test with the full flow, along with serial instantiation, for
@@ -919,7 +756,7 @@ class ShmooTestHarness:
         LOGGER.info(f'{Style.BRIGHT}{Fore.YELLOW}--- Starting enumeration for test suite "{suite_name}" ---{Style.RESET_ALL}')
         
         ### Hardware Initialization ###
-        smu = SMU(dummy=not use_smu)
+        psu = PSU(dummy=not use_equipment)
         
         # Retrieve the correct test suite to run.
         suite = ShmooTestHarness.TEST_SUITES[suite_name]
@@ -972,7 +809,8 @@ class ShmooTestHarness:
 
                     ### Serial Port Evaluation / FTDI Reset / SMU Setup ###
                     
-                    smu.set_voltage_limit(str(cur_v))
+                    # Set PSU Limits to 2A, variable voltage based on sweep.
+                    psu.set_limits(1, voltage=cur_v)
                     
                     ShmooTestHarness.reset_and_program_elf(suite.elf)
 
@@ -982,16 +820,8 @@ class ShmooTestHarness:
                     if not ser:
                         raise Exception('Unable to establish a UART serial connection handshake.')
 
-                    # SMU Setup
-                    smu.clear_buffers(append=True)
-                    smu.write(f"smub.measure.count = 1")
-                    smu.set_nplc('0.1')
-
                     ser.flushInput()
                     ser.flushOutput()
-
-                    smu.start_continuous_capture(gpio='1', buffer_idx=1, timeout=test.timeout,
-                                                 voltage=cur_v, freq=cur_clk)
                     
                     ### Begin Host<-->Chip Communication ###
 
@@ -1028,7 +858,7 @@ class ShmooTestHarness:
                     # Chip responds with BEL (7)
                     ShmooTestHarness.log_as_host(
                         f'Waiting for BEL (7, 0x07) payload acknowledgment...')
-                    
+
                     ser_data = ser.read_until(b'\x07')
                     if not ser_data:
                         # Timeout occurred, treat as chip fail
@@ -1044,13 +874,32 @@ class ShmooTestHarness:
 
                     ShmooTestHarness.log_as_chip(
                         f'Sent BEL (7) payload acknowledgment!')
-
-                    # Chip performs work. Host ignores any UART that is not ETB.
-                    # Chip responds with ETB (23)
+                    
                     ShmooTestHarness.log_as_host(
                         f'Waiting for ETB (23, 0x17) test completion acknowledgment...')
-                    
-                    etb_data = ser.read_until(b'\x17')
+
+                    # Chip performs work. Host ignores any UART that is not ETB.
+                    meas_v = []
+                    meas_i = []
+                    done = False
+                    etb_data = None
+                    timeout_time = datetime.now() + timedelta(seconds=test.timeout)
+                    while not done and datetime.now() <= timeout_time:
+                        while not ser.in_waiting and datetime.now() <= timeout_time:
+                            meas_v.append(psu.query("MEAS:VOLT?"))
+                            meas_i.append(psu.query("MEAS:CURR?"))
+
+                        # If we still don't have UART data, then test timed out.
+                        if not ser.in_waiting:
+                            break
+
+                        while ser.in_waiting:
+                            etb_data = ser.read()
+                            if etb_data == b'\x17':
+                                done = True
+                                break
+
+                    # Chip responds with ETB (23)
                     if not etb_data:
                         # Timeout occurred, treat as chip fail
                         ShmooTestHarness.log_as_chip(
@@ -1087,13 +936,7 @@ class ShmooTestHarness:
                     ### Post-Processing ###
 
                     # Check the output against the ShmooTest function.
-                    smu_data = smu.retrieve_buffer(1)
-                    artifact.has_smu = use_smu
-                    if not isinstance(smu_data, np.ndarray):
-                        ShmooTestHarness.log_as_misc(
-                            f'SMU buffer reading failed. Retrying test with {cur_clk}.')
-                        pending_freqs_stack.appendleft(cur_clk)
-                        continue
+                    artifact.has_measurements = use_equipment
 
                     passed, check_data = test.check_output(context, chip_payload)
                     if passed:
@@ -1103,13 +946,13 @@ class ShmooTestHarness:
                     artifact.check_data = check_data
                     
                     # Parse the data from the SMU and form it into a matrix.
-                    
-                    LOGGER.debug(f'[SMU Buffer Output] {smu_data}')
+                    measurements = np.array((meas_v, meas_i)).as_type(float)
+                    LOGGER.debug(f'[PSU Measurement Buffer Content] {measurements}')
 
                     # Generate and save a CSV of the SMU data.
-                    if use_smu:
+                    if use_equipment:
                         csv_path = ShmooTestHarness.save_data_as_csv(
-                            smu_data, artifact.status, results.output_dir,test.id,
+                            measurements, artifact.status, results.output_dir,test.id,
                             cur_v, cur_clk)
                         artifact.csv_path = csv_path
                     
@@ -1137,7 +980,7 @@ class ShmooTestHarness:
                 tests[test] = new_arr()
 
             value = 0
-            if artifact.has_smu:
+            if artifact.has_measurements:
                 value = artifact.avg_power
             else:
                 display_numbers = False
@@ -1186,5 +1029,5 @@ class ShmooTestHarness:
 
 
 # Describe exports
-__all__ = ['SerialDebug', 'SMU', 'ShmooTest', 'ShmooConstantTest', 'TestSuite',
+__all__ = ['SerialDebug', 'ShmooTest', 'ShmooConstantTest', 'TestSuite',
            'ShmooTestHarness', 'ShmooSuiteResults']

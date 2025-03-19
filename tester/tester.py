@@ -46,7 +46,7 @@ if __name__ == '__main__':
         help="Maximum number of cumulative failures until the tester changes to a new voltage."
     )
     parser.add_argument('-f', '--force', action='store_true', default=None, help='Force start without a confirmation of limits.')
-    parser.add_argument('--no-smu', action='store_true', default=None, help='Initialize a dummy software-side SMU to test SMU commands without equipment access. Note that power measurements cannot be made if this setting is enabled.')
+    parser.add_argument('--no-equipment', action='store_true', default=None, help='Initialize a dummy software-side PSU to test PSU commands without equipment access. Note that voltage and current measurements cannot be made if this setting is enabled.')
     parser.add_argument("--log", dest="log_level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="INFO",
@@ -85,4 +85,4 @@ if __name__ == '__main__':
             exit()
         results = ShmooTestHarness.run_suite(args.suite, voltages, frequencies,
                                    max_cmul_freq_fails=args.max_cmul_fail,
-                                   use_smu=not args.no_smu)
+                                   use_equipment=not args.no_equipment)
