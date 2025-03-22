@@ -25,8 +25,10 @@
 
 #include "kiss_fft.h"
 #define DMA_ADDR1 0x87000000L
-#define INPUT_ADDR1 0x87000000L // 0x08000000U
-
+#define INPUT_ADDR1 0x08000000U // 0x87000000L // 0x08000000U in shazam code
+#define NFFT 128 // FFT length for all
+#define TEST_FREQ 880.0 // In Hz
+#define RM_IMAG 1 // Remove imaginary for easier output parsing
 
 // WAV file header structure
 struct WAVHeader {
@@ -86,7 +88,7 @@ void app_init() {
 }
 
 void app_main(uint32_t* data) {
-  uint64_t mhartid = READ_CSR("mhartid");
+    uint64_t mhartid = READ_CSR("mhartid");
 
     printf("\r\n[STARTING TEST]\r\n");
 
@@ -98,7 +100,7 @@ void app_main(uint32_t* data) {
     reset_DMA();
     enable_Crack();
 
-    write_fft_dma(1, 128, data);
+    write_fft_dma(1, NFFT, data);
     uint64_t start_time = READ_CSR("mcycle");
     uint64_t start_instructions = READ_CSR("minstret");
 
@@ -107,7 +109,7 @@ void app_main(uint32_t* data) {
         printf("pain:%d, %d \r\n", fft_busy(), fft_count_left());
     }; // This is needed since fft is blocking and is not a very good block
 
-    read_fft_dma(1, 128, INPUT_ADDR1); // 0x08000000U);
+    read_fft_dma(1, NFFT, INPUT_ADDR1); // 0x08000000U);
 
     uint64_t end_time = READ_CSR("mcycle");
     uint64_t end_instructions = READ_CSR("minstret");
@@ -116,11 +118,11 @@ void app_main(uint32_t* data) {
     printf("mcycle = %lu\r\n", end_time - start_time);
     printf("minstret = %lu\r\n", end_instructions - start_instructions);
     
-    // for (int i = 0; i < 128; i++) {
+    // for (int i = 0; i < NFFT; i++) { // 128
     //   printf("Imag: %d  Real: %d\r\n", (*((uint32_t*) (INPUT_ADDR1 + 4*i)) >> 16), (*((uint32_t*) (INPUT_ADDR1 + 4*i)) && 0xFFFF));
     // }
     // uint32_t poll;
-    // for(int i=0; i<128; i++) {
+    // for(int i=0; i<NFFT; i++) { // 128
     //   poll = reg_read32(INPUT_ADDR1 + i*8);
     //   uint32_t real = poll & 0xFFFF;
     //   uint32_t imag = (poll >> 16);
@@ -138,14 +140,14 @@ void app_main(uint32_t* data) {
     uint64_t start_time_cpu = READ_CSR("mcycle");
     uint64_t start_instructions_cpu = READ_CSR("minstret");
 
-    kiss_fft_cfg cfg = kiss_fft_alloc(512 , 0, 0, 0);
-    int nfft = 512;
+    kiss_fft_cfg cfg = kiss_fft_alloc(NFFT , 0, 0, 0);
+    // int nfft = NFFT;
 
-    kiss_fft_cpx* fftbuf = (kiss_fft_cpx*) malloc(nfft * sizeof(kiss_fft_cpx) );
-    kiss_fft_cpx* fftoutbuf = (kiss_fft_cpx*) malloc(nfft * sizeof(kiss_fft_cpx) );
+    kiss_fft_cpx* fftbuf = (kiss_fft_cpx*) malloc(NFFT * sizeof(kiss_fft_cpx) );
+    kiss_fft_cpx* fftoutbuf = (kiss_fft_cpx*) malloc(NFFT * sizeof(kiss_fft_cpx) );
 
-    for(int i = 0; i < nfft; i += 1) {
-        fftbuf[i].r = B3_samples_512[i];
+    for(int i = 0; i < NFFT; i += 1) {
+        fftbuf[i].r = data[i];
         fftbuf[i].i = 0;
     }
 
@@ -167,26 +169,65 @@ void app_main(uint32_t* data) {
     //   }
     //   printf("Imag: %f  Real: %f\r\n", fftoutbuf[i].i, fftoutbuf[i].r);
     // }
-    // printf("Resulting frequency is about %f\r\n", (880.0) * index / nfft);
+    // printf("Resulting frequency is about %f\r\n", (TEST_FREQ) * index / nfft);
 
     /**/
     printf("Start CPU vs DMA Comparison\r\n");
 
-    uint32_t poll;
-    int index = 0;
-    float max = 0;
-    // for (int i = 0; i < nfft; i++) {
-    for (int i = 0; i < 10; i++) { // only testing first few values
-      poll = reg_read32(INPUT_ADDR1 + i*8);
-      uint32_t real = poll & 0xFFFF;
-      uint32_t imag = (poll >> 16);
-      printf("[%d] [CPU] Imag: (%hd), Real: (%hd)\r\n", i, imag, real);
-      if (fabs(fftoutbuf[i].i) > max) {
-        max = fabs(fftoutbuf[i].i);
-        index = i;
+    uint32_t poll_cpu;
+    int index_cpu = 0;
+    float max_cpu = 0;
+    int index_dma = 0;
+    float max_dma = 0;
+    for (int i = 0; i < NFFT; i++) {
+    // for (int i = 0; i < 10; i++) { // only testing first few values
+      /* CPU Check */
+      poll_cpu = reg_read32(INPUT_ADDR1 + i*8);
+      uint32_t real_cpu = poll_cpu & 0xFFFF;
+      uint32_t imag_cpu = (poll_cpu >> 16);
+      if (fabs(real_cpu) > max_cpu) {
+        max_cpu = fabs(real_cpu);
+        index_cpu = i;
       }
-      printf("[%d] [DMA] Imag: (%f),  Real: (%f)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r);
+      if (RM_IMAG) {
+        printf("[%d] [CPU] Real: (%hd)\r\n", i, real_cpu);
+      } else {
+        printf("[%d] [CPU] Imag: (%hd), Real: (%hd)\r\n", i, imag_cpu, real_cpu);
+      }
+
+      /* Kiss FFT Check */
+      if (fabs(fftoutbuf[i].r) > max_dma) {
+        max_dma = fabs(fftoutbuf[i].i);
+        index_dma = i;
+      }
+      if (RM_IMAG) {
+        printf("[%d] [DMA] Real: (%f)\r\n", i, fftoutbuf[i].r);
+      } else {
+        printf("[%d] [DMA] Imag: (%f),  Real: (%f)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r);
+      }
     }
+    printf("[CPU] Resulting frequency is about %f\r\n", (TEST_FREQ) * index_cpu / NFFT);
+    printf("[DMA] Resulting frequency is about %f\r\n", (TEST_FREQ) * index_dma / NFFT);
+
+    /* Old code - can  delete if above works */
+    // uint32_t poll;
+    // int index = 0;
+    // float max = 0;
+    // // for (int i = 0; i < NFFT; i++) {
+    // for (int i = 0; i < 10; i++) { // only testing first few values
+    //   poll = reg_read32(INPUT_ADDR1 + i*8);
+    //   uint32_t real = poll & 0xFFFF;
+    //   uint32_t imag = (poll >> 16);
+    //   printf("[%d] [CPU] Imag: (%hd), Real: (%hd)\r\n", i, imag, real);
+
+    //   if (fabs(fftoutbuf[i].i) > max) {
+    //     max = fabs(fftoutbuf[i].i);
+    //     index = i;
+    //   }
+    //   printf("[%d] [DMA] Imag: (%f),  Real: (%f)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r);
+
+    // }
+    // printf("Resulting frequency is about %f\r\n", (TEST_FREQ) * index / nfft);
 
     printf("End CPU vs DMA Comparison\r\n");
     /**/
@@ -283,7 +324,7 @@ int main(int argc, char **argv) {
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    app_main(B3_samples_512);
+    app_main(B3_samples_128);
     return 0;
   }
   /* USER CODE END WHILE */

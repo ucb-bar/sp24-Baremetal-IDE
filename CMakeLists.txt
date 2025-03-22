@@ -92,8 +92,8 @@ add_link_options(-T ${LINKER_SCRIPT})
 # Build
 #################################
 
-add_executable(app_naichen
-  app_naichen/src/main.c
+add_executable(app_rushed
+  app_rushed/src/main.c
 )
 
 add_executable(app_naich_comparison
@@ -133,7 +133,7 @@ target_include_directories(app_interface PUBLIC app_interface/include)
 
 target_include_directories(app_naich_comparison PUBLIC app_naich_comparison/include)
 
-target_include_directories(app_naichen PUBLIC app_naichen/include)
+target_include_directories(app_rushed PUBLIC app_rushed/include)
 
 target_include_directories(shazam_demo PUBLIC shazam_demo/include)
 
@@ -156,7 +156,7 @@ add_subdirectory(lab)
 
 target_link_libraries(shazam_demo PRIVATE m)
 
-target_link_libraries(app_naichen PRIVATE 
+target_link_libraries(app_rushed PRIVATE 
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
 )
 
