@@ -46,7 +46,15 @@ if __name__ == '__main__':
         help="Maximum number of cumulative failures until the tester changes to a new voltage."
     )
     parser.add_argument('-f', '--force', action='store_true', default=None, help='Force start without a confirmation of limits.')
-    parser.add_argument('--no-equipment', action='store_true', default=None, help='Initialize a dummy software-side PSU to test PSU commands without equipment access. Note that voltage and current measurements cannot be made if this setting is enabled.')
+    parser.add_argument('--psu-mode',
+        choices=["INT", "EXT"],
+        default="INT",
+        help='Mode to set the PSU to sense with. `remote` for 4-wire remote sense, `local` for 2-wire local sense, `none` for no PSU support.'
+    )
+    parser.add_argument('--psu-channel', type=int, default=1,
+        help='Channel to use for the PSU.'
+    )
+    parser.add_argument('--no-psu', action='store_true', default=None, help='Disables sending any commands to the PSU and instead redirects all SCPI commands to the log.')
     parser.add_argument("--log", dest="log_level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="INFO",
@@ -80,9 +88,14 @@ if __name__ == '__main__':
     if args.debug:
         ShmooTestHarness.test_run_suite(args.suite, voltages, frequencies)
     else:
+        psu_mode = PSUSourceMode[args.psu_mode]
         if not args.force and \
-            not ShmooTestHarness.terminal_confirm_params(voltages, frequencies):
+            not ShmooTestHarness.terminal_confirm_params(
+                voltages, frequencies, psu_mode, args.no_psu, args.psu_channel):
             exit()
         results = ShmooTestHarness.run_suite(args.suite, voltages, frequencies,
                                    max_cmul_freq_fails=args.max_cmul_fail,
-                                   use_equipment=not args.no_equipment)
+                                   psu_mode=psu_mode,
+                                   psu_channel=args.psu_channel,
+                                   psu_dummy=args.no_psu)
+

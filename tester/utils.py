@@ -81,6 +81,24 @@ class SerialDebug(serial.Serial):
         super().close()
 
 
+class PSUSourceMode(enum.Enum):
+    """
+    Enumeration class to store the various source modes for the PSU.
+    """
+
+    INT = '2-Wire Local Sensing Mode'
+    """
+    Sets the remote sense relays to local sensing. Use this if you have the
+    front remote sense terminals connected to the DUT. 2-wire mode.
+    """
+
+    EXT = '4-Wire Remote Sensing Mode (CONFIRM REAR TERMINAL CONNECTION)'
+    """
+    Sets the remote sense relays to remote sensing. Use this if you have the
+    rear remote sense terminals connected to the DUT. 4-wire mode.
+    """
+
+
 class PSU:
     """
     Wrapper class for all PyVisa PSU commands and data acquisition management.
@@ -106,9 +124,9 @@ class PSU:
     Defines the default path to use for communication with the SourceMeter.
     """
 
-    DUMMMY_LOG_PREFIX = f'{Fore.LIGHTBLUE_EX}{Style.BRIGHT}[Dummy SMU]{Style.RESET_ALL}'
+    DUMMMY_LOG_PREFIX = f'{Fore.LIGHTBLUE_EX}{Style.BRIGHT}[Dummy PSU]{Style.RESET_ALL}'
 
-    def __init__(self, dummy=False):
+    def __init__(self, dummy: bool=False):
         """
         PSU Initialization
 
@@ -124,10 +142,9 @@ class PSU:
         self.dummy = dummy
         if self.dummy:
             self.dummy_log('Dummy PSU has been created.')
-            return
-        
-        self.rm = pyvisa.ResourceManager("@py")
-        self._psu = self.rm.open_resource(self.VISA_PATH)
+        else:
+            self.rm = pyvisa.ResourceManager("@py")
+            self._psu = self.rm.open_resource(self.VISA_PATH)
 
         # Verify that we have the correct equipment
         verification = self.query("*IDN?")
@@ -138,6 +155,9 @@ class PSU:
 
         # Reset with our defaults
         self.reset()
+
+    def dummy_log(self, val):
+        LOGGER.info(f'{self.DUMMMY_LOG_PREFIX} {val}')
 
     def query(self, querystr: str) -> str:
         """
@@ -176,13 +196,13 @@ class PSU:
         else:
             return self._psu.write(cmdstr)
         
-    def enable(self, channel=1):
+    def enable(self, channel):
         """
         Enables PSU output on a specific channel.
         """
         self.write(f'OUTP ON,(@{channel})')
 
-    def disable(self, channel=1):
+    def disable(self, channel):
         """
         Disables PSU output on a specific channel.
         """
@@ -190,7 +210,18 @@ class PSU:
     
     def reset(self):
         self.set_limits(1, self.INIT_VOLTAGE_LIMIT, self.INIT_CURRENT_LIMIT)
-        self.enable()
+        # self.disable()
+
+    def set_mode(self, mode: PSUSourceMode, channel):
+        """
+        Changes the remote sense relays for a given output channel.
+
+        Args:
+            mode (PSUSourceMode): Mode to set based on sensing type.
+            channel (int, optional): Channel to modify. Defaults to 1.
+        """
+
+        self.write(f'VOLT:SENS:SOUR {mode.name},(@{channel})')
     
     def set_limits(self, channel, voltage: Union[str, int, float] = None,
                    current: Union[str, int, float] = None):
@@ -403,6 +434,8 @@ class ShmooSuiteResults:
                 f.write('\t'.join(
                     [self.suite.name, test.name, str(test.id),
                      float_to_str(voltage), str(freq), str(artifact)]) + '\n')
+                
+        # Compute the power values (if any)
             
     @staticmethod
     def load_from_run(path: str):
@@ -567,10 +600,20 @@ class ShmooTestHarness:
                 LOGGER.info(f'\t\t{Fore.MAGENTA}{Style.BRIGHT}{test.name}{Style.RESET_ALL} (Test ID: {test_id} [{hex(test_id)}])')
 
     @staticmethod
-    def terminal_confirm_params(voltages: list, frequencies: list):
+    def terminal_confirm_params(voltages: list, frequencies: list,
+                                psu_mode: PSUSourceMode, no_psu: bool, psu_ch: int):
         prompt = Fore.RED + Style.BRIGHT + 'Please confirm the following parameter sweep:\n' + Style.RESET_ALL
         prompt += Style.BRIGHT + 'Voltages: ' + str(voltages) + '\n' + Style.RESET_ALL
         prompt += Style.BRIGHT + 'Frequencies: ' + str(frequencies) + '\n' + Style.RESET_ALL
+        prompt += Style.BRIGHT + 'PSU Source Settings: ' + psu_mode.value
+        prompt += f' (Channel {psu_ch})\n{Style.RESET_ALL}'
+        prompt += Style.BRIGHT + 'Dummy PSU (Log Redirect): ' + str(no_psu)
+
+        if no_psu:
+            prompt += Fore.MAGENTA + ' (SCPI commands will be redirected to a log. No power data will be collected.)'
+
+        prompt += '\n' + Style.RESET_ALL
+
         while True:
             resp = input(f"{prompt} (y/n): ").lower()
             if resp in ['y', 'yes']:
@@ -737,7 +780,8 @@ class ShmooTestHarness:
 
     @staticmethod
     def run_suite(suite_name: str, voltages: list, frequencies: list,
-                  max_cmul_freq_fails: int = 1, use_equipment: bool = True
+                  max_cmul_freq_fails: int, psu_mode: PSUSourceMode,
+                  psu_dummy: bool, psu_channel: int
                   )-> ShmooSuiteResults:
         """
         Runs a test with the full flow, along with serial instantiation, for
@@ -747,16 +791,24 @@ class ShmooTestHarness:
             suite_name (str): The name of the registered suite to run.
             voltages (list): List of voltages to sweep.
             frequencies (list): List of frequencies (in MHz) to sweep.
-            max_cmul_freq_fails (int, optional): Max number of cumulative
+            max_cmul_freq_fails (int): Max number of cumulative
                 failures permitted for a given voltage. For example, a value of
                 2 means that if two subsequent failures occur for a voltage,
                 all other frequencies will be skipped for that voltage. Setting
-                this value to 0 disables the check overall. Defaults to 1.
+                this value to 0 disables the check overall.
+            psu_mode (PSUSourceMode): Sets the remote sense relay sensing mode
+                for the PSU.
+            psu_dummy (bool): True if we want to not use the PSU, but rather
+                redirect all SCPI commands to the log.
+            psu_channel (int): Channel to control on the PSU connected to the
+                DUT.
         """
         LOGGER.info(f'{Style.BRIGHT}{Fore.YELLOW}--- Starting enumeration for test suite "{suite_name}" ---{Style.RESET_ALL}')
         
-        ### Hardware Initialization ###
-        psu = PSU(dummy=not use_equipment)
+        ### PSU Initialization ###
+        psu = PSU(dummy=psu_dummy)
+        psu.set_mode(psu_mode, channel=psu_channel)
+        psu.enable(psu_channel)
         
         # Retrieve the correct test suite to run.
         suite = ShmooTestHarness.TEST_SUITES[suite_name]
@@ -810,7 +862,7 @@ class ShmooTestHarness:
                     ### Serial Port Evaluation / FTDI Reset / SMU Setup ###
                     
                     # Set PSU Limits to 2A, variable voltage based on sweep.
-                    psu.set_limits(1, voltage=cur_v)
+                    psu.set_limits(psu_channel, voltage=cur_v)
                     
                     ShmooTestHarness.reset_and_program_elf(suite.elf)
 
@@ -886,8 +938,8 @@ class ShmooTestHarness:
                     timeout_time = datetime.now() + timedelta(seconds=test.timeout)
                     while not done and datetime.now() <= timeout_time:
                         while not ser.in_waiting and datetime.now() <= timeout_time:
-                            meas_v.append(psu.query("MEAS:VOLT?"))
-                            meas_i.append(psu.query("MEAS:CURR?"))
+                            meas_v.append(psu.query(f"MEAS:VOLT? CH{psu_channel}"))
+                            meas_i.append(psu.query(f"MEAS:CURR? CH{psu_channel}"))
 
                         # If we still don't have UART data, then test timed out.
                         if not ser.in_waiting:
@@ -936,7 +988,7 @@ class ShmooTestHarness:
                     ### Post-Processing ###
 
                     # Check the output against the ShmooTest function.
-                    artifact.has_measurements = use_equipment
+                    artifact.has_measurements = not psu_dummy
 
                     passed, check_data = test.check_output(context, chip_payload)
                     if passed:
@@ -946,11 +998,12 @@ class ShmooTestHarness:
                     artifact.check_data = check_data
                     
                     # Parse the data from the SMU and form it into a matrix.
-                    measurements = np.array((meas_v, meas_i)).as_type(float)
+                    meas_as_text = np.column_stack((meas_v, meas_i))
+                    measurements = np.char.strip(meas_as_text).astype(np.float32)
                     LOGGER.debug(f'[PSU Measurement Buffer Content] {measurements}')
 
                     # Generate and save a CSV of the SMU data.
-                    if use_equipment:
+                    if artifact.has_measurements:
                         csv_path = ShmooTestHarness.save_data_as_csv(
                             measurements, artifact.status, results.output_dir,test.id,
                             cur_v, cur_clk)
@@ -1030,4 +1083,4 @@ class ShmooTestHarness:
 
 # Describe exports
 __all__ = ['SerialDebug', 'ShmooTest', 'ShmooConstantTest', 'TestSuite',
-           'ShmooTestHarness', 'ShmooSuiteResults']
+           'ShmooTestHarness', 'ShmooSuiteResults', 'PSUSourceMode']
