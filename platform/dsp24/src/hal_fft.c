@@ -24,7 +24,6 @@ void write_fft(int length, uint64_t* data) {
 
 void write_fft_dma(int dma_num, int length, uint64_t* data) {
     reg_write32(FFT_LENGTH, length);
-
     set_DMAC(dma_num, data, FFT_INPUT, 8, 0, length/2, 3);
     start_DMA(dma_num);
 }
