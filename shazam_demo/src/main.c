@@ -147,8 +147,8 @@ void run_dma_fft_test(uint32_t* data, bool print) {
       } else {
         printf("[%d] [DMA] Imag: (%hd), Real: (%hd)\r\n", i, imag, real); // %hd - short int in decimal form
       }
-      printf("[DMA] Resulting frequency is about %f\r\n", (SAMPLING_FREQ) * index / NFFT);
     }
+    printf("[DMA] Resulting frequency is about %f\r\n", (SAMPLING_FREQ) * index / NFFT);
   }
 }
 
@@ -186,16 +186,17 @@ void run_cpu_fft_test(uint32_t* data, bool print) {
 
   if (print) {
     int index = 0;
-    float max = 0; // should be fine even if values are int
+    int max = 0; // Note the type: if Hz stuck at 0, max and buffer might be mismatched types
     for (int i = 0; i < NFFT; i++) { 
-      if (fabs(fftoutbuf[i].r) > max) { // original code uses .i and I don't know why
-        max = fabs(fftoutbuf[i].r);  // original code uses .i and I don't know why
+      if (fabs(fftoutbuf[i].r) > max) {
+        max = fabs(fftoutbuf[i].r);
         index = i;
       }
+      // printf("DEBUG: [%d] max(f): (%f)  max(d): (%d) while fabs: (%f) \r\n", i, max, max, fabs(fftoutbuf[i].r)); 
       /* Original defaults to float */
-      // printf("[%d] [CPU] Imag: (%f)  Real: (%f)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r); 
+      printf("[%d] [CPU] Imag: (%f)  Real: (%f)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r); 
       /* For uint16_t */
-      printf("[%d] [CPU] Imag: (%hd)  Real: (%hd)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r);
+      // printf("[%d] [CPU d] Imag: (%hd)  Real: (%hd)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r);
     }
     printf("Resulting frequency is about %f\r\n", (SAMPLING_FREQ) * index / NFFT);
   }
@@ -333,24 +334,24 @@ int main(int argc, char **argv) {
 
   /* Start Shazam Demo */
 
-  struct WAVHeader* header = &HEADER;
-  //fread(&header, sizeof(header), 1, fp);
+  // struct WAVHeader* header = &HEADER;
+  // //fread(&header, sizeof(header), 1, fp);
 
-  // Check if it's a valid WAV file
-  if (strncmp(header->chunkID, "RIFF", 4) != 0 ||
-      strncmp(header->format, "WAVE", 4) != 0) {
-      fprintf(stderr, "Invalid WAV file\r\n");
+  // // Check if it's a valid WAV file
+  // if (strncmp(header->chunkID, "RIFF", 4) != 0 ||
+  //     strncmp(header->format, "WAVE", 4) != 0) {
+  //     fprintf(stderr, "Invalid WAV file\r\n");
       
-      return 1;
-  }
+  //     return 1;
+  // }
 
-  printf("Channels: %u\r\n", header->numChannels);
-  printf("Sample Rate: %u\r\n", header->sampleRate);
-  printf("Bits per Sample: %u\r\n", header->bitsPerSample);
+  // printf("Channels: %u\r\n", header->numChannels);
+  // printf("Sample Rate: %u\r\n", header->sampleRate);
+  // printf("Bits per Sample: %u\r\n", header->bitsPerSample);
 
-  // Read audio data
-  uint32_t *data = header + sizeof(struct WAVHeader);
-  printf("header size: %u\r\n", header->subchunk2Size);
+  // // Read audio data
+  // uint32_t *data = header + sizeof(struct WAVHeader);
+  // printf("header size: %u\r\n", header->subchunk2Size);
   
 
   // Process the audio data here
