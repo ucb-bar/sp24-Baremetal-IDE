@@ -572,6 +572,9 @@ def annotate_heatmap(im, data=None, valfmt="{x:.2f}",
     texts = []
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
+            if data[i, j] == 0:
+                texts.append('')
+                continue
             kw.update(color=textcolors[int(im.norm(data[i, j]) > threshold)])
             text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
             texts.append(text)
@@ -1075,7 +1078,7 @@ class ShmooTestHarness:
             else:
                 # display_numbers = False
                 value = 1 if artifact.status == TestStatus.PASS else 0
-            tests[test][voltages_idxs[voltage], freq_idxs[freq]] = value
+            tests[test][voltages_idxs[voltage], freq_idxs[freq]] = value * 1000
         
         for test in tests:
             fig = plt.figure(figsize=(12, 8))
@@ -1106,11 +1109,11 @@ class ShmooTestHarness:
                             aspect='equal', origin='lower')
 
             if display_numbers:
-                annotate_heatmap(im, valfmt="{x:.2f}", size=8)
+                annotate_heatmap(im, valfmt="{x:.3g}", size=8)
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes("right", size="2%", pad=0.05)
                 cbar = plt.colorbar(im, cax=cax)
-                cbar.set_label('Power (W)', rotation=270)
+                cbar.set_label('Power (mW)', rotation=270, labelpad=10)
 
             plt.tight_layout()
             imgpath = os.path.join(results.output_dir, f'test_{test.id}_plot.png')
