@@ -198,7 +198,7 @@ void run_cpu_fft_test(uint32_t* data, bool print) {
       /* For uint16_t */
       // printf("[%d] [CPU d] Imag: (%hd)  Real: (%hd)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r);
     }
-    printf("Resulting frequency is about %f\r\n", (SAMPLING_FREQ) * index / NFFT);
+    printf("Resulting frequency is about %f @ max = (%d), index = (%d)\r\n", (SAMPLING_FREQ) * index / NFFT, max, index);
   }
 
   /* CLEANUP */
