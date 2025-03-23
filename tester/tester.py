@@ -46,11 +46,11 @@ if __name__ == '__main__':
     parser.add_argument("--max-cmul-fail", dest="max_cmul_fail", type=int, default=1,
         help="Maximum number of cumulative failures until the tester changes to a new voltage."
     )
-    parser.add_argument('-f', '--force', action='store_true', default=None, help='Force start without a confirmation of limits.')
+    parser.add_argument('-f', '--force', action='store_true', default=None, help='Force start without a confirmation of limits. Only use this setting if you are absolutely sure that the testbench setup is correct and you are aware of the assigned limits.')
     parser.add_argument('--psu-mode',
         choices=["INT", "EXT"],
         default="INT",
-        help='Mode to set the PSU to sense with. `remote` for 4-wire remote sense, `local` for 2-wire local sense, `none` for no PSU support.'
+        help='Mode to set the PSU to sense with. `EXT` for 4-wire remote sense, `INT` for 2-wire local sense.'
     )
     parser.add_argument('--psu-channel', type=int, default=1,
         help='Channel to use for the PSU.'
