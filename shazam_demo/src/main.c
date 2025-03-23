@@ -18,6 +18,7 @@
 #include "main.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "chip_config.h"
 #include "hal_DMA.h"
 #include "hal_fft.h"
@@ -142,7 +143,7 @@ void run_dma_fft_test(uint32_t* data, bool print) {
         index = i;
       }
       if (RM_IMAG) {
-        printf("[%d] [DMA] Real: (%hd)\r\n", i, real_dma);
+        printf("[%d] [DMA] Real: (%hd)\r\n", i, real);
       } else {
         printf("[%d] [DMA] Imag: (%hd), Real: (%hd)\r\n", i, imag, real); // %hd - short int in decimal form
       }
@@ -209,7 +210,7 @@ void run_cpu_fft_test(uint32_t* data, bool print) {
 /* Untested in new function form - moved code (that was working) from main 
   Don't forget to free the KISS FFT memory after done, but not before.
 */
-void run_line_by_line_compare(kiss_fft_cfg cfg, kiss_fft_cfg* fftbuf, kiss_fft_cfg* fftoutbuf) {
+void run_line_by_line_compare(kiss_fft_cfg cfg, kiss_fft_cpx* fftbuf, kiss_fft_cpx* fftoutbuf) {
   /* OLD LINE BY LINE COMPARISON BELOW */
   printf("[Start CPU vs DMA Comparison]\r\n");
 
@@ -293,12 +294,12 @@ void run_dma_cpu_comparison(uint32_t* data) {
 
     printf("\r\n[STARTING TEST]\r\n");
 
-    run_dma_fft_test(data, 1);
+    run_dma_fft_test(data, true);
 
     reset_fft();
     reset_DMA();
 
-    run_cpu_fft_test(data, 1);
+    run_cpu_fft_test(data, true);
     
     printf("[DONE TEST]\r\n");
 }
