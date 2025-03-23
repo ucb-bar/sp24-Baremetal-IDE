@@ -153,8 +153,6 @@ class PSU:
         if not verification.startswith(self.IDN):
             raise Exception(f'Attempt to connect to `{self.IDN}` at {self.VISA_PATH} failed, IDN returned `{verification}` instead.')
 
-        # Reset with our defaults
-        self.reset()
 
     def dummy_log(self, val):
         LOGGER.info(f'{self.DUMMMY_LOG_PREFIX} {val}')
@@ -172,6 +170,9 @@ class PSU:
         """
         if self.dummy:
             self.dummy_log(f'QUERY: {querystr}')
+
+            if querystr.startswith('MEAS'):
+                return '8.000000e-00\n'
 
             if querystr == "*IDN?":
                 return self.IDN
@@ -208,9 +209,15 @@ class PSU:
         """
         self.write(f'OUTP OFF,(@{channel})')
     
-    def reset(self):
-        self.set_limits(1, self.INIT_VOLTAGE_LIMIT, self.INIT_CURRENT_LIMIT)
-        # self.disable()
+    def reset_channel(self, channel: int):
+        """
+        Resets a channel back to a default voltage/current limit.
+
+        Args:
+            channel (int): Channel to reset.
+        """
+        self.set_limits(channel, self.INIT_VOLTAGE_LIMIT,
+                        self.INIT_CURRENT_LIMIT)
 
     def set_mode(self, mode: PSUSourceMode, channel):
         """
@@ -345,9 +352,9 @@ class TestStatus(enum.Enum):
     Host did not receive an ETB test completion acknowledgment.
     """
 
-    FAIL_SMU = 4
+    FAIL_NO_UART = 4
     """
-    Host did not receive a response from the SMU during testing.
+    Host was unable to connect to the chip via UART.
     """
 
     SKIP_MAX_FREQ_FAIL = 5
@@ -419,7 +426,7 @@ class ShmooSuiteResults:
                 f.write('\t'.join(['Suite Name', 'Test Name', 'Test ID', 'Voltage', 'Frequency', 'Status', 'Context', 'Host Payload', 'Compare Check Data']) + '\n')
 
     def add_result(self, test: ShmooTest, voltage, freq,
-                          artifact: TestArtifact):
+                          artifact: TestArtifact, data: Optional[np.ndarray] = None):
         self.results_list.append((test, voltage, freq, artifact))
         if test not in self.results:
             self.results[test] = OrderedDict()
@@ -436,6 +443,16 @@ class ShmooSuiteResults:
                      float_to_str(voltage), str(freq), str(artifact)]) + '\n')
                 
         # Compute the power values (if any)
+        if isinstance(data, np.ndarray) and data.size > 0:
+            powers = np.multiply(data[0], data[2])
+            dt = np.diff(data[1])
+            energy = np.sum(np.multiply(powers[:-1], dt)) 
+            avg_power = energy / data[1][-1]
+            artifact.avg_power = avg_power
+            artifact.energy = energy
+            artifact.has_measurements = True
+        else:
+            artifact.has_measurements = False
             
     @staticmethod
     def load_from_run(path: str):
@@ -477,21 +494,11 @@ class ShmooSuiteResults:
                     check_data=compare_data,
                     csv_path=os.path.join(path, f'test_{testid}_{float_to_str(voltage)}v_{freq // 1000000}MHz.csv')
                 )
-
+                data = None
                 if os.path.exists(artifact.csv_path):
-                    dat = np.genfromtxt(artifact.csv_path, delimiter=',').T
-                    if dat.size > 0:
-                        powers = np.multiply(dat[0], dat[2])
-                        dt = np.diff(dat[1])
-                        energy = np.sum(np.multiply(powers[:-1], dt)) 
-                        avg_power = energy / dat[1][-1]
-                        artifact.avg_power = avg_power
-                        artifact.energy = energy
-                        artifact.has_measurements = True
-                else:
-                    artifact.has_measurements = False
-
-                res.add_result(suite.tests[testid], voltage, freq, artifact)
+                    data = np.genfromtxt(artifact.csv_path, delimiter=',').T
+                res.add_result(
+                    suite.tests[testid], voltage, freq, artifact, data)
             
             res.voltage_range = sorted(list(voltage_range))
             res.freq_range = sorted(list(freq_range))
@@ -773,10 +780,21 @@ class ShmooTestHarness:
             str: Path to the created output file.
         """
         filename = f'{dir}/test_{testid}_{float_to_str(voltage)}v_{freq}MHz.csv'
-        if not isinstance(data, np.ndarray): 
-            data = np.array(data).astype(float)
         np.savetxt(filename, data, delimiter=",")
         return filename
+    
+    @staticmethod
+    def np_arr_to_float_vectorized(arr, dtype):
+        new_arr = np.zeros_like(arr, dtype=dtype)
+        
+        can_convert = np.vectorize(lambda x: True if isinstance(x, (int, float, str)) else False)(arr)
+
+        try:
+            new_arr[can_convert] = arr[can_convert].astype(dtype)
+        except (ValueError, TypeError):
+            new_arr[can_convert] = 0
+            
+        return new_arr
 
     @staticmethod
     def run_suite(suite_name: str, voltages: list, frequencies: list,
@@ -808,7 +826,8 @@ class ShmooTestHarness:
         ### PSU Initialization ###
         psu = PSU(dummy=psu_dummy)
         psu.set_mode(psu_mode, channel=psu_channel)
-        psu.enable(psu_channel)
+        #psu.reset_channel(psu_channel)
+        # psu.enable(psu_channel)
         
         # Retrieve the correct test suite to run.
         suite = ShmooTestHarness.TEST_SUITES[suite_name]
@@ -855,6 +874,7 @@ class ShmooTestHarness:
 
                 while pending_freqs_stack:
                     cur_clk = int(pending_freqs_stack.popleft())
+                    freq_hz = cur_clk * 1_000_000
 
                     LOGGER.info(f'{Style.BRIGHT}{Fore.MAGENTA}--- [Test ID {test.id}] Running at {cur_clk} MHz and {cur_v} V ---{Style.RESET_ALL}')
                     artifact = TestArtifact()
@@ -863,6 +883,8 @@ class ShmooTestHarness:
                     
                     # Set PSU Limits to 2A, variable voltage based on sweep.
                     psu.set_limits(psu_channel, voltage=cur_v)
+                    psu.enable(psu_channel)
+                    sleep(0.3)
                     
                     ShmooTestHarness.reset_and_program_elf(suite.elf)
 
@@ -870,7 +892,14 @@ class ShmooTestHarness:
                                              timeout=test.timeout)
 
                     if not ser:
-                        raise Exception('Unable to establish a UART serial connection handshake.')
+                        ShmooTestHarness.log_as_chip(
+                            f'Unable to connect to the chip over UART. No destinations available for ENQ connection handshake.',
+                            red=True)
+                        artifact.status = TestStatus.FAIL_NO_UART
+                        ShmooTestHarness.log_test_result(test, artifact)
+                        results.add_result(test, cur_v, freq_hz, artifact)
+                        max_fail_check(artifact)
+                        continue
 
                     ser.flushInput()
                     ser.flushOutput()
@@ -892,7 +921,6 @@ class ShmooTestHarness:
                     ser.write(data_pkt_size.to_bytes(4, byteorder='little'))
 
                     # Host sends clock frequency over UART (Hz) (64-bit int)
-                    freq_hz = cur_clk * 1_000_000
                     ShmooTestHarness.log_as_host(
                         f'Clock frequency is {freq_hz} Hz')
                     ser.write(freq_hz.to_bytes(8, byteorder='little'))
@@ -912,6 +940,7 @@ class ShmooTestHarness:
                         f'Waiting for BEL (7, 0x07) payload acknowledgment...')
 
                     ser_data = ser.read_until(b'\x07')
+                    start_time = datetime.now()
                     if not ser_data:
                         # Timeout occurred, treat as chip fail
                         ShmooTestHarness.log_as_chip(
@@ -923,7 +952,7 @@ class ShmooTestHarness:
                         ser.close()
                         max_fail_check(artifact)
                         continue
-
+                    
                     ShmooTestHarness.log_as_chip(
                         f'Sent BEL (7) payload acknowledgment!')
                     
@@ -935,7 +964,8 @@ class ShmooTestHarness:
                     meas_i = []
                     done = False
                     etb_data = None
-                    timeout_time = datetime.now() + timedelta(seconds=test.timeout)
+                    timeout_time = start_time + timedelta(seconds=test.timeout)
+                    end_time = None
                     while not done and datetime.now() <= timeout_time:
                         while not ser.in_waiting and datetime.now() <= timeout_time:
                             meas_v.append(psu.query(f"MEAS:VOLT? CH{psu_channel}"))
@@ -948,6 +978,7 @@ class ShmooTestHarness:
                         while ser.in_waiting:
                             etb_data = ser.read()
                             if etb_data == b'\x17':
+                                end_time = datetime.now()
                                 done = True
                                 break
 
@@ -966,6 +997,9 @@ class ShmooTestHarness:
                     
                     ShmooTestHarness.log_as_chip(
                         f'Sent ETB (23, 0x17) test completion acknowledgment!')
+                    
+                    test_time = end_time - start_time
+                    ShmooTestHarness.log_as_misc(f'Test completed in {test_time.microseconds} μs')
 
                     # Chip sends size of payload packet (in bytes) (32-bit int)
                     ShmooTestHarness.log_as_host(
@@ -988,7 +1022,7 @@ class ShmooTestHarness:
                     ### Post-Processing ###
 
                     # Check the output against the ShmooTest function.
-                    artifact.has_measurements = not psu_dummy
+                    artifact.has_measurements = True
 
                     passed, check_data = test.check_output(context, chip_payload)
                     if passed:
@@ -998,8 +1032,11 @@ class ShmooTestHarness:
                     artifact.check_data = check_data
                     
                     # Parse the data from the SMU and form it into a matrix.
-                    meas_as_text = np.column_stack((meas_v, meas_i))
-                    measurements = np.char.strip(meas_as_text).astype(np.float32)
+                    timestamps = np.linspace(0.0, test_time.microseconds, num=len(meas_v), endpoint=True)
+                    meas_as_text = np.column_stack((meas_v, timestamps, meas_i))
+                    measurements = ShmooTestHarness.np_arr_to_float_vectorized(
+                        np.char.strip(meas_as_text), np.number)
+
                     LOGGER.debug(f'[PSU Measurement Buffer Content] {measurements}')
 
                     # Generate and save a CSV of the SMU data.
@@ -1012,7 +1049,7 @@ class ShmooTestHarness:
                     # Output appropriate result to the log and keep track of
                     # the result in our results object.
                     ShmooTestHarness.log_test_result(test, artifact)
-                    results.add_result(test, cur_v, freq_hz, artifact)
+                    results.add_result(test, cur_v, freq_hz, artifact, measurements)
                     ser.close()
 
                     max_fail_check(artifact)
@@ -1036,7 +1073,7 @@ class ShmooTestHarness:
             if artifact.has_measurements:
                 value = artifact.avg_power
             else:
-                display_numbers = False
+                # display_numbers = False
                 value = 1 if artifact.status == TestStatus.PASS else 0
             tests[test][voltages_idxs[voltage], freq_idxs[freq]] = value
         
