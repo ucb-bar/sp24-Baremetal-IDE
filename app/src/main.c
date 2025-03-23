@@ -15,7 +15,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "hthread.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -40,7 +40,7 @@
 /* USER CODE BEGIN PV */
 
 uint8_t counter = 0;
-
+uint64_t counter1[] = {0, 0, 0, 0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -54,17 +54,30 @@ uint8_t counter = 0;
 
 
 void app_init() {
-  // torch::executor::runtime_init();
+  UART_InitType UART_init_config;
+  UART_init_config.baudrate = 115200;
+  UART_init_config.mode = UART_MODE_TX_RX;
+  UART_init_config.stopbits = UART_STOPBITS_2;
+  uart_init(UART0, &UART_init_config);
+
+  // *((uint32_t*) 0x1000) = 0x80000000;
+  for (int i = 1; i < 4; i++) {
+    CLINT->MSIP[i] = 1;
+  }
 }
 
-
+void worker_thread(volatile void* arg) {
+  uint32_t* cntr = (uint32_t*) arg;
+  *cntr += 1;
+}
 
 void app_main() {
   uint64_t mhartid = READ_CSR("mhartid");
-
-  printf("Hello world from hart %d: %d\n", mhartid, counter);
-
-  // sleep(1);
+  hthread_issue(counter % 3 + 1, &worker_thread, &(counter1[counter%3+1]));
+  hthread_join(counter%3+1);
+  printf("Hello world from hart %d: %d, %d, %d\r\n", mhartid, counter1[1], counter1[2], counter1[3]);
+  counter += 1;
+  sleep(1);
 }
 /* USER CODE END PUC */
 
@@ -89,18 +102,6 @@ int main(int argc, char **argv) {
   /* USER CODE BEGIN WHILE */
   while (1) {
     app_main();
-    return 0;
   }
   /* USER CODE END WHILE */
-}
-
-/*
- * Main function for secondary harts
- * 
- * Multi-threaded programs should provide their own implementation.
- */
-void __attribute__((weak, noreturn)) __main(void) {
-  while (1) {
-   asm volatile ("wfi");
-  }
 }

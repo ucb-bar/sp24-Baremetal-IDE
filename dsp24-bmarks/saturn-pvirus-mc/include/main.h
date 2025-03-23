@@ -36,6 +36,8 @@ extern "C" {
 
 #include "riscv.h"
 #include "chip_config.h"
+#include "libbmark.h"
+
 
 /**
  * This section controls which peripheral device is included in the application program.

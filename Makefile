@@ -18,6 +18,10 @@ build:
 ocd:
 	openocd -f ./platform/$(CHIP)/$(CHIP).cfg
 
+.PHONY: ocd-run
+ocd-run:
+	openocd -f ./platform/$(CHIP)/$(CHIP).cfg -c "load_image $(BINARY)" -c "resume 0x80000000"
+
 .PHONY: gdb
 gdb:
 	$(DG) $(BINARY) --eval-command="target extended-remote localhost:$(PORT)"
