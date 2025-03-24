@@ -153,6 +153,7 @@ class PSU:
         if not verification.startswith(self.IDN):
             raise Exception(f'Attempt to connect to `{self.IDN}` at {self.VISA_PATH} failed, IDN returned `{verification}` instead.')
 
+        self.display_meter()
 
     def dummy_log(self, val):
         LOGGER.info(f'{self.DUMMMY_LOG_PREFIX} {val}')
@@ -218,6 +219,7 @@ class PSU:
         """
         self.set_limits(channel, self.INIT_VOLTAGE_LIMIT,
                         self.INIT_CURRENT_LIMIT)
+        
 
     def set_mode(self, mode: PSUSourceMode, channel):
         """
@@ -251,6 +253,10 @@ class PSU:
             current = float_to_str(voltage)
 
         self.write(f'APPL Ch{channel}, {voltage}, {current}')
+        self.write(f'VOLT:PROT 1.5, (@{channel})')
+
+    def display_meter(self):
+        self.write(f'DISP:VIEW METER3')
 
 
 class ShmooTest:
@@ -932,12 +938,12 @@ class ShmooTestHarness:
                     freq_hz, retries = pending_freqs_stack.popleft()
                     freq_mhz = freq_hz // 1000000
 
-                    LOGGER.info(f'{Style.BRIGHT}{Fore.MAGENTA}--- [Test ID {test.id}] Running at {freq_mhz} MHz and {cur_v} V ---{Style.RESET_ALL}')
+                    LOGGER.info(f'{Style.BRIGHT}{Fore.MAGENTA}--- [Test ID {test.id}] Running at {freq_mhz} MHz and {float_to_str(cur_v)} V ---{Style.RESET_ALL}')
                     artifact = TestArtifact()
 
                     ### Serial Port Evaluation / FTDI Reset / PSU Setup ###
                     
-                    # Set PSU Limits to 2A, variable voltage based on sweep.
+                    # Set PSU Limits based on sweep.
                     dbg_bp('set PSU limits')
                     psu.set_limits(psu_channel, voltage=cur_v)
                     psu.enable(psu_channel)
