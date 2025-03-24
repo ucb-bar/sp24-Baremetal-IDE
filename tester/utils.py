@@ -423,9 +423,9 @@ class ShmooSuiteResults:
         self.readonly = readonly
 
         if not readonly:
-            self.output_dir = output_dir or \
-                f'data_{self.suite.name}_{datetime.now().isoformat()}'
-            self.result_path = f'{self.output_dir}/result.tsv'
+            self.output_dir = Path(output_dir or \
+                f'data_{self.suite.name}_{datetime.now().isoformat()}')
+            self.result_path = self.output_dir.joinpath('result.tsv')
             os.mkdir(self.output_dir)
 
             with open(self.result_path, 'a', encoding='utf-8') as f:
@@ -824,7 +824,8 @@ class ShmooTestHarness:
     def run_suite(suite_name: str, voltages: list, frequencies: list,
                   max_consec_voltage_fails: int, freq_retries: int,
                   psu_mode: PSUSourceMode, psu_dummy: bool, psu_channel: int,
-                  debug: bool=False, no_upload: bool=False)-> ShmooSuiteResults:
+                  output_path: str, debug: bool, no_upload: bool
+                  )-> ShmooSuiteResults:
         """
         Runs a test with the full flow, along with serial instantiation, for
         a given test harness.
@@ -851,11 +852,11 @@ class ShmooTestHarness:
                 redirect all SCPI commands to the log.
             psu_channel (int): Channel to control on the PSU connected to the
                 DUT.
-            debug (bool, optional): Enables debugging mode, which has a step-
-                by-step debugging system and infinite timeouts. Defaults to
-                False.
-            no_upload (bool, optional): If True, disables reprogramming the
-                chip via OpenOCD. Defaults to False.
+            output_path (str): Path to store output testing collateral files.
+            debug (bool): Enables debugging mode, which has a step-
+                by-step debugging system and infinite timeouts.
+            no_upload (bool): If True, disables reprogramming the
+                chip via OpenOCD.
         """
         LOGGER.info(f'{Style.BRIGHT}{Fore.YELLOW}--- Starting enumeration for test suite "{suite_name}" ---{Style.RESET_ALL}')
         
@@ -874,7 +875,7 @@ class ShmooTestHarness:
         # Convert all frequencies to hertz
         frequencies = [int(x) * 1000000 for x in frequencies]
 
-        results = ShmooSuiteResults(suite)
+        results = ShmooSuiteResults(suite, output_dir=output_path)
         results.voltage_range = [float(v) for v in voltages]
         results.freq_range = frequencies.copy()
         ShmooTestHarness.log_as_misc(f'Output will be stored within "{results.output_dir}/"')
@@ -920,7 +921,7 @@ class ShmooTestHarness:
                         
                         voltage_consec_fails += 1
                     
-                    results.add_result(test, cur_v, freq_hz, artifact, data)
+                    results.add_result(test, cur_v, freq_hz, artifact, data.T)
 
                     # If we have exceeded our allowed cumulative fail count,
                     # stop processing freqs for this voltage.
@@ -1101,22 +1102,19 @@ class ShmooTestHarness:
                     measurements = ShmooTestHarness.np_arr_to_float_vectorized(
                         np.char.strip(meas_as_text), np.number)
 
-                    LOGGER.debug(f'[PSU Measurement Buffer Content] {measurements}')
+                    LOGGER.debug(f'[PSU Measurements] {measurements}')
 
                     # Generate and save a CSV of the PSU data.
                     if artifact.has_measurements:
                         csv_path = ShmooTestHarness.save_data_as_csv(
-                            measurements, artifact.status, results.output_dir,test.id,
-                            cur_v, freq_mhz)
+                            measurements, artifact.status, results.output_dir,
+                            test.id, cur_v, freq_mhz)
                         artifact.csv_path = csv_path
                     
                     # Output appropriate result to the log and keep track of
                     # the result in our results object.
-                    ShmooTestHarness.log_test_result(test, artifact)
-                    results.add_result(test, cur_v, freq_hz, artifact, measurements)
                     ser.close()
-
-                    test_finish_handler(artifact)
+                    test_finish_handler(freq_hz, artifact, retries, measurements)
 
         ShmooTestHarness.make_shmoo_plot(results)
         return results

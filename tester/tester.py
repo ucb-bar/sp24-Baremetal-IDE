@@ -33,7 +33,8 @@ if __name__ == '__main__':
                     epilog='Created by Jasmine Angle (angle@berkeley.edu)')
     
     parser.add_argument('-i', '--input', help='Path to an existing Shmoo test run to import for Shmoo plot generation. If specified, this will only generate a Shmoo plot from existing data and not run any tests.')
-    
+    parser.add_argument('-o', '--output', type=str, default=None, help='Path for storing output files. If the path does not already exist, it will be created. If unspecified, a default path containing the suite name and test start timestamp will be created.')
+
     args_test = parser.add_argument_group('Shmoo Testing Options')
     args_test.add_argument('-s', '--suite', help='Name of the test suite to run')
     args_test.add_argument('--min-v', dest='min_v', type=float, default='0.85', help='Voltage lower bound')
@@ -48,7 +49,7 @@ if __name__ == '__main__':
     args_test.add_argument("--retries", dest="retries", type=int, default=0,
         help="Maximum number of retries permitted for a single frequency test at a given voltage. Retries are disabled (0) by default."
     )
-    args_test.add_argument('-f', '--force', action='store_true', default=None, help='Force start without a confirmation of limits. Only use this setting if you are absolutely sure that the testbench setup is correct and you are aware of the assigned limits.')
+    args_test.add_argument('-f', '--force', action='store_true', default=False, help='Force start without a confirmation of limits. Only use this setting if you are absolutely sure that the testbench setup is correct and you are aware of the assigned limits.')
     
     args_psu = parser.add_argument_group('PSU Configuration Options')
     args_psu.add_argument('--psu-mode',
@@ -115,5 +116,6 @@ if __name__ == '__main__':
                                    psu_channel=args.psu_channel,
                                    psu_dummy=args.no_psu,
                                    debug=args.debug,
-                                   no_upload=args.no_upload)
+                                   no_upload=args.no_upload,
+                                   output_path=args.output)
 
