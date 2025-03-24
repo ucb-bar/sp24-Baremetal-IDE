@@ -50,7 +50,7 @@ if __name__ == '__main__':
     )
     args_test.add_argument('-f', '--force', action='store_true', default=None, help='Force start without a confirmation of limits. Only use this setting if you are absolutely sure that the testbench setup is correct and you are aware of the assigned limits.')
     
-    args_psu = parser.add_argument_group('PSU Settings')
+    args_psu = parser.add_argument_group('PSU Configuration Options')
     args_psu.add_argument('--psu-mode',
         choices=["INT", "EXT"],
         default="INT",
@@ -61,9 +61,9 @@ if __name__ == '__main__':
     )
     args_psu.add_argument('--no-psu', action='store_true', default=None, help='Disables sending any commands to the PSU and instead redirects all SCPI commands to the log.')
     
-    args_dbg = parser.add_argument_group('Debugging Arguments')
+    args_dbg = parser.add_argument_group('Debugging Options')
     args_dbg.add_argument('-m', '--mock-test', action='store_true', help='Only mock run the host payload creation function of a test suite')
-    args_dbg.add_argument('-d', '--debug', dest='debug', action='store_true', help='Enables debugging mode, disabling all timeouts and allowing the user to run through a Shmoo test step-by-step.')
+    args_dbg.add_argument('-d', '--debug', dest='debug', action='store_true', help='Enables debugging mode, disabling all serial timeouts and allowing the user to run through a Shmoo test step-by-step.')
     args_dbg.add_argument('-n', '--no-upload', action='store_true', help='Disables OpenOCD reset and program of the chip. Useful for debugging with an external OpenOCD+GDB configuration.')
     
     args_dbg.add_argument('-l', '--list-suites', action='store_true', help='Ignore all other commands and print a list of test suites')

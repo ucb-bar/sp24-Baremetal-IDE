@@ -21,7 +21,6 @@
 
 #include "main.h"
 #include "chip_config.h"
-#include <riscv_vector.h>
 
 void mac_pv_intrinsics(uint64_t mt_cycles) {
   int32_t op1[32];
