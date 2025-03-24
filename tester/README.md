@@ -1,4 +1,26 @@
 # Jasmine Angle's ShmooTester
+
+## Setup
+
+### Python Environment
+
+Create a virtual environment using the package manager of your choice from the provided requirements.txt
+
+For example, using `venv`:
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### PSU
+
+The PSU will require some preliminary setup to ensure connectivity. Within `utils.py`, edit the following class values within the PSU class:
+
+- **`IDN`**: The IDN for the PSU you are using.
+- **`VISA_PATH`**: The GPIB LAN path for the PSU for a remote interface.
+
+## Usage
 ```
 usage: Jasmine's ShmooTester [-h] [-i INPUT] [-o OUTPUT] [-s SUITE] [--min-v MIN_V] [--max-v MAX_V] [--step-v STEP_V] [--min-freq MIN_FREQ] [--max-freq MAX_FREQ] [--step-freq STEP_FREQ] [--max-v-fail MAX_V_FAIL]
                                  [--retries RETRIES] [-f] [--psu-mode {INT,EXT}] [--psu-channel PSU_CHANNEL] [--no-psu] [-m] [-d] [-n] [-l] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--logfile LOGFILE]
