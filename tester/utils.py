@@ -159,20 +159,20 @@ class PSU:
 
     def query(self, querystr: str) -> str:
         """
-        Sends a query over GPIB to the SMU, expecting a result. This can be a
+        Sends a query over GPIB to the PSU, expecting a result. This can be a
         multiline script query.
 
         Args:
-            querystr (str): The query to send to the SMU.
+            querystr (str): The query to send to the PSU.
 
         Returns:
-            str: Data returned by the SMU.
+            str: Data returned by the PSU.
         """
         if self.dummy:
             self.dummy_log(f'QUERY: {querystr}')
 
             if querystr.startswith('MEAS'):
-                return '8.000000e-00\n'
+                return '0.000000e-00\n'
 
             if querystr == "*IDN?":
                 return self.IDN
@@ -183,13 +183,13 @@ class PSU:
 
     def write(self, cmdstr: str) -> str:
         """
-        Writes a command over GPIB to the SMU. This can be a multiline script.
+        Writes a command over GPIB to the PSU. This can be a multiline script.
 
         Args:
-            cmdstr (str): The command to send to the SMU.
+            cmdstr (str): The command to send to the PSU.
 
         Returns:
-            str: Data returned by the SMU.
+            str: Data returned by the PSU.
         """
         if self.dummy:
             self.dummy_log(f'QUERY: {cmdstr}')
@@ -611,7 +611,8 @@ class ShmooTestHarness:
 
     @staticmethod
     def terminal_confirm_params(voltages: list, frequencies: list,
-                                psu_mode: PSUSourceMode, no_psu: bool, psu_ch: int):
+                                psu_mode: PSUSourceMode, no_psu: bool, psu_ch: int,
+                                debug: bool):
         prompt = Fore.RED + Style.BRIGHT + 'Please confirm the following parameter sweep:\n' + Style.RESET_ALL
         prompt += Style.BRIGHT + 'Voltages: ' + str(voltages) + '\n' + Style.RESET_ALL
         prompt += Style.BRIGHT + 'Frequencies: ' + str(frequencies) + '\n' + Style.RESET_ALL
@@ -623,6 +624,9 @@ class ShmooTestHarness:
             prompt += Fore.MAGENTA + ' (SCPI commands will be redirected to a log. No power data will be collected.)'
 
         prompt += '\n' + Style.RESET_ALL
+        
+        if debug:
+            prompt += f'{Style.BRIGHT}{Fore.CYAN}Debugging Mode Enabled\n{Style.RESET_ALL}'
 
         while True:
             resp = input(f"{prompt} (y/n): ").lower()
@@ -633,6 +637,17 @@ class ShmooTestHarness:
                 return False
             else:
                 print("Invalid input. Please enter 'y' or 'n'.")
+
+    @staticmethod
+    def dbg_bp(command: str):
+        """
+        Debugging "breakpoint" within the host, permitting step-by-step test
+        execution.
+
+        Args:
+            command (str): Description of what will run after pressing Enter.
+        """
+        input(f'{Style.BRIGHT}{Fore.LIGHTRED_EX}[DBG] Press Enter to {command}.{Style.RESET_ALL}')
 
     @staticmethod
     def test_run_suite(suite_name: str, voltages: list, frequencies: list):
@@ -675,7 +690,7 @@ class ShmooTestHarness:
         Args:
             test (ShmooTest): The test to display a result from.
             passed (bool): True if the test passed.
-            csv_path (Optional[str], optional): Path to an output SMU Data
+            csv_path (Optional[str], optional): Path to an output PSU Data
                 File. Defaults to None.
         """
         if artifact.status == TestStatus.PASS:
@@ -685,7 +700,7 @@ class ShmooTestHarness:
         
         file_str = ''
         if artifact.csv_path:
-            file_str = f' (SMU Data File: {artifact.csv_path})'
+            file_str = f' (PSU Data File: {artifact.csv_path})'
         LOGGER.info(f'{status_str} Test ID {test.id} [{test.name}]{file_str}')
 
 
@@ -776,7 +791,7 @@ class ShmooTestHarness:
     def save_data_as_csv(data: np.ndarray, status: TestStatus, dir: str,
                          testid: int, voltage: float, freq: str) -> str:
         """
-        Saves a NumPy array containing SMU-acquired data to a standardized CSV
+        Saves a NumPy array containing PSU-acquired data to a standardized CSV
         file.
 
         Returns:
@@ -801,9 +816,9 @@ class ShmooTestHarness:
 
     @staticmethod
     def run_suite(suite_name: str, voltages: list, frequencies: list,
-                  max_cmul_freq_fails: int, psu_mode: PSUSourceMode,
-                  psu_dummy: bool, psu_channel: int
-                  )-> ShmooSuiteResults:
+                  max_consec_voltage_fails: int, freq_retries: int,
+                  psu_mode: PSUSourceMode, psu_dummy: bool, psu_channel: int,
+                  debug: bool=False, no_upload: bool=False)-> ShmooSuiteResults:
         """
         Runs a test with the full flow, along with serial instantiation, for
         a given test harness.
@@ -812,19 +827,34 @@ class ShmooTestHarness:
             suite_name (str): The name of the registered suite to run.
             voltages (list): List of voltages to sweep.
             frequencies (list): List of frequencies (in MHz) to sweep.
-            max_cmul_freq_fails (int): Max number of cumulative
-                failures permitted for a given voltage. For example, a value of
-                2 means that if two subsequent failures occur for a voltage,
+            max_consec_voltage_fails (int): Max number of consecutive
+                failures permitted for a given voltage. For example, a value
+                of 2 means that if two subsequent failures occur for a voltage,
                 all other frequencies will be skipped for that voltage. Setting
                 this value to 0 disables the check overall.
+            freq_retries (int): Max number of cumulative
+                retries permitted for a given frequency. For example, a value
+                of 1 means that if one failure occurs at a specific frequency
+                for the current voltage, the test will be re-run. Once the test
+                exceeds the provided retries, the tester will then follow
+                necessary failover rules based on the `max_cmul_voltage_fails`
+                value.
             psu_mode (PSUSourceMode): Sets the remote sense relay sensing mode
                 for the PSU.
             psu_dummy (bool): True if we want to not use the PSU, but rather
                 redirect all SCPI commands to the log.
             psu_channel (int): Channel to control on the PSU connected to the
                 DUT.
+            debug (bool, optional): Enables debugging mode, which has a step-
+                by-step debugging system and infinite timeouts. Defaults to
+                False.
+            no_upload (bool, optional): If True, disables reprogramming the
+                chip via OpenOCD. Defaults to False.
         """
         LOGGER.info(f'{Style.BRIGHT}{Fore.YELLOW}--- Starting enumeration for test suite "{suite_name}" ---{Style.RESET_ALL}')
+        
+        # Toggle debugging breakpoints
+        dbg_bp = ShmooTestHarness.dbg_bp if debug else lambda x: None
         
         ### PSU Initialization ###
         psu = PSU(dummy=psu_dummy)
@@ -835,73 +865,100 @@ class ShmooTestHarness:
         # Retrieve the correct test suite to run.
         suite = ShmooTestHarness.TEST_SUITES[suite_name]
 
+        # Convert all frequencies to hertz
+        frequencies = [int(x) * 1000000 for x in frequencies]
+
         results = ShmooSuiteResults(suite)
         results.voltage_range = [float(v) for v in voltages]
-        results.freq_range = [int(f) * 1000000 for f in frequencies]
+        results.freq_range = frequencies.copy()
         ShmooTestHarness.log_as_misc(f'Output will be stored within "{results.output_dir}/"')
 
 
         # This routine treats voltages and frequencies as a stack, such that we
         # can re-attempt at will. 
         for _, test in suite.tests.items():
+            test_timeout = None if debug else test.timeout
 
             # test_results = ShmooTestResults(suite, suite_results.result_path)
             pending_voltages_stack = deque(voltages)
             while pending_voltages_stack:
                 cur_v = float(pending_voltages_stack.popleft())
 
-                # Count of how many previous freq. tests failed (to know when to
-                # stop trying, perhaps by a configurable amount).
-                freq_last_failed = 0
+                # Count of how many previous tests at this voltage failed (to
+                # know when to stop trying, perhaps by a configurable amount).
+                voltage_consec_fails = 0
 
-                # Create a deque of available frequencies
-                pending_freqs_stack = deque(frequencies)
+                # Create a deque of tuples: (freq to test, # of retries)
+                pending_freqs_stack = deque(
+                    ((x, max_consec_voltage_fails) for x in frequencies))
 
-                def max_fail_check(art):
-                    nonlocal test, freq_last_failed, max_cmul_freq_fails, pending_freqs_stack, results, cur_v
+                def test_finish_handler(freq_hz: int, art: TestArtifact, retries: int,
+                                        data=None):
+                    nonlocal test, voltage_consec_fails, max_consec_voltage_fails, pending_freqs_stack, results, cur_v
+                    
+                    ShmooTestHarness.log_test_result(test, artifact)
+                    
                     # Update the cumulative failure counter
                     if art.status != TestStatus.PASS:
-                        freq_last_failed += 1
+
+                        # If failed, can we still retry the test?
+                        if retries > 0:
+                            remaining_retries = retries - 1
+                            ShmooTestHarness.log_as_misc(
+                                f'Retrying previous test "{test.name}" at {freq_hz} Hz ({remaining_retries} retries left).')
+                            pending_freqs_stack.appendleft(
+                                (freq_hz, remaining_retries))
+                            return
+                        else:
+                            ShmooTestHarness.log_as_misc(f'No retries available for failed test at {freq_hz} Hz.')
+                        
+                        voltage_consec_fails += 1
+                    
+                    results.add_result(test, cur_v, freq_hz, artifact, data)
 
                     # If we have exceeded our allowed cumulative fail count,
                     # stop processing freqs for this voltage.
-                    if max_cmul_freq_fails > 0 and freq_last_failed >= max_cmul_freq_fails:
-                        ShmooTestHarness.log_as_misc(f'Met maximum cumulative frequency failures for {cur_v} V. Skipping remaining frequency tests at this voltage: {pending_freqs_stack}.')
+                    if max_consec_voltage_fails > 0 and voltage_consec_fails >= max_consec_voltage_fails:
+                        ShmooTestHarness.log_as_misc(f'Met maximum consecutive failures for {cur_v} V. Skipping the following remaining frequency tests at this voltage: {pending_freqs_stack}.')
                         
                         # Clean out the rest of the frequencies
                         while pending_freqs_stack:
-                            freq_skipped = pending_freqs_stack.popleft()
+                            freq_skipped, retries = pending_freqs_stack.popleft()
                             results.add_result(test,
-                                cur_v, freq_skipped * 1000000,
+                                cur_v, freq_skipped,
                                 TestArtifact(TestStatus.SKIP_MAX_FREQ_FAIL))
 
                 while pending_freqs_stack:
-                    cur_clk = int(pending_freqs_stack.popleft())
-                    freq_hz = cur_clk * 1_000_000
+                    freq_hz, retries = pending_freqs_stack.popleft()
+                    freq_mhz = freq_hz // 1000000
 
-                    LOGGER.info(f'{Style.BRIGHT}{Fore.MAGENTA}--- [Test ID {test.id}] Running at {cur_clk} MHz and {cur_v} V ---{Style.RESET_ALL}')
+                    LOGGER.info(f'{Style.BRIGHT}{Fore.MAGENTA}--- [Test ID {test.id}] Running at {freq_mhz} MHz and {cur_v} V ---{Style.RESET_ALL}')
                     artifact = TestArtifact()
 
-                    ### Serial Port Evaluation / FTDI Reset / SMU Setup ###
+                    ### Serial Port Evaluation / FTDI Reset / PSU Setup ###
                     
                     # Set PSU Limits to 2A, variable voltage based on sweep.
+                    dbg_bp('set PSU limits')
                     psu.set_limits(psu_channel, voltage=cur_v)
                     psu.enable(psu_channel)
                     sleep(0.3)
                     
-                    ShmooTestHarness.reset_and_program_elf(suite.elf)
+                    if no_upload:
+                        ShmooTestHarness.log_as_misc("No Upload is True, skipping chip programming step.")
+                    else:
+                        dbg_bp('reset and program the chip')
+                        ShmooTestHarness.reset_and_program_elf(suite.elf)
 
+                    dbg_bp('attempt ENQ/ACK-verified UART connection')
                     ser = SerialDebug.create(ShmooTestHarness.UART_BAUD_RATE,
-                                             timeout=test.timeout)
+                                             timeout=test_timeout)
 
                     if not ser:
                         ShmooTestHarness.log_as_chip(
                             f'Unable to connect to the chip over UART. No destinations available for ENQ connection handshake.',
                             red=True)
                         artifact.status = TestStatus.FAIL_NO_UART
-                        ShmooTestHarness.log_test_result(test, artifact)
-                        results.add_result(test, cur_v, freq_hz, artifact)
-                        max_fail_check(artifact)
+                        test_finish_handler(freq_hz, artifact, retries)
                         continue
 
                     ser.flushInput()
@@ -910,6 +967,7 @@ class ShmooTestHarness:
                     ### Begin Host<-->Chip Communication ###
 
                     # Host sends a signal for the start of header (SOH)
+                    dbg_bp('send host payload to chip')
                     ShmooTestHarness.log_as_host("Sending Start of Header (SOH)")
                     ser.write(b'\x01')
 
@@ -947,13 +1005,11 @@ class ShmooTestHarness:
                     if not ser_data:
                         # Timeout occurred, treat as chip fail
                         ShmooTestHarness.log_as_chip(
-                            f'No BEL (7) payload acknowledgment was received within timeout period ({test.timeout} seconds).',
+                            f'No BEL (7) payload acknowledgment was received within timeout period ({test_timeout} seconds).',
                             red=True)
-                        artifact.status = TestStatus.FAIL_NO_BEL
-                        ShmooTestHarness.log_test_result(test, artifact)
-                        results.add_result(test, cur_v, freq_hz, artifact)
                         ser.close()
-                        max_fail_check(artifact)
+                        artifact.status = TestStatus.FAIL_NO_BEL
+                        test_finish_handler(freq_hz, artifact, retries)
                         continue
                     
                     ShmooTestHarness.log_as_chip(
@@ -969,13 +1025,13 @@ class ShmooTestHarness:
                     etb_data = None
                     timeout_time = start_time + timedelta(seconds=test.timeout)
                     end_time = None
-                    while not done and datetime.now() <= timeout_time:
+                    while debug or (not done and datetime.now() <= timeout_time):
                         while not ser.in_waiting and datetime.now() <= timeout_time:
                             meas_v.append(psu.query(f"MEAS:VOLT? CH{psu_channel}"))
                             meas_i.append(psu.query(f"MEAS:CURR? CH{psu_channel}"))
 
                         # If we still don't have UART data, then test timed out.
-                        if not ser.in_waiting:
+                        if not debug and not ser.in_waiting:
                             break
 
                         while ser.in_waiting:
@@ -991,11 +1047,9 @@ class ShmooTestHarness:
                         ShmooTestHarness.log_as_chip(
                             f'No ETB (23) test completion acknowledgment was received within timeout period ({test.timeout} seconds).',
                             red=True)
-                        artifact.status = TestStatus.FAIL_NO_ETB
-                        ShmooTestHarness.log_test_result(test, artifact)
-                        results.add_result(test, cur_v, freq_hz, artifact)
                         ser.close()
-                        max_fail_check(artifact)
+                        artifact.status = TestStatus.FAIL_NO_ETB
+                        test_finish_handler(freq_hz, artifact, retries)
                         continue
                     
                     ShmooTestHarness.log_as_chip(
@@ -1034,19 +1088,20 @@ class ShmooTestHarness:
                         artifact.status = TestStatus.FAIL_CHECK
                     artifact.check_data = check_data
                     
-                    # Parse the data from the SMU and form it into a matrix.
-                    timestamps = np.linspace(0.0, test_time.microseconds, num=len(meas_v), endpoint=True)
+                    # Parse the data from the PSU and form it into a matrix.
+                    timestamps = np.linspace(0.0, test_time.microseconds,
+                                             num=len(meas_v), endpoint=True)
                     meas_as_text = np.column_stack((meas_v, timestamps, meas_i))
                     measurements = ShmooTestHarness.np_arr_to_float_vectorized(
                         np.char.strip(meas_as_text), np.number)
 
                     LOGGER.debug(f'[PSU Measurement Buffer Content] {measurements}')
 
-                    # Generate and save a CSV of the SMU data.
+                    # Generate and save a CSV of the PSU data.
                     if artifact.has_measurements:
                         csv_path = ShmooTestHarness.save_data_as_csv(
                             measurements, artifact.status, results.output_dir,test.id,
-                            cur_v, cur_clk)
+                            cur_v, freq_mhz)
                         artifact.csv_path = csv_path
                     
                     # Output appropriate result to the log and keep track of
@@ -1055,7 +1110,7 @@ class ShmooTestHarness:
                     results.add_result(test, cur_v, freq_hz, artifact, measurements)
                     ser.close()
 
-                    max_fail_check(artifact)
+                    test_finish_handler(artifact)
 
         ShmooTestHarness.make_shmoo_plot(results)
         return results
