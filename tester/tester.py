@@ -28,8 +28,8 @@ if __name__ == '__main__':
 
     # Called directly, default to CLI.
     parser = argparse.ArgumentParser(
-                    prog='Jasmine\'s SMU ShmooTester',
-                    description='Performs Shmoo testing using the default Bringup communication protocol',
+                    prog='Jasmine\'s ShmooTester',
+                    description='Performs Shmoo testing using the default BEL/ETB Bringup communication protocol.',
                     epilog='Created by Jasmine Angle (angle@berkeley.edu)')
     
     parser.add_argument('-i', '--input', help='Path to an existing Shmoo test run to import for Shmoo plot generation. If specified, this will only generate a Shmoo plot from existing data and not run any tests.')
