@@ -22,10 +22,12 @@ The PSU will require some preliminary setup to ensure connectivity. Within `util
 
 ## Usage
 ```
-usage: Jasmine's ShmooTester [-h] [-i INPUT] [-o OUTPUT] [-s SUITE] [--min-v MIN_V] [--max-v MAX_V] [--step-v STEP_V] [--min-freq MIN_FREQ] [--max-freq MAX_FREQ] [--step-freq STEP_FREQ] [--max-v-fail MAX_V_FAIL]
-                                 [--retries RETRIES] [-f] [--psu-mode {INT,EXT}] [--psu-channel PSU_CHANNEL] [--no-psu] [-m] [-d] [-n] [-l] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--logfile LOGFILE]
+usage: Jasmine's ShmooTester [-h] [-i INPUT] [-o OUTPUT] [-s SUITE] [-t TESTS] [--min-v MIN_V] [--max-v MAX_V] [--step-v STEP_V]
+                             [--min-freq MIN_FREQ] [--max-freq MAX_FREQ] [--step-freq STEP_FREQ] [--max-v-fail MAX_V_FAIL] [--retries RETRIES]
+                             [-f] [--psu-mode {INT,EXT}] [--psu-channel PSU_CHANNEL] [--no-psu] [-m] [-d] [-n] [-l]
+                             [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--logfile LOGFILE]
 
-Performs Shmoo testing using the default Bringup communication protocol
+Performs Shmoo testing using the default BEL/ETB Bringup communication protocol.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -37,6 +39,8 @@ optional arguments:
 Shmoo Testing Options:
   -s SUITE, --suite SUITE
                         Name of the test suite to run
+  -t TESTS, --test TESTS
+                        ID of the test you wish to run (as a decimal number). This argument can be passed multiple times to run multiple specific tests within a test suite. If unspecified, all tests will run.
   --min-v MIN_V         Voltage lower bound
   --max-v MAX_V         Voltage upper bound (exclusive)
   --step-v STEP_V       Voltage step size

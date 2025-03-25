@@ -37,6 +37,7 @@ if __name__ == '__main__':
 
     args_test = parser.add_argument_group('Shmoo Testing Options')
     args_test.add_argument('-s', '--suite', help='Name of the test suite to run')
+    args_test.add_argument('-t', '--test', type=int, dest='tests', action='append', help='ID of the test you wish to run (as a decimal number). This argument can be passed multiple times to run multiple specific tests within a test suite. If unspecified, all tests will run.')
     args_test.add_argument('--min-v', dest='min_v', type=float, default='0.85', help='Voltage lower bound')
     args_test.add_argument('--max-v', dest='max_v', type=float, default='0.86', help='Voltage upper bound (exclusive)')
     args_test.add_argument('--step-v', dest='step_v', type=float, default='0.05', help='Voltage step size')
@@ -109,7 +110,8 @@ if __name__ == '__main__':
                 voltages, frequencies, psu_mode, args.no_psu, args.psu_channel,
                 args.debug):
             exit()
-        results = ShmooTestHarness.run_suite(args.suite, voltages, frequencies,
+        results = ShmooTestHarness.run_suite(args.suite, args.tests,
+                                   voltages, frequencies,
                                    max_consec_voltage_fails=args.max_v_fail,
                                    freq_retries=args.retries,
                                    psu_mode=psu_mode,

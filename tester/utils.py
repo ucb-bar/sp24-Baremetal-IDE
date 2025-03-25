@@ -821,7 +821,7 @@ class ShmooTestHarness:
         return new_arr
 
     @staticmethod
-    def run_suite(suite_name: str, voltages: list, frequencies: list,
+    def run_suite(suite_name: str, tests: Union[list[int], None], voltages: list, frequencies: list,
                   max_consec_voltage_fails: int, freq_retries: int,
                   psu_mode: PSUSourceMode, psu_dummy: bool, psu_channel: int,
                   output_path: str, debug: bool, no_upload: bool
@@ -832,6 +832,8 @@ class ShmooTestHarness:
 
         Args:
             suite_name (str): The name of the registered suite to run.
+            tests (Union[list[int], None]): Test IDs to run. If None, this will
+                run all tests for a provided test suite.
             voltages (list): List of voltages to sweep.
             frequencies (list): List of frequencies (in MHz) to sweep.
             max_consec_voltage_fails (int): Max number of consecutive
@@ -882,8 +884,18 @@ class ShmooTestHarness:
 
 
         # This routine treats voltages and frequencies as a stack, such that we
-        # can re-attempt at will. 
-        for _, test in suite.tests.items():
+        # can re-attempt at will.
+        if tests:
+            tests_to_run = [t for t in tests]
+            for test_id in tests:
+                if test_id not in suite.tests:
+                    LOGGER.warning(f'A registered test with ID {test_id} was not found for suite "{suite.name}"')
+                else:
+                    tests_to_run.append(suite.tests[test_id])
+        else:
+            tests_to_run = list(suite.tests.values())
+
+        for test in tests_to_run:
             test_timeout = None if debug else test.timeout
 
             # test_results = ShmooTestResults(suite, suite_results.result_path)
@@ -921,7 +933,7 @@ class ShmooTestHarness:
                         
                         voltage_consec_fails += 1
                     
-                    results.add_result(test, cur_v, freq_hz, artifact, data.T)
+                    results.add_result(test, cur_v, freq_hz, artifact, data.T if data is not None else data)
 
                     # If we have exceeded our allowed cumulative fail count,
                     # stop processing freqs for this voltage.
