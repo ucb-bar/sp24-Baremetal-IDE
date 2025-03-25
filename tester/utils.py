@@ -24,6 +24,8 @@ from serial.tools import list_ports
 import numpy as np
 
 from openocd import OpenOcdTclRpc
+from pyftdi.ftdi import Ftdi, UsbTools
+from pyftdi.gpio import *
 
 # I'm too tired to use vt100 commands
 from colorama import Fore, Style
@@ -728,7 +730,22 @@ class ShmooTestHarness:
         # Reset the chip.
         success = False
         while not success:
+            devices = UsbTools.build_dev_strings('ftdi', Ftdi.VENDOR_IDS, Ftdi.PRODUCT_IDS, Ftdi.list_devices())
+            if not devices:
+                raise Exception("No FTDI device found.")
+            LOGGER.debug('Available FTDI Devices: %s', str(devices))
+            for device in [d for d in devices if d[0].endswith('/1')]:
+                gcont = GpioMpsseController()
+                gcont.configure(device[0], direction=0x0100, frequency=10e6)
+                port = gcont.get_gpio()
+                LOGGER.debug(f"Resetting FTDI device {device}")
+                port.write(0x00)
+                sleep(.3)
+                while gcont.is_connected:
+                    gcont.close()
+
             # Attempt to launch OpenOCD subprocess
+        
             ocd_proc = None
             while not ocd_proc:
                 openocd_args = shlex.split("openocd -f ./platform/dsp24/dsp24.cfg")
@@ -760,19 +777,16 @@ class ShmooTestHarness:
                 try:
                     if not os.path.exists(elf):
                         raise Exception(f'Unable to find a binary file at "{elf}".')
-                    openocd.run('reset halt')
-                    ShmooTestHarness.log_as_misc(
-                        "Chip has been reset and is now halted.")
                     openocd.run(f'load_image {elf} 0x0 elf')
                     openocd.run('resume 0x80000000')
                     success = True
                 except TclException:
                     # The chip has not started up fast enough. Try again.
-                    ShmooTestHarness.log_as_misc('Failed to reset and program the chip. It is likely that you need to reset/re-program the FPGA. Trying again...')
+                    ShmooTestHarness.log_as_misc('Failed to program the chip. It is likely that you need to reset/re-program the FPGA. Trying again...')
                     ShmooTestHarness.kill_process_with_fire(ocd_proc)
                     continue
 
-            ShmooTestHarness.log_as_misc(f"Uploaded and started program {elf} via OpenOCD.")
+            ShmooTestHarness.log_as_misc(f"Uploaded program {elf} via OpenOCD.")
 
             # Try with all our might to kill OpenOCD
             ShmooTestHarness.kill_process_with_fire(ocd_proc)
