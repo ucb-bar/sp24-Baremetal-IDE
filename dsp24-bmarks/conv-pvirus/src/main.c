@@ -22,6 +22,35 @@
 #include "main.h"
 #include "chip_config.h"
 
+
+int test_conv_dma() {
+    //puts("Starting test");
+    uint16_t in_kernel[8] = {0x0000, 0x3C00, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000}; // {0, 1, 0, 0, 0, 0, 0, 0} in FP16
+    int8_t in_arr[8] = {1, 2, 3, 4, 5, 6, 7, 8};                                                            
+
+    //puts("Setting values of MMIO registers");
+    set_conv_params(conv_len, 1, in_kernel);
+
+    
+    //puts("Starting Convolution");
+    start_conv();
+
+    //printf("read from address: %x\n", conv_data);
+
+    //printf("Start DMA Write (C)\r\n");
+    write_conv_dma(0, conv_len, conv_data);
+    //printf("start read DMA\r\n");
+    read_conv_dma(1, conv_len, 0x8001000);
+    
+    //printf("\nRead written to memory address \n");
+    // for (int i = 0; i < conv_len; i++) {
+    //     uint64_t current_out = reg_read16(OUT_WRITE_ADDR + 2*i);         // the OUTPUT is a queue, each read gives one FP16
+    //     printf("[%d] 0x%x\r\n", i, current_out);
+    // }
+    //printf("\n\n");
+    //printf("TEST DONE \r\n");
+}
+
 void mac_pv_intrinsics(uint64_t mt_cycles) {
   int32_t op1[32];
 
@@ -37,10 +66,18 @@ void mac_pv_intrinsics(uint64_t mt_cycles) {
 
   start_roi();
   while(clint_get_time(CLINT) < target_cycles) {
-    set_conv_params(16, 1, ((uint64_t*) in_kernel));
-    write_conv_dma(0, 16, op1);
-    start_conv();
-    read_conv_dma(0, 16, CONV_BASE + 0x20);
+    // set_conv_params(16, 1, ((uint64_t*) in_kernel));
+    // // write_conv_dma(0, 16, op1);
+    // for(int i=0; i<(16); i+=1) {
+    //     reg_write64(CONV_BASE, op1[i]);
+    // }
+    // start_conv();
+    // // read_conv_dma(0, 16, 0x8001000);
+    // for(int i=0; i<(16); i+=1) {
+    //     reg_read32(CONV_OUTPUT_ADDR);
+    // }
+    test_conv_dma();
+    // msleep(2000);
   }
   end_roi();
   xmit_payload_packet(NULL, 0);
