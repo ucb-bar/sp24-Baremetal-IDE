@@ -64,15 +64,17 @@ void mac_pv_mh(uint8_t num_harts, uint64_t mt_cycles) {
 int main(int argc, char **argv) {
   while (1) {
     test_info t = init_test(UART1);
-    uint64_t cycles = (*((uint64_t*) &t.payload)) * chip_mtime_freq / 500;
+    uint8_t harts = ((SaturnMCPayload*) t.payload_buffer)->num_harts;
+    uint64_t cycles = ((SaturnMCPayload*) t.payload_buffer)->time_ms * chip_mtime_freq / 500;
 
     switch (t.testid) {
       case 0:
-        mac_pv_intrinsics(cycles);
+        mac_pv_mh(harts, cycles);
         break;
       // case 1:
       //   mac_pv_asm(cycles);
     }
+    clean_test(t);
   }
 
 

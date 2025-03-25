@@ -60,7 +60,10 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+typedef struct __attribute__((packed)) {
+  uint8_t num_harts;
+  uint64_t time_ms;
+} SaturnMCPayload;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
