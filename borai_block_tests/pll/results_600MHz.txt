@@ -1,0 +1,82 @@
+--------------- [HART ID 0] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 2459 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000000 (has offset of 0 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x9800df68:     1       1       1       1       1       1       1       1
+0x9800dfa8:     1       1       1       1       1       1       1       1
+0x9800dfe8:     1       1       1       1       1       1       1       1
+0x9800e028:     1       1       1       1       1       1       1       1
+0x9800e068:     1       1       1       1       1       1       1       1
+0x9800e0a8:     1       1       1       1       1       1       1       1
+0x9800e0e8:     1       1       1       1       1       1       1       1
+0x9800e128:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14663 cycles.
+VERIFY: --- Comparing DEST_REG values directly ---
+VERIFY: [CORRECT :D]    (Row 0)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 1)         Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 2)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 3)         Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 4)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 5)         Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 6)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 7)         Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 8)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 9)         Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 10)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 11)                Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 12)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 13)                Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 14)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 15)                Expected        1088    Got     1088
+VERIFY: --- Comparing corrected driver values ---
+VERIFY: [CORRECT :D]    (Row 0)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 1)         Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 2)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 3)         Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 4)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 5)         Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 6)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 7)         Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 8)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 9)         Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 10)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 11)                Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 12)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 13)                Expected        1088    Got     1088
+VERIFY: [CORRECT :D]    (Row 14)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 15)                Expected        1088    Got     1088
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x440   0x40    0x440   0x40    0x440   0x40    0x440
+0x8002010:      0x40    0x440   0x40    0x440   0x40    0x440   0x40    0x440
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      64      1088    64      1088    64      1088    64      1088
+0x8800280:      64      1088    64      1088    64      1088    64      1088
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x40    0x440   0x40    0x440   0x40    0x440   0x40    0x440
+0x8800280:      0x40    0x440   0x40    0x440   0x40    0x440   0x40    0x440
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+DMA Destination Output Memcpy Dump (Int8 Hexadecimal, Full Range):
+0x8000000:      0x40    0x440   0x40    0x440   0x40    0x440   0x40    0x440
+0x8000010:      0x40    0x440   0x40    0x440   0x40    0x440   0x40    0x440
+0x8000020:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8000030:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 0] Finished test "All ones offset test" ---------------

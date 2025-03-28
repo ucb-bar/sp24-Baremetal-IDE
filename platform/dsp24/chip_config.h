@@ -12,18 +12,28 @@ extern "C" {
 #include "uart.h"
 #include "gpio.h"
 #include "pwm.h"
+<<<<<<< HEAD
 #include "pll.h"
 #include "hal_rcc.h"
+=======
+>>>>>>> borai
 
 
 // ================================
 //  System Clock
 // ================================
 // system clock frequency in Hz
+<<<<<<< HEAD
 #define SYS_CLK_FREQ   50000000
 
 // CLINT time base frequency in Hz
 #define MTIME_FREQ     50000
+=======
+#define SYS_CLK_FREQ   500000000
+
+// CLINT time base frequency in Hz
+#define MTIME_FREQ     500000
+>>>>>>> borai
 
 
 // ================================
@@ -52,8 +62,12 @@ extern "C" {
 
 /* Peripheral Pointer Definition */
 #define UART0_BASE              (UART_BASE)
+<<<<<<< HEAD
 #define UART1_BASE              (UART_BASE + 0x1000)
 #define GPIOC_BASE              (GPIO_BASE + 0x2000)
+=======
+#define UART1_BASE              (UART_BASE + 0x1000U)
+>>>>>>> borai
 
 /* Peripheral Structure Definition */
 #define RCC                     ((RCC_Type *)RCC_BASE)
@@ -64,7 +78,12 @@ extern "C" {
 #define PLIC_CC                 ((PLIC_ContextControl_Type *)(PLIC_BASE + 0x00200000U))
 #define UART0                   ((UART_Type *)UART0_BASE)
 #define UART1                   ((UART_Type *)UART1_BASE)
+<<<<<<< HEAD
 #define GPIOC                   ((GPIO_Type *)GPIOC_BASE)
+=======
+
+
+>>>>>>> borai
 
 
 #ifdef __cplusplus

@@ -1,0 +1,944 @@
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 1413 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000000 (has offset of 0 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14854 cycles.
+VERIFY: [CORRECT :D]    (Row 0)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 1)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 2)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 3)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 4)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 5)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 6)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 7)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 8)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 9)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 10)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 11)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 12)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 13)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 14)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 15)                Expected        64      Got     64
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      64      64      64      64      64      64      64      64
+0x8800280:      64      64      64      64      64      64      64      64
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8800280:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 1129 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000010 (has offset of 16 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14619 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     128
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      128     128     128     128     128     128     128     128
+0x8800280:      128     128     128     128     128     128     128     128
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x80    0x80    0x80    0x80    0x80    0x80    0x80    0x80
+0x8800280:      0x80    0x80    0x80    0x80    0x80    0x80    0x80    0x80
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 1015 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000020 (has offset of 32 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14871 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     192
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      192     192     192     192     192     192     192     192
+0x8800280:      192     192     192     192     192     192     192     192
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0
+0x8800280:      0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 983 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000030 (has offset of 48 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14682 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     256
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      256     256     256     256     256     256     256     256
+0x8800280:      256     256     256     256     256     256     256     256
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x100   0x100   0x100   0x100   0x100   0x100   0x100   0x100
+0x8800280:      0x100   0x100   0x100   0x100   0x100   0x100   0x100   0x100
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 968 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000040 (has offset of 64 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [CORRECT :D]    (Row 0)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 1)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 2)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 3)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 4)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 5)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 6)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 7)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 8)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 9)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 10)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 11)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 12)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 13)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 14)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 15)                Expected        64      Got     64
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      64      64      64      64      64      64      64      64
+0x8800280:      64      64      64      64      64      64      64      64
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8800280:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 989 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000050 (has offset of 80 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     128
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      128     128     128     128     128     128     128     128
+0x8800280:      128     128     128     128     128     128     128     128
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x80    0x80    0x80    0x80    0x80    0x80    0x80    0x80
+0x8800280:      0x80    0x80    0x80    0x80    0x80    0x80    0x80    0x80
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 973 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000060 (has offset of 96 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     192
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      192     192     192     192     192     192     192     192
+0x8800280:      192     192     192     192     192     192     192     192
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0
+0x8800280:      0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 973 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000070 (has offset of 112 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     256
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      256     256     256     256     256     256     256     256
+0x8800280:      256     256     256     256     256     256     256     256
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x100   0x100   0x100   0x100   0x100   0x100   0x100   0x100
+0x8800280:      0x100   0x100   0x100   0x100   0x100   0x100   0x100   0x100
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 963 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000080 (has offset of 0 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [CORRECT :D]    (Row 0)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 1)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 2)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 3)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 4)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 5)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 6)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 7)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 8)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 9)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 10)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 11)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 12)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 13)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 14)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 15)                Expected        64      Got     64
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      64      64      64      64      64      64      64      64
+0x8800280:      64      64      64      64      64      64      64      64
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8800280:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 975 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x85000090 (has offset of 16 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     128
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      128     128     128     128     128     128     128     128
+0x8800280:      128     128     128     128     128     128     128     128
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x80    0x80    0x80    0x80    0x80    0x80    0x80    0x80
+0x8800280:      0x80    0x80    0x80    0x80    0x80    0x80    0x80    0x80
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 973 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x850000a0 (has offset of 32 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     192
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      192     192     192     192     192     192     192     192
+0x8800280:      192     192     192     192     192     192     192     192
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0
+0x8800280:      0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 989 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x850000b0 (has offset of 48 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     256
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      256     256     256     256     256     256     256     256
+0x8800280:      256     256     256     256     256     256     256     256
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x100   0x100   0x100   0x100   0x100   0x100   0x100   0x100
+0x8800280:      0x100   0x100   0x100   0x100   0x100   0x100   0x100   0x100
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 963 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x850000c0 (has offset of 64 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [CORRECT :D]    (Row 0)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 1)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 2)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 3)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 4)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 5)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 6)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 7)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 8)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 9)         Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 10)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 11)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 12)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 13)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 14)                Expected        64      Got     64
+VERIFY: [CORRECT :D]    (Row 15)                Expected        64      Got     64
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      64      64      64      64      64      64      64      64
+0x8800280:      64      64      64      64      64      64      64      64
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8800280:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 989 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x850000d0 (has offset of 80 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     128
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     128
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      128     128     128     128     128     128     128     128
+0x8800280:      128     128     128     128     128     128     128     128
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x80    0x80    0x80    0x80    0x80    0x80    0x80    0x80
+0x8800280:      0x80    0x80    0x80    0x80    0x80    0x80    0x80    0x80
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 983 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x850000e0 (has offset of 96 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     192
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     192
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      192     192     192     192     192     192     192     192
+0x8800280:      192     192     192     192     192     192     192     192
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0
+0x8800280:      0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0    0xc0
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------
+--------------- [HART ID 2] Starting test "All ones offset test" ---------------
+Clearing destination array...Done!
+DMA OK (Finished in 973 cycles)
+VERIFY: --- DMA Verify MAC Results Utility ---
+VERIFY: DMA Stride:     64
+VERIFY: Destination Address:    0x8000000
+VERIFY: Source Address: 0x850000f0 (has offset of 112 bytes)
+VERIFY: Row Count:      16
+VERIFY: Operand Buffer Input Dump (Int8):
+0x90017f48:     1       1       1       1       1       1       1       1
+0x90017f88:     1       1       1       1       1       1       1       1
+0x90017fc8:     1       1       1       1       1       1       1       1
+0x90018008:     1       1       1       1       1       1       1       1
+0x90018048:     1       1       1       1       1       1       1       1
+0x90018088:     1       1       1       1       1       1       1       1
+0x900180c8:     1       1       1       1       1       1       1       1
+0x90018108:     1       1       1       1       1       1       1       1
+VERIFY: DMA Operand Register Dump (Int8):
+0x8800040:      1       1       1       1       1       1       1       1
+0x8800240:      1       1       1       1       1       1       1       1
+0x8800440:      1       1       1       1       1       1       1       1
+0x8800640:      1       1       1       1       1       1       1       1
+0x8800840:      1       1       1       1       1       1       1       1
+0x8800a40:      1       1       1       1       1       1       1       1
+0x8800c40:      1       1       1       1       1       1       1       1
+0x8800e40:      1       1       1       1       1       1       1       1
+Allocating space for intended compuation result array in Scratchpad Bank...Done!
+VERIFY: Naive run completed in 14544 cycles.
+VERIFY: [INVALID D:]    (Row 0)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 1)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 2)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 3)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 4)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 5)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 6)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 7)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 8)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 9)         Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 10)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 11)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 12)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 13)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 14)                Expected        64      Got     256
+VERIFY: [INVALID D:]    (Row 15)                Expected        64      Got     256
+Intended Result Dump (Int8):
+0x8002000:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+0x8002010:      0x40    0x40    0x40    0x40    0x40    0x40    0x40    0x40
+DMA Destination Register Dump (Int8, Full Register):
+0x8800080:      256     256     256     256     256     256     256     256
+0x8800280:      256     256     256     256     256     256     256     256
+0x8800480:      0       0       0       0       0       0       0       0
+0x8800680:      0       0       0       0       0       0       0       0
+DMA Destination Register Dump (Int8 Hexadecimal, Full Register):
+0x8800080:      0x100   0x100   0x100   0x100   0x100   0x100   0x100   0x100
+0x8800280:      0x100   0x100   0x100   0x100   0x100   0x100   0x100   0x100
+0x8800480:      0000    0000    0000    0000    0000    0000    0000    0000
+0x8800680:      0000    0000    0000    0000    0000    0000    0000    0000
+VERIFY: !-- End DMA Verify MAC Results Utility --!
+--------------- [HART ID 2] Finished test "All ones offset test" ---------------

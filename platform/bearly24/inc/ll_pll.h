@@ -1,15 +1,14 @@
-#ifndef __PLL_H
-#define __PLL_H
+#ifndef __LL_PLL_H
+#define __LL_PLL_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "metal.h"
-
 typedef struct {
   __IO uint32_t SEL;                                    // 0x00
 } ClockSel_Type;
+
 
 typedef struct {
   __IO uint32_t FZ_TIGHT_LOOPB;                         // 0x00
@@ -79,10 +78,9 @@ typedef struct {
   __IO uint32_t PLLFWEN_B;                              // 0x100
 } PLL_Type;
 
-void configure_pll(PLL_Type* pll, uint32_t ratio, uint32_t fraction);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __PLL_H */
+#endif /* __LL_PLL_H */

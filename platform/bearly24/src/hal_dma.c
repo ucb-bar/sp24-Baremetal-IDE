@@ -27,14 +27,18 @@ void dma_init_memcpy(DMA_Type* DMAX, void* src, void* dst, uint64_t src_stride, 
 void dma_init_MAC(DMA_Type* DMAX, void* src, int8_t* operand, uint64_t src_stride, uint32_t count) {
   while (dma_operation_inprogress_and_not_error(DMAX));
 
-  uint64_t* op = (uint64_t*) operand;
-  for (size_t i = 0; i < 8; i++)
-    DMAX->OPERAND_REG[i] = op[i];
+  // int64_t* op = (int64_t *) operand;
+  // int64_t* reg = (int64_t *) DMAX->OPERAND_REG;
+  // for (size_t i = 0; i < 8; i++)  // 8*8byte-wide elements in operand = 64 total cols
+  //   reg[i] = op[i];
+  
+  // 8*8byte-wide elements in operand = 64 total cols
+  DMAX->MODE = MODE_MAC;
+  memcpy(DMAX->OPERAND_REG, operand, 64);
   DMAX->SRC_ADDR = (uint64_t) src;
   DMAX->SRCSTRIDE = src_stride;
-  DMAX->MODE = MODE_MAC;
   DMAX->COUNT = count;
-
+  
 }
 
 DMA_Status dma_await_result(DMA_Type* DMAX) {
@@ -51,8 +55,17 @@ DMA_Status dma_get_MAC_result(DMA_Type* DMAX, int16_t* dst, uint32_t count) {
     count = 32;
   
   if (dma_operation_complete(DMAX)){
+<<<<<<< HEAD
     for (size_t i = 0; i < count; i++)
       dst[i] = DMAX->DEST_REG[i];
+=======
+    // Copy count * 2^4 (count * 16 byte vals)
+    memcpy(dst, DMAX->DEST_REG, count << 4);
+    // int64_t* op = (int64_t *) operand;
+    // int64_t* reg = (int64_t *) DMAX->OPERAND_REG;
+    // for (size_t i = 0; i < count; i++)
+    //   dst[i] = ((int16_t *) DMAX->DEST_REG)[i];
+>>>>>>> borai
     return DMA_OK;
   }
   else {
@@ -60,4 +73,8 @@ DMA_Status dma_get_MAC_result(DMA_Type* DMAX, int16_t* dst, uint32_t count) {
         dst[i] = -1;
     return get_status(DMAX);
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> borai

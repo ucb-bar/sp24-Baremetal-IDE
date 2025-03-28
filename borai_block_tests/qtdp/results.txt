@@ -1,0 +1,156 @@
+--------------- [HART ID 2] Starting test "Simple multiply unsigned by 1" ---------------
+[GIVEN]
+Vector 1:       1       2       3       4       5       6       7       8
+Vector 2:       1       1       1       1       1       1       1       1
+Loading vectors...Done!
+Retrieving QT vectors for verification...Done!
+Stored 1:       1       2       3       4       5       6       7       8
+Stored 2:       1       1       1       1       1       1       1       1
+Generating naive solution:
+        [Element 0] 1 = 1 * 1 (Cumulative sum is now 1)
+        [Element 1] 2 = 2 * 1 (Cumulative sum is now 3)
+        [Element 2] 3 = 3 * 1 (Cumulative sum is now 6)
+        [Element 3] 4 = 4 * 1 (Cumulative sum is now 10)
+        [Element 4] 5 = 5 * 1 (Cumulative sum is now 15)
+        [Element 5] 6 = 6 * 1 (Cumulative sum is now 21)
+        [Element 6] 7 = 7 * 1 (Cumulative sum is now 28)
+        [Element 7] 8 = 8 * 1 (Cumulative sum is now 36)
+Naive Expected Output: 36
+Setting scale factor of 1, 0...Done!
+[WHEN]
+Dot product is executed...
+Done!
+V_DOTPROD destination register equals 36 (0x24)
+[THEN]
+The vectorized dot product should equal the naive result...Pass!
+--------------- [HART ID 2] Finished test "Simple multiply unsigned by 1" ---------------
+--------------- [HART ID 2] Starting test "Multiply incremented unsigned values" ---------------
+[GIVEN]
+Vector 1:       1       2       3       4       5       6       7       8
+Vector 2:       1       1       3       4       5       6       7       8
+Loading vectors...Done!
+Retrieving QT vectors for verification...Done!
+Stored 1:       1       2       3       4       5       6       7       8
+Stored 2:       1       1       3       4       5       6       7       8
+Generating naive solution:
+        [Element 0] 1 = 1 * 1 (Cumulative sum is now 1)
+        [Element 1] 2 = 2 * 1 (Cumulative sum is now 3)
+        [Element 2] 9 = 3 * 3 (Cumulative sum is now 12)
+        [Element 3] 16 = 4 * 4 (Cumulative sum is now 28)
+        [Element 4] 25 = 5 * 5 (Cumulative sum is now 53)
+        [Element 5] 36 = 6 * 6 (Cumulative sum is now 89)
+        [Element 6] 49 = 7 * 7 (Cumulative sum is now 138)
+        [Element 7] 64 = 8 * 8 (Cumulative sum is now 202)
+Naive Expected Output: 202
+Setting scale factor of 1, 0...Done!
+[WHEN]
+Dot product is executed...
+Done!
+V_DOTPROD destination register equals 202 (0xca)
+[THEN]
+The vectorized dot product should equal the naive result...Pass!
+--------------- [HART ID 2] Finished test "Multiply incremented unsigned values" ---------------
+--------------- [HART ID 2] Starting test "Unordered int8 unsigned values" ---------------
+[GIVEN]
+Vector 1:       53      127     0       62      123     -105    77      15
+Vector 2:       37      65      67      81      126     -126    8       55
+Loading vectors...Done!
+Retrieving QT vectors for verification...Done!
+Stored 1:       53      127     0       62      123     -105    77      15
+Stored 2:       37      65      67      81      126     -126    8       55
+Generating naive solution:
+        [Element 0] 1961 = 53 * 37 (Cumulative sum is now 1961)
+        [Element 1] 8255 = 127 * 65 (Cumulative sum is now 10216)
+        [Element 2] 0 = 0 * 67 (Cumulative sum is now 10216)
+        [Element 3] 5022 = 62 * 81 (Cumulative sum is now 15238)
+        [Element 4] 15498 = 123 * 126 (Cumulative sum is now 30736)
+        [Element 5] 13230 = -105 * -126 (Cumulative sum is now -21570)
+        [Element 6] 616 = 77 * 8 (Cumulative sum is now -20954)
+        [Element 7] 825 = 15 * 55 (Cumulative sum is now -20129)
+Naive Expected Output: -20129
+Setting scale factor of 1, 0...Done!
+[WHEN]
+Dot product is executed...
+Done!
+V_DOTPROD destination register equals 95 (0x5f)
+[THEN]
+The vectorized dot product should equal the naive result...FAIL! <----
+--------------- [HART ID 2] Finished test "Unordered int8 unsigned values" ---------------
+--------------- [HART ID 2] Starting test "Simple multiply by 0 test" ---------------
+[GIVEN]
+Vector 1:       1       2       3       4       5       6       7       8
+Vector 2:       0       0       0       0       0       0       0       0
+Loading vectors...Done!
+Retrieving QT vectors for verification...Done!
+Stored 1:       1       2       3       4       5       6       7       8
+Stored 2:       0       0       0       0       0       0       0       0
+Generating naive solution:
+        [Element 0] 0 = 1 * 0 (Cumulative sum is now 0)
+        [Element 1] 0 = 2 * 0 (Cumulative sum is now 0)
+        [Element 2] 0 = 3 * 0 (Cumulative sum is now 0)
+        [Element 3] 0 = 4 * 0 (Cumulative sum is now 0)
+        [Element 4] 0 = 5 * 0 (Cumulative sum is now 0)
+        [Element 5] 0 = 6 * 0 (Cumulative sum is now 0)
+        [Element 6] 0 = 7 * 0 (Cumulative sum is now 0)
+        [Element 7] 0 = 8 * 0 (Cumulative sum is now 0)
+Naive Expected Output: 0
+Setting scale factor of 1, 0...Done!
+[WHEN]
+Dot product is executed...
+Done!
+V_DOTPROD destination register equals 0 ( 0)
+[THEN]
+The vectorized dot product should equal the naive result...Pass!
+--------------- [HART ID 2] Finished test "Simple multiply by 0 test" ---------------
+--------------- [HART ID 2] Starting test "Simple multiply signed by 1" ---------------
+[GIVEN]
+Vector 1:       -1      -2      -3      -4      -5      -6      -7      -8
+Vector 2:       1       1       1       1       1       1       1       1
+Loading vectors...Done!
+Retrieving QT vectors for verification...Done!
+Stored 1:       -1      -2      -3      -4      -5      -6      -7      -8
+Stored 2:       1       1       1       1       1       1       1       1
+Generating naive solution:
+        [Element 0] -1 = -1 * 1 (Cumulative sum is now -1)
+        [Element 1] -2 = -2 * 1 (Cumulative sum is now -3)
+        [Element 2] -3 = -3 * 1 (Cumulative sum is now -6)
+        [Element 3] -4 = -4 * 1 (Cumulative sum is now -10)
+        [Element 4] -5 = -5 * 1 (Cumulative sum is now -15)
+        [Element 5] -6 = -6 * 1 (Cumulative sum is now -21)
+        [Element 6] -7 = -7 * 1 (Cumulative sum is now -28)
+        [Element 7] -8 = -8 * 1 (Cumulative sum is now -36)
+Naive Expected Output: -36
+Setting scale factor of 1, 0...Done!
+[WHEN]
+Dot product is executed...
+Done!
+V_DOTPROD destination register equals 220 (0xdc)
+[THEN]
+The vectorized dot product should equal the naive result...FAIL! <----
+--------------- [HART ID 2] Finished test "Simple multiply signed by 1" ---------------
+--------------- [HART ID 2] Starting test "Simple multiply all zero except one signed" ---------------
+[GIVEN]
+Vector 1:       -1      -2      -3      -4      -5      -6      -7      -8
+Vector 2:       1       0       0       0       0       0       0       0
+Loading vectors...Done!
+Retrieving QT vectors for verification...Done!
+Stored 1:       -1      -2      -3      -4      -5      -6      -7      -8
+Stored 2:       1       0       0       0       0       0       0       0
+Generating naive solution:
+        [Element 0] -1 = -1 * 1 (Cumulative sum is now -1)
+        [Element 1] 0 = -2 * 0 (Cumulative sum is now -1)
+        [Element 2] 0 = -3 * 0 (Cumulative sum is now -1)
+        [Element 3] 0 = -4 * 0 (Cumulative sum is now -1)
+        [Element 4] 0 = -5 * 0 (Cumulative sum is now -1)
+        [Element 5] 0 = -6 * 0 (Cumulative sum is now -1)
+        [Element 6] 0 = -7 * 0 (Cumulative sum is now -1)
+        [Element 7] 0 = -8 * 0 (Cumulative sum is now -1)
+Naive Expected Output: -1
+Setting scale factor of 1, 0...Done!
+[WHEN]
+Dot product is executed...
+Done!
+V_DOTPROD destination register equals 255 (0xff)
+[THEN]
+The vectorized dot product should equal the naive result...FAIL! <----
+--------------- [HART ID 2] Finished test "Simple multiply all zero except one signed" ---------------
