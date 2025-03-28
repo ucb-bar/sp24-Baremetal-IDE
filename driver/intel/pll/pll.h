@@ -8,10 +8,6 @@ extern "C" {
 #include "metal.h"
 
 typedef struct {
-  __IO uint32_t SEL;                                    // 0x00
-} ClockSel_Type;
-
-typedef struct {
   __IO uint32_t FZ_TIGHT_LOOPB;                         // 0x00
   __IO uint32_t FZ_LOCKFORCE;                           // 0x04
   __IO uint32_t FZ_LOCKCNT;                             // 0x08
