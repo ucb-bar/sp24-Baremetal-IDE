@@ -37,6 +37,7 @@ extern "C" {
 #include "riscv.h"
 #include "chip_config.h"
 #include "libbmark.h"
+#include "hthread.h"
 #include "rocketcore.h"
 
 

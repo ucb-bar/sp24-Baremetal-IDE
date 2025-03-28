@@ -37,11 +37,17 @@ test_info init_test(UART_Type *UARTx) {
     CLOCK_SELECTOR->TILE2 = 0;
     CLOCK_SELECTOR->TILE3 = 0;
     CLOCK_SELECTOR->CLKTAP = 0; //Ensure we are using the non PLL clock
+
     UART_InitType UART_init_config;
     UART_init_config.baudrate = 115200;
     UART_init_config.mode = UART_MODE_TX_RX;
     UART_init_config.stopbits = UART_STOPBITS_2;
     uart_init(debug_uart, &UART_init_config);
+
+    // Wake up all the secondary HARTs
+    for (int i = 1; i < 4; i++) {
+      CLINT->MSIP[i] = 1;
+    }
     first_iteration = false;
   }
 

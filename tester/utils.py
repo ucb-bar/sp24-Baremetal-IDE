@@ -777,6 +777,8 @@ class ShmooTestHarness:
                 try:
                     if not os.path.exists(elf):
                         raise Exception(f'Unable to find a binary file at "{elf}".')
+                    openocd.run('reset run')
+                    openocd.run('halt')
                     openocd.run(f'load_image {elf} 0x0 elf')
                     openocd.run('resume 0x80000000')
                     success = True

@@ -21,7 +21,7 @@ ocd:
 
 .PHONY: ocd-run
 ocd-run:
-	openocd -f ./platform/$(CHIP)/$(CHIP).cfg -c "reset halt" -c "load_image $(BINARY)" -c "resume 0x80000000"
+	openocd -f ./platform/$(CHIP)/$(CHIP).cfg -c "reset run" -c "halt" -c "load_image $(BINARY)" -c "resume 0x80000000"
 
 .PHONY: gdb
 gdb:
