@@ -36,14 +36,20 @@ void mac_pv_intrinsics(uint64_t mt_cycles) {
   vint8m4_t fac1 = __riscv_vle8_v_i8m4((int8_t*) &op1, vl);
   vint8m4_t fac2 = __riscv_vle8_v_i8m4((int8_t*) &op2, vl);
 
-  uint64_t start_time = clint_get_time(CLINT);
+  vint8m4_t acc = __riscv_vle8_v_i8m4((int8_t*) op1, vl);
+  vint8m4_t mul = __riscv_vle8_v_i8m4((int8_t*) op1, vl);
+
+  uint64_t start_time = get_cycles();
   uint64_t target_cycles = start_time + mt_cycles;
 
   start_roi();
-  while(clint_get_time(CLINT) < target_cycles) {
-    vint8m4_t acc = __riscv_vmacc_vv_i8m4(acc, fac1, fac2, vl);
+  while(get_cycles() < target_cycles) {
+    acc = __riscv_vmacc_vv_i8m4(acc, fac1, fac2, vl);
+    mul = __riscv_vdiv_vv_i8m4(fac1, fac2, vl);
   }
   end_roi();
+  volatile vint8m4_t result1 = acc;
+  volatile vint8m4_t result3 = mul;
   xmit_payload_packet(NULL, 0);
 }
 
@@ -54,7 +60,7 @@ void mac_pv_intrinsics(uint64_t mt_cycles) {
 int main(int argc, char **argv) {
   while (1) {
     test_info t = init_test(UART1);
-    uint64_t cycles = (*((uint64_t*) &t.payload)) * chip_mtime_freq / 500;
+    uint64_t cycles = (*((uint64_t*) &t.payload)) * chip_freq / 500;
 
     switch (t.testid) {
       case 0:

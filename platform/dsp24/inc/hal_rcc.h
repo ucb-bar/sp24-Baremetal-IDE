@@ -15,6 +15,7 @@
 extern "C" {
 #endif
 
+#include "metal.h"
 
 typedef struct {
   __IO uint32_t UNCORE;                                 // 0x00
@@ -24,6 +25,8 @@ typedef struct {
   __IO uint32_t TILE3;                                  // 0x10
   __IO uint32_t CLKTAP;                                 // 0x14
 } ClockSel_Type;
+
+void set_all_clocks(ClockSel_Type* clksel, uint32_t clksrc);
 
 #ifdef __cplusplus
 }
