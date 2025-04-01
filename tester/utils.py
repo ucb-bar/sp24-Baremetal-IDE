@@ -823,10 +823,10 @@ class ShmooTestHarness:
         return new_arr
 
     @staticmethod
-    def run_suite(suite_name: str, tests: Union[list[int], None], voltages: list, frequencies: list,
+    def run_suite(suite_name: str, tests: list[int] | None, voltages: list, frequencies: list,
                   max_consec_voltage_fails: int, freq_retries: int,
                   psu_mode: PSUSourceMode, psu_dummy: bool, psu_channel: int,
-                  output_path: str, debug: bool, no_upload: bool
+                  output_path: str, debug: bool, no_upload: bool, test_runs: int
                   )-> ShmooSuiteResults:
         """
         Runs a test with the full flow, along with serial instantiation, for
@@ -861,6 +861,8 @@ class ShmooTestHarness:
                 by-step debugging system and infinite timeouts.
             no_upload (bool): If True, disables reprogramming the
                 chip via OpenOCD.
+            test_runs (int): Number of runs of the test prior to capturing
+                power data. This can be used to warm up caches.
         """
         LOGGER.info(f'{Style.BRIGHT}{Fore.YELLOW}--- Starting enumeration for test suite "{suite_name}" ---{Style.RESET_ALL}')
         
@@ -982,153 +984,162 @@ class ShmooTestHarness:
                         test_finish_handler(freq_hz, artifact, retries)
                         continue
 
-                    ser.flushInput()
-                    ser.flushOutput()
-                    
-                    ### Begin Host<-->Chip Communication ###
+                    run_errored = False
+                    for run_number in range(test_runs):
 
-                    # Host sends a signal for the start of header (SOH)
-                    dbg_bp('send host payload to chip')
-                    ShmooTestHarness.log_as_host("Sending Start of Header (SOH)")
-                    ser.write(b'\x01')
-
-                    # Host sends the size of the data packet
-                    host_to_chip_payload, context = test.create_payload()
-                    artifact.host_payload = host_to_chip_payload
-                    artifact.context = context
-
-                    data_pkt_size = len(host_to_chip_payload)
-                    ShmooTestHarness.log_as_host(
-                        f'Size of header data packet is {data_pkt_size}')
-                    ser.write(data_pkt_size.to_bytes(4, byteorder='little'))
-
-                    # Host sends clock frequency over UART (Hz) (64-bit int)
-                    ShmooTestHarness.log_as_host(
-                        f'Clock frequency is {freq_hz} Hz')
-                    ser.write(freq_hz.to_bytes(8, byteorder='little'))
-
-                    # Host sends test ID (8-bit value)
-                    ShmooTestHarness.log_as_host(
-                        f'Current Test ID is {test.id}')
-                    ser.write(test.id.to_bytes(1, byteorder='little'))
-
-                    # Host sends header data
-                    ser.write(host_to_chip_payload)
-                    ShmooTestHarness.log_as_host(
-                        f'Sent the following payload: {host_to_chip_payload}')
-
-                    # Chip responds with BEL (7)
-                    ShmooTestHarness.log_as_host(
-                        f'Waiting for BEL (7, 0x07) payload acknowledgment...')
-
-                    ser_data = ser.read_until(b'\x07')
-                    start_time = datetime.now()
-                    if not ser_data:
-                        # Timeout occurred, treat as chip fail
-                        ShmooTestHarness.log_as_chip(
-                            f'No BEL (7) payload acknowledgment was received within timeout period ({test_timeout} seconds).',
-                            red=True)
-                        ser.close()
-                        artifact.status = TestStatus.FAIL_NO_BEL
-                        test_finish_handler(freq_hz, artifact, retries)
-                        continue
-                    
-                    ShmooTestHarness.log_as_chip(
-                        f'Sent BEL (7) payload acknowledgment!')
-                    
-                    ShmooTestHarness.log_as_host(
-                        f'Waiting for ETB (23, 0x17) test completion acknowledgment...')
-
-                    # Chip performs work. Host ignores any UART that is not ETB.
-                    meas_v = []
-                    meas_i = []
-                    done = False
-                    etb_data = None
-                    timeout_time = start_time + timedelta(seconds=test.timeout)
-                    end_time = None
-                    while debug or (not done and datetime.now() <= timeout_time):
-                        while not ser.in_waiting and datetime.now() <= timeout_time:
-                            meas_v.append(psu.query(f"MEAS:VOLT? CH{psu_channel}"))
-                            meas_i.append(psu.query(f"MEAS:CURR? CH{psu_channel}"))
-
-                        # If we still don't have UART data, then test timed out.
-                        if not debug and not ser.in_waiting:
+                        # This will check if a subtest failed. If so, break to outer attempt layer
+                        if run_errored:
                             break
+                        
+                        ShmooTestHarness.log_as_misc(f'Starting run {run_number + 1} of {test_runs}.')
 
-                        while ser.in_waiting:
-                            etb_data = ser.read()
-                            if etb_data == b'\x17':
-                                end_time = datetime.now()
-                                done = True
+                        ser.flushInput()
+                        ser.flushOutput()
+                        
+                        ### Begin Host<-->Chip Communication ###
+
+                        # Host sends a signal for the start of header (SOH)
+                        dbg_bp('send host payload to chip')
+                        ShmooTestHarness.log_as_host("Sending Start of Header (SOH)")
+                        ser.write(b'\x01')
+
+                        # Host sends the size of the data packet
+                        host_to_chip_payload, context = test.create_payload()
+                        artifact.host_payload = host_to_chip_payload
+                        artifact.context = context
+
+                        data_pkt_size = len(host_to_chip_payload)
+                        ShmooTestHarness.log_as_host(
+                            f'Size of header data packet is {data_pkt_size}')
+                        ser.write(data_pkt_size.to_bytes(4, byteorder='little'))
+
+                        # Host sends clock frequency over UART (Hz) (64-bit int)
+                        ShmooTestHarness.log_as_host(
+                            f'Clock frequency is {freq_hz} Hz')
+                        ser.write(freq_hz.to_bytes(8, byteorder='little'))
+
+                        # Host sends test ID (8-bit value)
+                        ShmooTestHarness.log_as_host(
+                            f'Current Test ID is {test.id}')
+                        ser.write(test.id.to_bytes(1, byteorder='little'))
+
+                        # Host sends header data
+                        ser.write(host_to_chip_payload)
+                        ShmooTestHarness.log_as_host(
+                            f'Sent the following payload: {host_to_chip_payload}')
+
+                        # Chip responds with BEL (7)
+                        ShmooTestHarness.log_as_host(
+                            f'Waiting for BEL (7, 0x07) payload acknowledgment...')
+
+                        ser_data = ser.read_until(b'\x07')
+                        start_time = datetime.now()
+                        if not ser_data:
+                            # Timeout occurred, treat as chip fail
+                            ShmooTestHarness.log_as_chip(
+                                f'No BEL (7) payload acknowledgment was received within timeout period ({test_timeout} seconds).',
+                                red=True)
+                            run_errored = True
+                            artifact.status = TestStatus.FAIL_NO_BEL
+                            test_finish_handler(freq_hz, artifact, retries)
+                            break
+                        
+                        ShmooTestHarness.log_as_chip(
+                            f'Sent BEL (7) payload acknowledgment!')
+                        
+                        ShmooTestHarness.log_as_host(
+                            f'Waiting for ETB (23, 0x17) test completion acknowledgment...')
+
+                        # Chip performs work. Host ignores any UART that is not ETB.
+                        meas_v = []
+                        meas_i = []
+                        done = False
+                        etb_data = None
+                        timeout_time = start_time + timedelta(seconds=test.timeout)
+                        end_time = None
+                        while debug or (not done and datetime.now() <= timeout_time):
+                            while not ser.in_waiting and datetime.now() <= timeout_time:
+                                meas_v.append(psu.query(f"MEAS:VOLT? CH{psu_channel}"))
+                                meas_i.append(psu.query(f"MEAS:CURR? CH{psu_channel}"))
+
+                            # If we still don't have UART data, then test timed out.
+                            if not debug and not ser.in_waiting:
                                 break
 
-                    # Chip responds with ETB (23)
-                    if not etb_data:
-                        # Timeout occurred, treat as chip fail
+                            while ser.in_waiting:
+                                etb_data = ser.read()
+                                if etb_data == b'\x17':
+                                    end_time = datetime.now()
+                                    done = True
+                                    break
+
+                        # Chip responds with ETB (23)
+                        if not etb_data:
+                            # Timeout occurred, treat as chip fail
+                            ShmooTestHarness.log_as_chip(
+                                f'No ETB (23) test completion acknowledgment was received within timeout period ({test.timeout} seconds).',
+                                red=True)
+                            run_errored = True
+                            artifact.status = TestStatus.FAIL_NO_ETB
+                            test_finish_handler(freq_hz, artifact, retries)
+                            break
+                        
                         ShmooTestHarness.log_as_chip(
-                            f'No ETB (23) test completion acknowledgment was received within timeout period ({test.timeout} seconds).',
-                            red=True)
-                        ser.close()
-                        artifact.status = TestStatus.FAIL_NO_ETB
-                        test_finish_handler(freq_hz, artifact, retries)
-                        continue
-                    
-                    ShmooTestHarness.log_as_chip(
-                        f'Sent ETB (23, 0x17) test completion acknowledgment!')
-                    
-                    test_time = end_time - start_time
-                    ShmooTestHarness.log_as_misc(f'Test completed in {test_time.microseconds} μs')
+                            f'Sent ETB (23, 0x17) test completion acknowledgment!')
+                        
+                        test_time = end_time - start_time
+                        ShmooTestHarness.log_as_misc(f'Test completed in {test_time.microseconds} μs')
 
-                    # Chip sends size of payload packet (in bytes) (32-bit int)
-                    ShmooTestHarness.log_as_host(
-                        f'Awaiting chip payload packet size...')
-                    payload_size_bytes = ser.read(4)
-                    payload_size = struct.unpack('<I', payload_size_bytes)[0]
-                    ShmooTestHarness.log_as_chip(
-                        f'Payload packet size is {payload_size} ({payload_size_bytes})')
+                        # Chip sends size of payload packet (in bytes) (32-bit int)
+                        ShmooTestHarness.log_as_host(
+                            f'Awaiting chip payload packet size...')
+                        payload_size_bytes = ser.read(4)
+                        payload_size = struct.unpack('<I', payload_size_bytes)[0]
+                        ShmooTestHarness.log_as_chip(
+                            f'Payload packet size is {payload_size} ({payload_size_bytes})')
 
-                    # Chip responds with Payload
-                    ShmooTestHarness.log_as_host(
-                        f'Waiting for chip payload packet...')
-                    
-                    chip_payload = ser.read(payload_size)
-                    artifact.chip_payload = chip_payload
+                        # Chip responds with Payload
+                        ShmooTestHarness.log_as_host(
+                            f'Waiting for chip payload packet...')
+                        
+                        chip_payload = ser.read(payload_size)
+                        artifact.chip_payload = chip_payload
 
-                    ShmooTestHarness.log_as_chip(
-                        f'Payload packet: {chip_payload}')
+                        ShmooTestHarness.log_as_chip(
+                            f'Payload packet: {chip_payload}')
 
-                    ### Post-Processing ###
+                        ### Post-Processing ###
 
-                    # Check the output against the ShmooTest function.
-                    artifact.has_measurements = True
+                        # Check the output against the ShmooTest function.
+                        artifact.has_measurements = True
 
-                    passed, check_data = test.check_output(context, chip_payload)
-                    if passed:
-                        artifact.status = TestStatus.PASS
-                    else:
-                        artifact.status = TestStatus.FAIL_CHECK
-                    artifact.check_data = check_data
-                    
-                    # Parse the data from the PSU and form it into a matrix.
-                    timestamps = np.linspace(0.0, test_time.microseconds,
-                                             num=len(meas_v), endpoint=True)
-                    meas_as_text = np.column_stack((meas_v, timestamps, meas_i))
-                    measurements = ShmooTestHarness.np_arr_to_float_vectorized(
-                        np.char.strip(meas_as_text), np.number)
+                        passed, check_data = test.check_output(context, chip_payload)
+                        if passed:
+                            artifact.status = TestStatus.PASS
+                        else:
+                            artifact.status = TestStatus.FAIL_CHECK
+                        artifact.check_data = check_data
+                        
+                        # Parse the data from the PSU and form it into a matrix.
+                        timestamps = np.linspace(0.0, test_time.microseconds,
+                                                num=len(meas_v), endpoint=True)
+                        meas_as_text = np.column_stack((meas_v, timestamps, meas_i))
+                        measurements = ShmooTestHarness.np_arr_to_float_vectorized(
+                            np.char.strip(meas_as_text), np.number)
 
-                    LOGGER.debug(f'[PSU Measurements] {measurements}')
+                        LOGGER.debug(f'[PSU Measurements] {measurements}')
 
-                    # Generate and save a CSV of the PSU data.
-                    if artifact.has_measurements:
-                        csv_path = ShmooTestHarness.save_data_as_csv(
-                            measurements, artifact.status, results.output_dir,
-                            test.id, cur_v, freq_mhz)
-                        artifact.csv_path = csv_path
-                    
-                    # Output appropriate result to the log and keep track of
-                    # the result in our results object.
+                        # Generate and save a CSV of the PSU data.
+                        if artifact.has_measurements and run_number+1 == test_runs:
+                            csv_path = ShmooTestHarness.save_data_as_csv(
+                                measurements, artifact.status, results.output_dir,
+                                test.id, cur_v, freq_mhz)
+                            artifact.csv_path = csv_path
+                        
+                        # Output appropriate result to the log and keep track of
+                        # the result in our results object.
+                        test_finish_handler(freq_hz, artifact, retries, measurements)
                     ser.close()
-                    test_finish_handler(freq_hz, artifact, retries, measurements)
 
         ShmooTestHarness.make_shmoo_plot(results)
         return results

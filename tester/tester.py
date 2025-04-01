@@ -50,6 +50,9 @@ if __name__ == '__main__':
     args_test.add_argument("--retries", dest="retries", type=int, default=0,
         help="Maximum number of retries permitted for a single frequency test at a given voltage. Retries are disabled (0) by default."
     )
+    args_test.add_argument("-r", "--num-runs", type=int, default=1,
+        help="Number of times to re-run the test"
+    )
     args_test.add_argument('-f', '--force', action='store_true', default=False, help='Force start without a confirmation of limits. Only use this setting if you are absolutely sure that the testbench setup is correct and you are aware of the assigned limits.')
     
     args_psu = parser.add_argument_group('PSU Configuration Options')
@@ -119,5 +122,6 @@ if __name__ == '__main__':
                                    psu_dummy=args.no_psu,
                                    debug=args.debug,
                                    no_upload=args.no_upload,
-                                   output_path=args.output)
+                                   output_path=args.output,
+                                   test_runs=args.num_runs)
 
