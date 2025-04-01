@@ -22,14 +22,12 @@ The PSU will require some preliminary setup to ensure connectivity. Within `util
 
 ## Usage
 ```
-usage: Jasmine's ShmooTester [-h] [-i INPUT] [-o OUTPUT] [-s SUITE] [-t TESTS] [--min-v MIN_V] [--max-v MAX_V] [--step-v STEP_V]
-                             [--min-freq MIN_FREQ] [--max-freq MAX_FREQ] [--step-freq STEP_FREQ] [--max-v-fail MAX_V_FAIL] [--retries RETRIES]
-                             [-f] [--psu-mode {INT,EXT}] [--psu-channel PSU_CHANNEL] [--no-psu] [-m] [-d] [-n] [-l]
-                             [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--logfile LOGFILE]
+usage: Jasmine's ShmooTester [-h] [-i INPUT] [-o OUTPUT] [-s SUITE] [-t TESTS] [--min-v MIN_V] [--max-v MAX_V] [--step-v STEP_V] [--min-freq MIN_FREQ] [--max-freq MAX_FREQ] [--step-freq STEP_FREQ] [--max-v-fail MAX_V_FAIL] [--retries RETRIES]
+                             [-r NUM_RUNS] [-f] [--psu-mode {INT,EXT}] [--psu-channel PSU_CHANNEL] [--no-psu] [-m] [-d] [-n] [-l] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--logfile LOGFILE]
 
 Performs Shmoo testing using the default BEL/ETB Bringup communication protocol.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
                         Path to an existing Shmoo test run to import for Shmoo plot generation. If specified, this will only generate a Shmoo plot from existing data and not run any tests.
@@ -51,6 +49,8 @@ Shmoo Testing Options:
   --max-v-fail MAX_V_FAIL
                         Maximum number of consecutive failures until the tester changes to a new voltage.
   --retries RETRIES     Maximum number of retries permitted for a single frequency test at a given voltage. Retries are disabled (0) by default.
+  -r NUM_RUNS, --num-runs NUM_RUNS
+                        Number of times to re-run the test for a given attempt. Only the final test run will have data captured. Any fail within these runs will fall back to the specified `attempts` count. Defaults to 1.
   -f, --force           Force start without a confirmation of limits. Only use this setting if you are absolutely sure that the testbench setup is correct and you are aware of the assigned limits.
 
 PSU Configuration Options:

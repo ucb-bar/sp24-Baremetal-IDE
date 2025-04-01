@@ -51,7 +51,7 @@ if __name__ == '__main__':
         help="Maximum number of retries permitted for a single frequency test at a given voltage. Retries are disabled (0) by default."
     )
     args_test.add_argument("-r", "--num-runs", type=int, default=1,
-        help="Number of times to re-run the test"
+        help="Number of times to re-run the test for a given attempt. Only the final test run will have data captured. Any fail within these runs will fall back to the specified `attempts` count. Defaults to 1."
     )
     args_test.add_argument('-f', '--force', action='store_true', default=False, help='Force start without a confirmation of limits. Only use this setting if you are absolutely sure that the testbench setup is correct and you are aware of the assigned limits.')
     
