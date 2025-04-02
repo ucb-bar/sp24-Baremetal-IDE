@@ -22,6 +22,27 @@ extern "C" {
 
 #define READ_CHECK_ADDR   0x0880008D
 
+typedef struct __attribute__((packed)) {
+    __IO uint64_t DATA_ENQUEUE;
+    uint32_t RESERVED0[6];
+    __IO uint64_t RESULT_DEQUEUE;
+    uint32_t RESERVED1[6];
+    __IO uint64_t KERNEL;
+    uint8_t RESERVED2[34];
+    __IO uint8_t STATUS;
+    uint8_t RESERVED3[1];
+    __IO uint8_t START;
+    __IO uint8_t CLEAR;
+    uint8_t RESERVED4[9];
+    __IO uint32_t LENGTH;
+    __IO uint16_t DILATION;
+    uint8_t RESERVED5[14];
+    __IO uint8_t ENQUEUE_REQ;
+    __IO uint8_t DEQUEUE_REQ;
+    __IO uint8_t USE_FLOAT;
+    __IO uint8_t RESET;
+} ConvAccel_Type;
+
 int set_conv_params(int len, uint16_t in_dilation, uint16_t* in_kernel);
 
 void write_conv_dma(int dma_num, int length, uint64_t* data);

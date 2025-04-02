@@ -14,6 +14,7 @@ extern "C" {
 #include "pwm.h"
 #include "pll.h"
 #include "hal_rcc.h"
+#include "hal_I2S.h"
 
 
 // ================================
@@ -65,7 +66,9 @@ extern "C" {
 #define UART0                   ((UART_Type *)UART0_BASE)
 #define UART1                   ((UART_Type *)UART1_BASE)
 #define GPIOC                   ((GPIO_Type *)GPIOC_BASE)
+#define I2S0                    ((I2S_Type *)I2S_BASE)
 
+#define CONVACCEL               ((ConvAccel_Type *)CONV_BASE)
 
 #ifdef __cplusplus
 }
