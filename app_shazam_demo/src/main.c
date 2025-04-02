@@ -176,8 +176,8 @@ void run_cpu_fft_test(uint32_t* data, bool print) {
   for(int i = 0; i < NFFT; i += 1) {
       // kiss_fft_cpx is struct with kiss_fft_scalar real, imaginary of chosen type (see FIXED_POINT)
       fftbuf[i].r = (int16_t) INPUT_DATA[0][i]; 
-      fftbuf[i].i = 0;
-      printf("[DATA DEBUG..] %d\r\n",  INPUT_DATA[0][i]);
+      fftbuf[i].i = 0; // (int16_t) (INPUT_DATA[0][i] >> 16); 
+      // printf("[DATA DEBUG..] %x\r\n",  INPUT_DATA[0][i]); // This should match the input vector line by line
   }
 
   /* DO THE FFT TRANFORMATION */
@@ -201,9 +201,9 @@ void run_cpu_fft_test(uint32_t* data, bool print) {
       }
       // printf("DEBUG: [%d] max(f): (%f)  max(d): (%d) while fabs: (%f) \r\n", i, max, max, fabs(fftoutbuf[i].r)); 
       /* Original defaults to float */
-      printf("[%d] [CPU] Imag: (%d)  Real: (%d)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r); 
+      // printf("[%d] [CPU] Imag: (%f)  Real: (%f)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r); 
       /* For uint16_t */
-      // printf("[%d] [CPU d] Imag: (%hd)  Real: (%hd)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r);
+      printf("[%d] [CPU] Imag: (%hd)  Real: (%hd)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r);
     }
     printf("Resulting frequency is about %f @ max = (%d), index = (%d)\r\n", (SAMPLING_FREQ) * index / NFFT, max, index);
   }
