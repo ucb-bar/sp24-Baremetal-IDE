@@ -1,5 +1,5 @@
-uint32_t fft_len = 128;
-#define NUM_TESTS 14
+// uint32_t fft_len = 128;
+// #define NUM_TESTS 1
 
 uint32_t fft_data[256] = {
 {
