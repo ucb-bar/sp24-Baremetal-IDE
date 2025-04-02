@@ -485,6 +485,7 @@ void run_cpu_fft_test_forever(bool print) {
 void app_main() {
   /* The main point of this app */
   // arguments: (print outputs?, )
+  printf("\r\n[Oh cool, you're being reasonable (is not an infinite loop).]\r\n");
   main_functionality_test(true);
   /* Infinite FFT DMA */
   printf("\r\n[YOU'RE RUNNING AN INFINITE TEST]\r\n");
