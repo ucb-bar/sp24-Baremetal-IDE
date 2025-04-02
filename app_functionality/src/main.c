@@ -38,15 +38,15 @@
 #include "../goldenmodel/fft_expected_data_128len_twinkle.h"
 
 /* INPUT OPTIONS */
-// #define INPUT_DATA fft_data_twinkle
-#define INPUT_DATA fft_data_131c
+#define INPUT_DATA fft_data_twinkle
+// #define INPUT_DATA fft_data_131c
 
 /* COMPARABLE OUTPUT OPTIONS */
-// #define OUTPUT_DATA fft_expected_data_twinkle
-#define OUTPUT_DATA fft_expected_data_131c
+#define OUTPUT_DATA fft_expected_data_twinkle
+// #define OUTPUT_DATA fft_expected_data_131c
 
 #ifndef NUM_TESTS
-#define NUM_TESTS 1 // 14 // will also be overwritten if in data file
+#define NUM_TESTS 14 // 14 // will also be overwritten if in data file
 #endif
 
 /* Private includes ----------------------------------------------------------*/
@@ -310,8 +310,10 @@ void app_main() {
 
   /* TEST SETUP */
 
+  printf("\r\n------------------------------------------------\r\n");
   printf("\r\n[STARTING TEST]\r\n");
   printf("\n[NUMBER OF TESTS: %d]\r\n", NUM_TESTS);
+  printf("------------------------------------------------\r\n");
 
   int error_cnt = 0;
   int error_cnt_dma = 0;
@@ -325,12 +327,13 @@ void app_main() {
     error_cnt_cpu += run_cpu_fft_test(i, true);
   }
   error_cnt = error_cnt_dma + error_cnt_raw + error_cnt_cpu;
-  printf("------------------------------------------\r\n");
+  printf("\r\n------------------------------------------------\r\n");
   printf("[ TOTAL ERRORS FOUND ACROSS (%d) TESTS : %d ]\r\n", NUM_TESTS, error_cnt);
   printf("[      DMA-FFT vs NUMPY : %d ]\r\n", error_cnt_dma);
   printf("[      RAW-FFT vs NUMPY : %d ]\r\n", error_cnt_raw);
   printf("[      CPU-FFT vs NUMPY : %d ]\r\n", error_cnt_cpu);
   printf("[DONE WITH ALL (RAW-FFT vs DMA-FFT vs CPU-FFT vs NUMPY) TESTS!]\r\n");
+  printf("------------------------------------------------\r\n");
 
   // Close the log file
   // fclose(log_file);
