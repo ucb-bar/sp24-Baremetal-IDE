@@ -39,7 +39,7 @@
 #ifndef NUM_TESTS
 #define NUM_TESTS 14 // 14 // will also be overwritten if in data file
 #endif
-#define RM_IMAG 0 // Remove imaginary values for easier output parsing
+#define RM_IMAG 1 // Remove imaginary values for easier output parsing
 
 
 /* Private includes ----------------------------------------------------------*/
@@ -87,6 +87,133 @@ void app_init() {
 //   fprintf(log_file, "%s", message);
 // }
 
+int fft_dma_test(int i) {
+  int error_cnt = 0;
+  uint64_t mhartid = READ_CSR("mhartid");
+
+  // printf("[TEST: %d] [FFT] vs [NUMPY]\r\n", i);
+  reset_fft();
+  // enable_Crack(); // bad idea to enable for initial tests 
+  uint64_t start_time_dmafft = READ_CSR("mcycle");
+  uint64_t start_instructions_dmafft = READ_CSR("minstret");
+
+  /* WRITE INPUT DATA */
+
+  write_fft_dma(DMA_NUM, NUM_POINTS, (uint32_t*) INPUT_DATA[i]); 
+
+  while(fft_busy() || fft_count_left()){
+    // continue; // not sure why this was added
+    printf("pain:%d, %d \r\n", fft_busy(), fft_count_left());
+  }; // This is needed since fft is blocking and is not a very good block
+
+  /* READ & COMPARE OUTPUT DATA */
+
+  /* Making use of DMA */
+
+  printf("[TEST: %d] [DMA-FFT] vs [NUMPY]\r\n", i);
+
+  // while (*(volatile char*) (DMA_BASE+0x1) != 0);
+
+  read_fft_real_dma(DMA_NUM, NUM_POINTS, DMA_ADDR1);
+
+  // while (*(volatile char*) (DMA_BASE+0x1) != 0);
+
+  uint32_t poll_dmafft, real_dmafft, imag_dmafft;
+  uint32_t poll_real_max_dmafft = 0;
+  uint32_t idx_max_dmafft = 0;
+  for(int j=0; j < NUM_POINTS; j++) {
+    poll_dmafft = reg_read32(DMA_ADDR1 + j*4); // DO NOT DO j*8, even if other people do!
+    int16_t poll_real_dmafft = poll_dmafft & 0xFFFF; // same effect as "(int16_t) poll"
+    int16_t poll_imag_dmafft = poll_dmafft >> 16; // untested - not needed for audio type inputs
+    int16_t expected_real_dmafft = (int16_t) OUTPUT_DATA[i][j];
+    if (poll_real_dmafft - expected_real_dmafft < -MAX_DIFF || poll_real_dmafft - expected_real_dmafft > MAX_DIFF) {
+      printf("[FAIL @ test=%d, idx=%d] [DMA-FFT] Actual: %lx, [NUMPY] Expected: %lx]\r\n", i, j, poll_real_dmafft, expected_real_dmafft);
+      error_cnt++;
+    }
+    if (RM_IMAG) {
+      printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real_dmafft, expected_real_dmafft);
+    } else {
+      printf("[idx=%d] Actual (r|i): %d | %d, Expected: %d \r\n", j, poll_real_dmafft, poll_imag_dmafft, expected_real_dmafft);
+    }
+
+    if (abs(poll_real_dmafft) > poll_real_max_dmafft) {
+      poll_real_max_dmafft = abs(poll_real_dmafft);
+      idx_max_dmafft = j;
+    }
+  }
+  // return vector [poll real, imag]
+  // return idx_max, poll_real_max, errorcnt
+
+  /* RESULTS & CLEANUP */
+
+  uint64_t end_time_dmafft = READ_CSR("mcycle");
+  uint64_t end_instructions_dmafft = READ_CSR("minstret");
+  printf("[TEST: %d] Peak at Index %d: Actual: %d, Expected: %d \r\n", i, idx_max_dmafft, poll_real_max_dmafft, OUTPUT_DATA[i][idx_max_dmafft]);
+  printf("ERRORS FOUND: %d\r\n", error_cnt);
+  printf("mcycle = %lu\r\n", end_time_dmafft - start_time_dmafft);
+  printf("minstret = %lu\r\n", end_instructions_dmafft - start_instructions_dmafft);
+
+  return error_cnt;
+}
+
+int fft_raw_test(int i) {
+  int error_cnt = 0;
+  uint64_t mhartid = READ_CSR("mhartid");
+
+  /* Not making use of DMA */
+
+  // printf("[TEST: %d] [FFT] vs [NUMPY]\r\n", i);
+  reset_fft();
+  // enable_Crack(); // bad idea to enable for initial tests 
+  uint64_t start_time_fft = READ_CSR("mcycle");
+  uint64_t start_instructions_fft = READ_CSR("minstret");
+
+  /* WRITE INPUT DATA */
+
+  write_fft_dma(DMA_NUM, NUM_POINTS, (uint32_t*) INPUT_DATA[i]); 
+
+  while(fft_busy() || fft_count_left()){
+    // continue; // not sure why this was added
+    printf("pain:%d, %d \r\n", fft_busy(), fft_count_left());
+  }; // This is needed since fft is blocking and is not a very good block
+
+  printf("[TEST: %d] [RAW-FFT] vs [NUMPY]\r\n", i);
+
+  uint32_t poll_fft;
+  uint32_t poll_real_max_fft = 0;
+  uint32_t idx_max_fft = 0;
+
+  for(int j=0; j<NUM_POINTS; j++) {
+    poll_fft = read_fft();
+    int16_t poll_real_fft = (int16_t) poll_fft;
+    int16_t expected_real_fft = (int16_t) OUTPUT_DATA[i][j];
+
+    if (poll_real_fft - expected_real_fft < -MAX_DIFF || poll_real_fft - expected_real_fft > MAX_DIFF) {
+      printf("[FAIL @ test=%d, idx=%d] [FFT] Actual: %lx, [NUMPY] Expected: %lx]\r\n", i, j, poll_real_fft, expected_real_fft);
+      error_cnt++;
+    }
+
+    printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real_fft, expected_real_fft);
+
+    if (poll_real_fft > poll_real_max_fft) {
+      poll_real_max_fft = poll_real_fft;
+      idx_max_fft = j;
+    }
+    
+  }
+
+  /* RESULTS & CLEANUP */
+
+  uint64_t end_time_fft = READ_CSR("mcycle");
+  uint64_t end_instructions_fft = READ_CSR("minstret");
+  printf("[TEST: %d] Peak at Index %d: Actual: %d, Expected: %d \r\n", i, idx_max_fft, poll_real_max_fft, OUTPUT_DATA[i][idx_max_fft]);
+  printf("ERRORS FOUND: %d\r\n", error_cnt);
+  printf("mcycle = %lu\r\n", end_time_fft - start_time_fft);
+  printf("minstret = %lu\r\n", end_instructions_fft - start_instructions_fft);
+
+  return error_cnt;
+}
+
 void app_main() {
   
   /* LOG FILE SETUP */
@@ -107,115 +234,13 @@ void app_main() {
   uint64_t mhartid = READ_CSR("mhartid");
 
   for (int i = 0; i < NUM_TESTS; i++) {
-    // printf("[TEST: %d] [FFT] vs [NUMPY]\r\n", i);
-    reset_fft();
-    // enable_Crack(); // bad idea to enable for initial tests 
-    uint64_t start_time = READ_CSR("mcycle");
-    uint64_t start_instructions = READ_CSR("minstret");
-
-    /* WRITE INPUT DATA */
-
-    write_fft_dma(DMA_NUM, NUM_POINTS, (uint32_t*) INPUT_DATA[i]); 
-
-    while(fft_busy() || fft_count_left()){
-      // continue; // not sure why this was added
-      printf("pain:%d, %d \r\n", fft_busy(), fft_count_left());
-    }; // This is needed since fft is blocking and is not a very good block
-
-    /* READ & COMPARE OUTPUT DATA */
-
-    /* Making use of DMA */
-
-    printf("[TEST: %d] [DMA-FFT] vs [NUMPY]\r\n", i);
-
-    // while (*(volatile char*) (DMA_BASE+0x1) != 0);
-
-    read_fft_real_dma(DMA_NUM, NUM_POINTS, DMA_ADDR1);
-
-    // while (*(volatile char*) (DMA_BASE+0x1) != 0);
-
-    uint32_t poll, real, imag;
-    uint32_t poll_real_max = 0;
-    uint32_t idx_max = 0;
-    // for(int i=0; i<512; i++) {
-    //     poll = reg_read32(DMA_ADDR1 + i*8);
-    //     real = poll & 0xFFFF; 
-    //     imag = (poll >> 16);
-    //     printf("[%d]real: (%hd), imag: (%hd)\r\n", i, real, imag);
-    // }
-    for(int j=0; j < NUM_POINTS; j++) {
-      poll = reg_read16(DMA_ADDR1 + j*4);
-      int16_t poll_real = (int16_t) poll;
-      int16_t expected_real = (int16_t) OUTPUT_DATA[i][j];
-      if (poll_real - expected_real < -MAX_DIFF || poll_real - expected_real > MAX_DIFF) {
-        printf("[FAIL @ test=%d, idx=%d] [DMA-FFT] Actual: %lx, [NUMPY] Expected: %lx]\n", i, j, poll_real, expected_real);
-        error_cnt++;
-      }
-      printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real, expected_real);
-
-      if (poll_real > poll_real_max) {
-        poll_real_max = poll_real;
-        idx_max = j;
-      }
-    }
-
-    // uint32_t poll_dma;
-    // int index_dma = 0;
-    // float max_dma = 0;
-    // for (int i = 0; i < NUM_POINTS; i++) {
-    //   /* DMA Check */
-    //   poll_dma = reg_read32(INPUT_ADDR1 + i*8);
-    //   uint32_t real_dma = poll_dma & 0xFFFF;
-    //   uint32_t imag_dma = (poll_dma >> 16);
-    //   if (fabs(real_dma) > max_dma) {
-    //     max_dma = fabs(real_dma);
-    //     index_dma = i;
-    //   }
-    //   if (RM_IMAG) {
-    //     printf("[%d] [DMA] Real: (%hd)\r\n", i, real_dma);
-    //   } else {
-    //     printf("[%d] [DMA] Imag: (%hd), Real: (%hd)\r\n", i, imag_dma, real_dma);
-    //   }
-    // }
-
-    /* Not making use of DMA */
-
-    // printf("[TEST: %d] [RAW-FFT] vs [NUMPY]\r\n", i);
-
-    // uint32_t poll;
-    // uint32_t poll_real_max = 0;
-    // uint32_t idx_max = 0;
-
-    // for(int j=0; j<NUM_POINTS; j++) {
-    //   poll = read_fft();
-    //   int16_t poll_real = (int16_t) poll;
-    //   int16_t expected_real = (int16_t) OUTPUT_DATA[i][j];
-
-    //   if (poll_real - expected_real < -MAX_DIFF || poll_real - expected_real > MAX_DIFF) {
-    //     printf("[FAIL @ test=%d, idx=%d] [FFT] Actual: %lx, [NUMPY] Expected: %lx]\n", i, j, poll_real, expected_real);
-    //     error_cnt++;
-    //   }
-
-    //   printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real, expected_real);
-
-    //   if (poll_real > poll_real_max) {
-    //     poll_real_max = poll_real;
-    //     idx_max = j;
-    //   }
-      
-    // }
-
-    /* RESULTS & CLEANUP */
-
-    uint64_t end_time = READ_CSR("mcycle");
-    uint64_t end_instructions = READ_CSR("minstret");
-    printf("[TEST: %d] Peak at Index %d: Actual: %d, Expected: %d \r\n", i, idx_max, poll_real_max, OUTPUT_DATA[i][idx_max]);
-    printf("ERRORS FOUND: %d\r\n", error_cnt);
-    printf("mcycle = %lu\r\n", end_time - start_time);
-    printf("minstret = %lu\r\n", end_instructions - start_instructions);
-
+    error_cnt += fft_dma_test(i);
+    error_cnt += fft_raw_test(i);
+    
+    printf("------------------------------------------\r\n");
+    printf("[ TOTAL ERRORS FOUND ACROSS TESTS : %d ]\r\n", error_cnt);
   }
-  printf("[DONE WITH ALL TESTS]\r\n");
+  printf("[DONE WITH ALL TESTS!]\r\n");
 
   // Close the log file
   // fclose(log_file);
