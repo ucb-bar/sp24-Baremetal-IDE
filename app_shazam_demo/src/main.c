@@ -28,8 +28,9 @@
 #define DMA_ADDR1 0x87000000L
 #define INPUT_ADDR1 0x08000000U // Where to save data - scratchpad is 0x08000000U
 #define NFFT 128 // FFT length for all
-#define RM_IMAG 0 // Remove imaginary values for easier output parsing
+#define RM_IMAG 1 // Remove imaginary values for easier output parsing
 #define FIXED_POINT 16 // For kiss_fft: 32 is int32_t, 16 is int16_t, undefined is float
+#define DMA_NUM 0 // Tested with 0 and 1
 
 /* Test data */
 #include "meep.h" // .wav HEADER[] file
@@ -104,7 +105,7 @@ void run_dma_fft_test(uint32_t* data, bool print) {
 
   /* SETUP */
   reset_fft();
-  // reset_DMA(); // reset is at DMA base address 
+  reset_DMA(); // reset is at DMA base address 
   // DO NOT enable crack - unreliable, causes race conditions, or may deadlock, depending on where you look
   // disable_Crack();
   uint64_t start_time = READ_CSR("mcycle");
@@ -119,7 +120,7 @@ void run_dma_fft_test(uint32_t* data, bool print) {
   };
 
   /* READ DATA */
-  read_fft_real_dma(1, NFFT, INPUT_ADDR1); // does set_DMAC, start_DMA
+  read_fft_real_dma(DMA_NUM, NFFT, INPUT_ADDR1); // read_fft_dma doesn't work for some reason
   uint64_t end_time = READ_CSR("mcycle");
   uint64_t end_instructions = READ_CSR("minstret");
 
@@ -174,7 +175,7 @@ void run_cpu_fft_test(uint32_t* data, bool print) {
   // Load data into input buffer
   for(int i = 0; i < NFFT; i += 1) {
       // kiss_fft_cpx is struct with kiss_fft_scalar real, imaginary of chosen type (see FIXED_POINT)
-      fftbuf[i].r = data[i]; 
+      fftbuf[i].r = INPUT_DATA[0][i]; 
       fftbuf[i].i = 0;
   }
 
@@ -302,10 +303,10 @@ void run_dma_cpu_comparison(uint32_t* data) {
 
     run_dma_fft_test(data, true);
 
-    // reset_fft();
-    // reset_DMA();
+    reset_fft();
+    reset_DMA();
 
-    // run_cpu_fft_test(data, true);
+    run_cpu_fft_test(data, true);
     
     printf("[DONE TEST]\r\n");
 }

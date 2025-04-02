@@ -99,6 +99,7 @@ int fft_dma_test(int i) {
 
   // printf("[TEST: %d] [FFT] vs [NUMPY]\r\n", i);
   reset_fft();
+  reset_DMA(); // reset is at DMA base address 
   // enable_Crack(); // bad idea to enable for initial tests 
   uint64_t start_time_dmafft = READ_CSR("mcycle");
   uint64_t start_instructions_dmafft = READ_CSR("minstret");

@@ -33,6 +33,7 @@ extern "C" {
 #define KISS_FFT_FREE free
 #endif	
 
+#define FIXED_POINT 16 // For kiss_fft: 32 is int32_t, 16 is int16_t, undefined is float
 
 #ifdef FIXED_POINT
 #include <sys/types.h>	
