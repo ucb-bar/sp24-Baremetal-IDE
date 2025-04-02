@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     print("Frequencies:", frequencies)
 
-    num_points = 256
+    num_points = 128
 
     # Define the file paths
     file_path = "../data/fft_data.h"
@@ -94,7 +94,6 @@ if __name__ == '__main__':
         expected_output = gen_expected_output(data)
         expected_outputs.append(expected_output)
 
-
         # Write the FFT data to the file
         with open(file_path, "a") as file:
             #format_c_array(file, encoded_datas)
@@ -108,9 +107,6 @@ if __name__ == '__main__':
             format_c_array(file, expected_outputs)
             if i != len(frequencies) - 1:
                 file.write(",")
-
-
-
 
     # finish off files
     with open(file_path, "a") as file:
