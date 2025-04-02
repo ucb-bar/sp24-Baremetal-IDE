@@ -16,21 +16,26 @@
 /* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include "main.h"
 #include "chip_config.h"
 #include "hal_DMA.h"
 #include "hal_fft.h"
-
-#include "dataset2.h" // original test shazam used - not sure what it corresponds to
-#include "../goldenmodel/fft_data_128len_131c.h"
-#include "../goldenmodel/fft_data_128len_twinkle.h"
-#include "../goldenmodel/fft_expected_data_128len_131c.h"
-#include "../goldenmodel/fft_expected_data_128len_twinkle.h"
+#include "kiss_fft.h"
 
 // #define LOGPATH "./fft_log.txt"
 #define DMA_ADDR1 0x87000000L // DMA base address
 #define INPUT_ADDR1 0x08000000U // Where to save data - scratchpad is 0x08000000U
+#define NUM_POINTS 128 // Should always be 128 for DSP24, == FFT length
+#define DMA_NUM 0 // Tested with 0 and 1
+#define MAX_DIFF 5 // Might work down to 2-3
+#define RM_IMAG 1 // Remove imaginary values for easier output parsing
+
+#include "../goldenmodel/fft_data_128len_131c.h"
+#include "../goldenmodel/fft_data_128len_twinkle.h"
+#include "../goldenmodel/fft_expected_data_128len_131c.h"
+#include "../goldenmodel/fft_expected_data_128len_twinkle.h"
 
 /* INPUT OPTIONS */
 // #define INPUT_DATA fft_data_twinkle
@@ -43,11 +48,6 @@
 #ifndef NUM_TESTS
 #define NUM_TESTS 1 // 14 // will also be overwritten if in data file
 #endif
-
-#define NUM_POINTS 128 // Should always be 128 for DSP24
-#define DMA_NUM 0 // Tested with 0 and 1
-#define MAX_DIFF 5 // Might work down to 2-3
-#define RM_IMAG 1 // Remove imaginary values for easier output parsing
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -94,7 +94,7 @@ void app_init() {
 //   fprintf(log_file, "%s", message);
 // }
 
-int fft_dma_test(int i) {
+int run_fft_dma_test(int i, bool print) {
   int error_cnt = 0;
 
   // printf("[TEST: %d] [FFT] vs [NUMPY]\r\n", i);
@@ -135,10 +135,12 @@ int fft_dma_test(int i) {
       printf("[FAIL @ test=%d, idx=%d] [DMA-FFT] Actual: %lx, [NUMPY] Expected: %lx]\r\n", i, j, poll_real_dmafft, expected_real_dmafft);
       error_cnt++;
     }
-    if (RM_IMAG) {
-      printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real_dmafft, expected_real_dmafft);
-    } else {
-      printf("[idx=%d] Actual (r|i): %d | %d, Expected: %d \r\n", j, poll_real_dmafft, poll_imag_dmafft, expected_real_dmafft);
+    if (print) {
+      if (RM_IMAG) {
+        printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real_dmafft, expected_real_dmafft);
+      } else {
+        printf("[idx=%d] Actual (r|i): %d | %d, Expected: %d \r\n", j, poll_real_dmafft, poll_imag_dmafft, expected_real_dmafft);
+      }
     }
 
     if (abs(poll_real_dmafft) > poll_real_max_dmafft) {
@@ -161,10 +163,12 @@ int fft_dma_test(int i) {
   return error_cnt;
 }
 
-int fft_raw_test(int i) {
+int run_fft_raw_test(int i, bool print) {
   int error_cnt = 0;
-  printf("[TEST: %d] [RAW-FFT] vs [NUMPY]\r\n", i);
 
+  /* Not making use of DMA */
+
+  // printf("[TEST: %d] [FFT] vs [NUMPY]\r\n", i);
   reset_fft();
   // enable_Crack(); // bad idea to enable for initial tests 
   uint64_t start_time_fft = READ_CSR("mcycle");
@@ -178,6 +182,8 @@ int fft_raw_test(int i) {
     // continue; // not sure why this was added
     printf("pain:%d, %d \r\n", fft_busy(), fft_count_left());
   }; // This is needed since fft is blocking and is not a very good block
+
+  printf("[TEST: %d] [RAW-FFT] vs [NUMPY]\r\n", i);
 
   uint32_t poll_fft;
   uint32_t poll_real_max_fft = 0;
@@ -193,7 +199,9 @@ int fft_raw_test(int i) {
       error_cnt++;
     }
 
-    printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real_fft, expected_real_fft);
+    if (print) {
+      printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real_fft, expected_real_fft);
+    }
 
     if (poll_real_fft > poll_real_max_fft) {
       poll_real_max_fft = poll_real_fft;
@@ -214,6 +222,81 @@ int fft_raw_test(int i) {
   return error_cnt;
 }
 
+int run_cpu_fft_test(int i, bool print) {
+  printf("[TEST: %d] [CPU-FFT] vs [NUMPY]\r\n", i);
+
+  /* SETUP */
+  int error_cnt = 0;
+  uint64_t start_time = READ_CSR("mcycle");
+  uint64_t start_instructions = READ_CSR("minstret");
+  // Allocates memory for FFT + parameters but not buffers
+  // Return value is a contiguous block of memory, can be free()d
+  kiss_fft_cfg cfg = kiss_fft_alloc(NUM_POINTS , 0, 0, 0);
+  // Allocate memory for the input data buffer
+  kiss_fft_cpx* fftbuf = (kiss_fft_cpx*) malloc(NUM_POINTS * sizeof(kiss_fft_cpx));
+  // Allocate memory for the output data buffer
+  kiss_fft_cpx* fftoutbuf = (kiss_fft_cpx*) malloc(NUM_POINTS * sizeof(kiss_fft_cpx));
+  // Load data into input buffer
+  for(int j = 0; j < NUM_POINTS; j += 1) {
+      // kiss_fft_cpx is struct with kiss_fft_scalar real, imaginary of chosen type (see FIXED_POINT)
+      fftbuf[j].r = (int16_t) INPUT_DATA[i][j]; 
+      fftbuf[j].i = 0; // (int16_t) (INPUT_DATA[0][i] >> 16); 
+      // printf("[DATA DEBUG..] %x\r\n",  INPUT_DATA[0][i]); // This should match the input vector line by line
+  }
+
+  /* DO THE FFT TRANFORMATION */
+  // actually kiss_fft_stride -> kf_work -> openmp -> magic, trust me bro
+  kiss_fft(cfg, fftbuf, fftoutbuf);
+  // uint64_t end_time = READ_CSR("mcycle");
+  // uint64_t end_instructions = READ_CSR("minstret");
+
+  /* RESULTS */
+  printf("CPU FFT Transformation Complete\r\n");
+
+  int index = 0;
+  int max = 0; // Note the type: if Hz stuck at 0, max and buffer might be mismatched types
+  for (int j = 0; j < NUM_POINTS; j++) { 
+    if (abs(fftoutbuf[j].r) > max) {
+      max = abs(fftoutbuf[j].r);
+      index = j;
+    }
+    int16_t expected_real_fft = (int16_t) OUTPUT_DATA[i][j];
+
+    if (fftoutbuf[j].r - expected_real_fft < -MAX_DIFF || fftoutbuf[j].r - expected_real_fft > MAX_DIFF) {
+      printf("[FAIL @ test=%d, idx=%d] [CPU] Actual: %lx, [NUMPY] Expected: %lx]\r\n", i, j, fftoutbuf[j].r, expected_real_fft);
+      error_cnt++;
+    }
+
+    // printf("DEBUG: [%d] max(f): (%f)  max(d): (%d) while fabs: (%f) \r\n", i, max, max, fabs(fftoutbuf[i].r)); 
+    /* Original defaults to float */
+    // printf("[%d] [CPU] Imag: (%f)  Real: (%f)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r); 
+    /* For uint16_t */
+    if (print) {
+      if (RM_IMAG) {
+        printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, fftoutbuf[j].r, expected_real_fft);
+      } else {
+        printf("[idx=%d] Actual (r|i): %d | %d, Expected: %d \r\n", j, fftoutbuf[j].r, fftoutbuf[j].i, expected_real_fft);
+      }
+    }
+  }
+  
+  // printf("Resulting frequency is about %f @ max = (%d), index = (%d)\r\n", (SAMPLING_FREQ) * index / NFFT, max, index);
+
+  /* RESULTS & CLEANUP */
+  uint64_t end_time = READ_CSR("mcycle");
+  uint64_t end_instructions = READ_CSR("minstret");
+  printf("[TEST: %d] Peak at Index %d: Actual: %d, Expected: %d \r\n", i, index, max, OUTPUT_DATA[i][index]);
+  printf("ERRORS FOUND: %d\r\n", error_cnt);
+  printf("mcycle = %lu\r\n", end_time - start_time);
+  printf("minstret = %lu\r\n", end_instructions - start_instructions);
+
+  free(cfg);
+  free(fftbuf);
+  free(fftoutbuf);
+  kiss_fft_cleanup();
+  return error_cnt;
+}
+
 void app_main() {
   
   /* LOG FILE SETUP */
@@ -231,16 +314,23 @@ void app_main() {
   printf("\n[NUMBER OF TESTS: %d]\r\n", NUM_TESTS);
 
   int error_cnt = 0;
+  int error_cnt_dma = 0;
+  int error_cnt_raw = 0; 
+  int error_cnt_cpu = 0;
   uint64_t mhartid = READ_CSR("mhartid");
 
   for (int i = 0; i < NUM_TESTS; i++) {
-    error_cnt += fft_dma_test(i);
-    error_cnt += fft_raw_test(i);
-    
-    printf("------------------------------------------\r\n");
-    printf("[ TOTAL ERRORS FOUND ACROSS TESTS : %d ]\r\n", error_cnt);
+    error_cnt_dma += run_fft_dma_test(i, true);
+    error_cnt_raw += run_fft_raw_test(i, true);
+    error_cnt_cpu += run_cpu_fft_test(i, true);
   }
-  printf("[DONE WITH ALL (FFT vs DMA-FFT vs NUMPY) TESTS!]\r\n");
+  error_cnt = error_cnt_dma + error_cnt_raw + error_cnt_cpu;
+  printf("------------------------------------------\r\n");
+  printf("[ TOTAL ERRORS FOUND ACROSS (%d) TESTS : %d ]\r\n", NUM_TESTS, error_cnt);
+  printf("[      DMA-FFT vs NUMPY : %d ]\r\n", error_cnt_dma);
+  printf("[      RAW-FFT vs NUMPY : %d ]\r\n", error_cnt_raw);
+  printf("[      CPU-FFT vs NUMPY : %d ]\r\n", error_cnt_cpu);
+  printf("[DONE WITH ALL (RAW-FFT vs DMA-FFT vs CPU-FFT vs NUMPY) TESTS!]\r\n");
 
   // Close the log file
   // fclose(log_file);

@@ -87,6 +87,11 @@ add_link_options(-T ${LINKER_SCRIPT})
 # Build
 #################################
 
+add_executable(app_functionality
+  app_functionality/src/main.c
+  app_functionality/src/kiss_fft.c
+)
+
 add_executable(app_interface
   app_interface/src/main.c
 )
@@ -124,6 +129,8 @@ add_executable(dsp-strcmp
   benchmarks/vec-strcmp/vec-strcmp.S
 )
 
+target_include_directories(app_functionality PUBLIC app_functionality/include)
+
 target_include_directories(app_interface PUBLIC app_interface/include)
 
 target_include_directories(app_naichen_at_3am PUBLIC app_naichen_at_3am/include)
@@ -149,7 +156,13 @@ add_subdirectory(glossy)
 add_subdirectory(lib)
 add_subdirectory(lab)
 
+# Needed to not get math-related etc errors
 target_link_libraries(app_shazam_demo PRIVATE m)
+target_link_libraries(app_functionality PRIVATE m)
+
+target_link_libraries(app_functionality PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
 
 target_link_libraries(app_interface PRIVATE 
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
