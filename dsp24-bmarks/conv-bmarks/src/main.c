@@ -17,7 +17,7 @@
 #include "main.h"
 #include "float16.h"
 
-#define INPUT_LENGTH 1024
+#define INPUT_LENGTH 256
 #define QUEUE_DEPTH 256
 
 typedef struct {
@@ -49,8 +49,8 @@ void cpu_f16_test(int seed) {
   uint64_t time;
 
   // setup input
-  uint16_t in_arr[INPUT_LENGTH/2];
-  volatile uint16_t ref_out[INPUT_LENGTH];
+  uint16_t in_arr[INPUT_LENGTH];
+  volatile uint16_t ref_out[INPUT_LENGTH + 8];
 
   for (int i = 0; i < INPUT_LENGTH; i++) {
     in_arr[i] = f16_from_int(i);
@@ -59,7 +59,7 @@ void cpu_f16_test(int seed) {
   start_roi();
 
   time = get_cycles();
-  convolution_1D_f16(in_arr, INPUT_LENGTH, in_kernel, 8, 0, ref_out);
+  convolution_1D_f16(in_arr, INPUT_LENGTH, in_kernel, 8, 1, ref_out);
   result.cycles = get_cycles() - time;
 
   end_roi();
@@ -73,9 +73,9 @@ void convaccel_test(int seed) {
   convtest_result_t result;
   uint64_t time;
 
-  uint16_t in_arr[INPUT_LENGTH/2];
-  volatile uint16_t ref_out[INPUT_LENGTH/2];
-  volatile uint16_t conv_out[INPUT_LENGTH/2];
+  uint16_t in_arr[INPUT_LENGTH];
+  volatile uint16_t ref_out[INPUT_LENGTH+8];
+  volatile uint16_t conv_out[INPUT_LENGTH+8];
 
   for (int i = 0; i < INPUT_LENGTH; i++) {
     in_arr[i] = f16_from_int(i);
@@ -83,27 +83,32 @@ void convaccel_test(int seed) {
 
   uint64_t* in_kernel_ptr = in_kernel;
 
+  CONVACCEL->RESET = 1;
+  CONVACCEL->RESET = 0;
   CONVACCEL->LENGTH = INPUT_LENGTH;
+  CONVACCEL->DILATION = 1;
+  CONVACCEL->USE_FLOAT = 1;
   CONVACCEL->KERNEL = in_kernel_ptr[0];
   CONVACCEL->KERNEL = in_kernel_ptr[1];
   CONVACCEL->START = 1;
   
+  start_roi();
   time = get_cycles();
   int transfer_count = INPUT_LENGTH/4;
   for (int i = 0; i < transfer_count; i += QUEUE_DEPTH) {
     for (int j = i; (j < i + QUEUE_DEPTH) && (j < transfer_count); j++) {
       CONVACCEL->DATA_ENQUEUE = in_kernel_ptr[j];
     }
-    for (int j = i; (j < i + QUEUE_DEPTH) && (j < transfer_count); j++) {
+    for (int j = i; (j < i + QUEUE_DEPTH) && (j < transfer_count + 8); j++) {
       conv_out[j] = CONVACCEL->RESULT_DEQUEUE;
     }
   }
   result.cycles = get_cycles() - time;
-
-  convolution_1D_f16(in_arr, INPUT_LENGTH, in_kernel, 8, 0, ref_out);
+  end_roi();
+  convolution_1D_f16(in_arr, INPUT_LENGTH, in_kernel, 8, 1, ref_out);
 
   bool res_correct = true;
-  for (int i = 0; i < INPUT_LENGTH/2; i++) {
+  for (int i = 0; i < INPUT_LENGTH + 8; i++) {
     if (conv_out[i] != ref_out[i]) {
       res_correct = false;
       break;
