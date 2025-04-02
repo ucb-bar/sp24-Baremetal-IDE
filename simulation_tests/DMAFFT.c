@@ -38,6 +38,10 @@ int main(void) {
         poll = reg_read16(DMA_ADDR1 + i*4);
         printf("[%d]real: (%hd)\n", i, poll);
     }
+
+    /* lucy debug note */
+    // i dont think this code makes sense
+    // it only polls one point repeatedly
     
     printf("[DONE] Test\n");
 
