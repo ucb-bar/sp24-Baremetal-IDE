@@ -1128,8 +1128,13 @@ class ShmooTestHarness:
                         timestamps = np.linspace(0.0, test_time.microseconds,
                                                 num=len(meas_v), endpoint=True)
                         meas_as_text = np.column_stack((meas_v, timestamps, meas_i))
-                        measurements = ShmooTestHarness.np_arr_to_float_vectorized(
-                            np.char.strip(meas_as_text), np.number)
+                        if len(meas_as_text) > 0:
+                            meas_as_text = np.char.strip(meas_as_text)
+
+                            measurements = ShmooTestHarness.np_arr_to_float_vectorized(
+                                meas_as_text, np.number)
+                        else:
+                            measurements = meas_as_text
 
                         LOGGER.debug(f'[PSU Measurements] {measurements}')
 
