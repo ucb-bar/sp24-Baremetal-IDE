@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body
+  * @brief          : Main FFT functionality testing body with some stress tests
   ******************************************************************************
   * @attention
   *
@@ -24,7 +24,7 @@
 #include "hal_fft.h"
 #include "kiss_fft.h"
 
-// #define LOGPATH "./fft_log.txt"
+// #define LOGPATH "./fft_log.txt" // TODO abandoned efforts to output into log files
 #define DMA_ADDR1 0x87000000L // DMA base address
 #define INPUT_ADDR1 0x08000000U // Where to save data - scratchpad is 0x08000000U
 #define NUM_POINTS 128 // Should always be 128 for DSP24, == FFT length
@@ -36,12 +36,16 @@
 #include "../goldenmodel/fft_data_128len_twinkle.h"
 #include "../goldenmodel/fft_expected_data_128len_131c.h"
 #include "../goldenmodel/fft_expected_data_128len_twinkle.h"
-#include "tone_samples.h"
+#include "tone_samples.h" // TODO still debugging..
+
+/*
+ * PICK YOUR INPUT OPTION BELOW (AND COMPARISON IF APPLICABLE)
+ */
 
 /* INPUT OPTIONS */
 #define INPUT_DATA fft_data_twinkle
 // #define INPUT_DATA fft_data_131c
-// #define INPUT_DATA B3_samples_hex_128 // Still needs work - different format
+// #define INPUT_DATA B3_samples_hex_128 // TODO Still needs work - different format.. 
 
 /* COMPARISON OUTPUT OPTIONS */
 #define OUTPUT_DATA fft_expected_data_twinkle
@@ -55,8 +59,13 @@ bool compare_output = false;
 #endif 
 
 #ifndef NUM_TESTS
-#define NUM_TESTS 14 // 14 // will also be overwritten if in data file
+#define NUM_TESTS 14 // 1 // will also be overwritten if in data file
 #endif
+
+/*
+ * END OF USER OPTIONS (SORRY FOR USING DEFINES FOR THIS, CRINGE I KNOW)
+ */
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -104,8 +113,8 @@ void app_init() {
 // }
 
 /*
- * 
- *
+ * THE MAIN FFT DMA TEST
+ * It works.
 */
 
 int run_fft_dma_test(int i, bool print) {
@@ -195,8 +204,8 @@ int run_fft_dma_test(int i, bool print) {
 }
 
 /*
- * 
- *
+ * THE MAIN FFT NO DMA TEST
+ * It works.
 */
 
 int run_fft_raw_test(int i, bool print) {
@@ -269,8 +278,8 @@ int run_fft_raw_test(int i, bool print) {
 }
 
 /*
- * 
- *
+ * THE MAIN KISS FFT ON CPU DMA TEST
+ * It does not match Numpy expectations.
 */
 
 int run_cpu_fft_test(int i, bool print) {
@@ -340,8 +349,6 @@ int run_cpu_fft_test(int i, bool print) {
       } 
     }
   }
-    
-  
   
   // printf("Resulting frequency is about %f @ max = (%d), index = (%d)\r\n", (SAMPLING_FREQ) * index / NFFT, max, index);
 
@@ -364,7 +371,12 @@ int run_cpu_fft_test(int i, bool print) {
   return error_cnt;
 }
 
-void app_main() {
+/*
+ * COMPARISONS BETWEEN THE FFT MODELS
+ * The comparison works.
+*/
+
+void main_functionality_test(bool print) {
   
   /* LOG FILE SETUP */
 
@@ -389,9 +401,9 @@ void app_main() {
   uint64_t mhartid = READ_CSR("mhartid");
 
   for (int i = 0; i < NUM_TESTS; i++) {
-    error_cnt_dma += run_fft_dma_test(i, true);
-    error_cnt_raw += run_fft_raw_test(i, true);
-    error_cnt_cpu += run_cpu_fft_test(i, true);
+    error_cnt_dma += run_fft_dma_test(i, print);
+    error_cnt_raw += run_fft_raw_test(i, print);
+    error_cnt_cpu += run_cpu_fft_test(i, print);
   }
   error_cnt = error_cnt_dma + error_cnt_raw + error_cnt_cpu;
   if (compare_output) {
@@ -411,8 +423,80 @@ void app_main() {
 
   // Close the log file
   // fclose(log_file);
-
 }
+
+/*
+ * STRESS TESTS AHEAD
+*/
+
+void run_fft_dma_test_forever(bool print) {
+  printf("\r\n------------------------------------------------\r\n");
+  printf("\r\n[STARTING DMA FFT INFINITE TEST]\r\n");
+  printf("------------------------------------------------\r\n");
+  uint64_t mhartid = READ_CSR("mhartid");
+
+  while (1) {
+    printf("\r\n------------------------------------------------\r\n");
+    printf("\r\n[STARTING A TEST ITERATION..]\r\n");
+    printf("------------------------------------------------\r\n");
+    for (int i = 0; i < NUM_TESTS; i++) {
+      run_fft_dma_test(i, print);
+    }
+  }
+}
+
+void run_fft_raw_test_forever(bool print) {
+  printf("\r\n------------------------------------------------\r\n");
+  printf("\r\n[STARTING RAW FFT INFINITE TEST]\r\n");
+  printf("------------------------------------------------\r\n");
+  uint64_t mhartid = READ_CSR("mhartid");
+
+  while (1) {
+    printf("\r\n------------------------------------------------\r\n");
+    printf("\r\n[STARTING A TEST ITERATION..]\r\n");
+    printf("------------------------------------------------\r\n");
+    for (int i = 0; i < NUM_TESTS; i++) {
+      run_fft_raw_test(i, print);
+    }
+  }
+}
+
+void run_cpu_fft_test_forever(bool print) {
+  printf("\r\n------------------------------------------------\r\n");
+  printf("\r\n[STARTING CPU FFT INFINITE TEST]\r\n");
+  printf("------------------------------------------------\r\n");
+  uint64_t mhartid = READ_CSR("mhartid");
+
+  while (1) {
+    printf("\r\n------------------------------------------------\r\n");
+    printf("\r\n[STARTING A TEST ITERATION..]\r\n");
+    printf("------------------------------------------------\r\n");
+    for (int i = 0; i < NUM_TESTS; i++) {
+      run_cpu_fft_test(i, print);
+    }
+  }
+}
+
+/*
+ * RUNNING FROM APP MAIN IS RECOMMENDED
+ * Comment out what you're not running.
+*/
+
+void app_main() {
+  /* The main point of this app */
+  // arguments: (print outputs?, )
+  main_functionality_test(true);
+  /* Infinite FFT DMA */
+  printf("\r\n[YOU'RE RUNNING AN INFINITE TEST]\r\n");
+  run_fft_dma_test_forever(true); // Change to false to not print outputs
+  /* Infinite FFT no DMA */
+  printf("\r\n[YOU'RE RUNNING AN INFINITE TEST]\r\n");
+  run_fft_raw_test_forever(true); // Change to false to not print outputs
+  /* Infinite CPU FFT */
+  printf("\r\n[YOU'RE RUNNING AN INFINITE TEST]\r\n");
+  run_cpu_fft_test_forever(true); // Change to false to not print outputs
+}
+
 /* USER CODE END PUC */
 
 /**
