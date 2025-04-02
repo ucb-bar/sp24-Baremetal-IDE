@@ -1,7 +1,7 @@
-uint32_t fft_len = 128;
+// uint32_t fft_len = 128;
 #define NUM_TESTS 1
 
-uint32_t fft_data[128][128] = {
+uint32_t fft_data_131c[128][128] = {
 {
     0x00000100,
     0x000000fd,

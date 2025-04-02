@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-uint32_t fft_expected_data[128][128] = {
+uint32_t fft_expected_data_131c[128][128] = {
 {
     0x00000000,
     0x00000000,

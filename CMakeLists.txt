@@ -149,21 +149,21 @@ add_subdirectory(glossy)
 add_subdirectory(lib)
 add_subdirectory(lab)
 
-target_link_libraries(shazam_demo PRIVATE m)
-
-target_link_libraries(app_rushed PRIVATE 
-  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
-)
-
-target_link_libraries(app_naich_comparison PRIVATE 
-  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
-)
+target_link_libraries(app_shazam_demo PRIVATE m)
 
 target_link_libraries(app_interface PRIVATE 
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
 )
 
-target_link_libraries(shazam_demo PRIVATE 
+target_link_libraries(app_naichen_at_3am PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(app_SGEMM_vectorized PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
+)
+
+target_link_libraries(app_shazam_demo PRIVATE 
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
 )
 
