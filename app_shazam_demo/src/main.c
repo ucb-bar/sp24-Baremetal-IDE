@@ -34,9 +34,14 @@
 /* Test data */
 #include "meep.h" // .wav HEADER[] file
 #include "tone_samples.h" // Input data samples 
+#include "fft_data_128len_131c.h" // Pure tone
 #define SAMPLING_FREQ 880.0 // In Hz for current test
-#define SAMPLE_CHOICE B3_samples_128 // From the headers 
-#define SAMPLE_CHOICE_NAME "B3_samples_128"
+
+#define SAMPLE_CHOICE fft_data_131c // From the headers 
+#define SAMPLE_CHOICE_NAME "fft_data_131c"
+#define INPUT_DATA fft_data_131c
+// #define SAMPLE_CHOICE B3_samples_128 // From the headers 
+// #define SAMPLE_CHOICE_NAME "B3_samples_128"
 
 // WAV file header structure
 struct WAVHeader {
@@ -99,14 +104,14 @@ void run_dma_fft_test(uint32_t* data, bool print) {
 
   /* SETUP */
   reset_fft();
-  reset_DMA(); // reset is at DMA base address 
+  // reset_DMA(); // reset is at DMA base address 
   // DO NOT enable crack - unreliable, causes race conditions, or may deadlock, depending on where you look
-  disable_Crack();
+  // disable_Crack();
   uint64_t start_time = READ_CSR("mcycle");
   uint64_t start_instructions = READ_CSR("minstret");
 
   /* WRITE DATA */
-  write_fft_dma(1, NFFT, data); // does reg_write32, set_DMAC, start_DMA
+  write_fft_dma(1, NFFT, (uint32_t*) INPUT_DATA[0]); // does reg_write32, set_DMAC, start_DMA
   // This is needed since fft is blocking and is not a very good block
   while(fft_busy() || fft_count_left()) {
     continue;
@@ -114,7 +119,7 @@ void run_dma_fft_test(uint32_t* data, bool print) {
   };
 
   /* READ DATA */
-  read_fft_dma(1, NFFT, INPUT_ADDR1); // does set_DMAC, start_DMA
+  read_fft_real_dma(1, NFFT, INPUT_ADDR1); // does set_DMAC, start_DMA
   uint64_t end_time = READ_CSR("mcycle");
   uint64_t end_instructions = READ_CSR("minstret");
 
@@ -135,7 +140,7 @@ void run_dma_fft_test(uint32_t* data, bool print) {
     int index = 0;
     float max = 0; // should be fine even if values are int
     for(int i=0; i<NFFT; i++) {
-      poll = reg_read32(INPUT_ADDR1 + i*8); 
+      poll = reg_read32(INPUT_ADDR1 + i*4); 
       uint16_t imag = poll >> 16; // Imaginary is top 16 bits 
       uint16_t real = poll & 0xFFFF; // Real is bottom 16 bits - this masks the top
       if (fabs(real) > max) { // abs is int, fabs is double (8 bytes)
@@ -297,10 +302,10 @@ void run_dma_cpu_comparison(uint32_t* data) {
 
     run_dma_fft_test(data, true);
 
-    reset_fft();
-    reset_DMA();
+    // reset_fft();
+    // reset_DMA();
 
-    run_cpu_fft_test(data, true);
+    // run_cpu_fft_test(data, true);
     
     printf("[DONE TEST]\r\n");
 }

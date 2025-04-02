@@ -109,7 +109,7 @@ int fft_dma_test(int i) {
 
   while(fft_busy() || fft_count_left()){
     // continue; // not sure why this was added
-    printf("pain:%d, %d \r\n", fft_busy(), fft_count_left());
+    printf("[Blocking] pain:%d, %d \r\n", fft_busy(), fft_count_left());
   }; // This is needed since fft is blocking and is not a very good block
 
   /* READ & COMPARE OUTPUT DATA */
