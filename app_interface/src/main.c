@@ -69,7 +69,7 @@ void app_init() {
 void app_main() {
   uint64_t mhartid = READ_CSR("mhartid");
 
-  printf("\n[STARTING TEST]\n\n");
+  printf("\r\n[STARTING TEST]\r\n");
 
   reset_fft();
   // enable_Crack(); // bad idea to enable for initial tests 
@@ -82,7 +82,7 @@ void app_main() {
 
   while(fft_busy() || fft_count_left()){
     // continue; // not sure why this was added
-    printf("pain:%d, %d \n", fft_busy(), fft_count_left());
+    printf("pain:%d, %d \r\n", fft_busy(), fft_count_left());
   }; // This is needed since fft is blocking and is not a very good block
 
   uint64_t end_time = READ_CSR("mcycle");
@@ -98,15 +98,15 @@ void app_main() {
   for(int j=0; j<NUM_POINTS; j++) {
     poll = read_fft();
     int16_t poll_real = (int16_t) poll;
-    int16_t expected_real = (int16_t) OUTPUT_DATA[j];
+    int16_t expected_real = (int16_t) OUTPUT_DATA[0][j];
     // if (poll_real - expected_real < -MAX_DIFF || poll_real - expected_real > MAX_DIFF) {
     //   printf("[FAIL, test=%d, idx=%d] Expected %lx, received %lx]\n", i, j, fft_expected_data[i][j], poll);
     //   // error_cnt++;
     // }
-    printf("Actual: %d, Expected: %d \n", poll_real, expected_real);
+    printf("Actual: %d, Expected: %d \r\n", poll_real, expected_real);
   }
 
-  printf("[DONE] Waiting Write\n");
+  // printf("[DONE] Waiting Write\r\n");
   printf("mcycle = %lu\r\n", end_time - start_time);
   printf("minstret = %lu\r\n", end_instructions - start_instructions);
   // uint32_t poll, real, imag;
@@ -121,7 +121,7 @@ void app_main() {
   //     printf("[%d]real: (%hd)\r\n", i, poll);
   // }
   
-  printf("[DONE] Test\n");
+  printf("[DONE] Test\r\n");
 
 }
 /* USER CODE END PUC */
