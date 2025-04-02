@@ -41,6 +41,7 @@ struct kiss_fft_state{
    C_SUBFROM( res , a)  : res -= a
    C_ADDTO( res , a)    : res += a
  * */
+#define FIXED_POINT 16 // For kiss_fft: 32 is int32_t, 16 is int16_t, undefined is float
 #ifdef FIXED_POINT
 #if (FIXED_POINT==32)
 # define FRACBITS 31

@@ -175,8 +175,9 @@ void run_cpu_fft_test(uint32_t* data, bool print) {
   // Load data into input buffer
   for(int i = 0; i < NFFT; i += 1) {
       // kiss_fft_cpx is struct with kiss_fft_scalar real, imaginary of chosen type (see FIXED_POINT)
-      fftbuf[i].r = INPUT_DATA[0][i]; 
+      fftbuf[i].r = (int16_t) INPUT_DATA[0][i]; 
       fftbuf[i].i = 0;
+      printf("[DATA DEBUG..] %d\r\n",  INPUT_DATA[0][i]);
   }
 
   /* DO THE FFT TRANFORMATION */
@@ -194,13 +195,13 @@ void run_cpu_fft_test(uint32_t* data, bool print) {
     int index = 0;
     int max = 0; // Note the type: if Hz stuck at 0, max and buffer might be mismatched types
     for (int i = 0; i < NFFT; i++) { 
-      if (fabs(fftoutbuf[i].r) > max) {
-        max = fabs(fftoutbuf[i].r);
+      if (abs(fftoutbuf[i].r) > max) {
+        max = abs(fftoutbuf[i].r);
         index = i;
       }
       // printf("DEBUG: [%d] max(f): (%f)  max(d): (%d) while fabs: (%f) \r\n", i, max, max, fabs(fftoutbuf[i].r)); 
       /* Original defaults to float */
-      printf("[%d] [CPU] Imag: (%f)  Real: (%f)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r); 
+      printf("[%d] [CPU] Imag: (%d)  Real: (%d)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r); 
       /* For uint16_t */
       // printf("[%d] [CPU d] Imag: (%hd)  Real: (%hd)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r);
     }
