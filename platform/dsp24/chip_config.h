@@ -15,6 +15,7 @@ extern "C" {
 #include "pll.h"
 #include "hal_rcc.h"
 #include "hal_I2S.h"
+#include "hal_conv.h"
 
 
 // ================================

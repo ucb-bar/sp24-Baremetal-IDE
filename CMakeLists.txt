@@ -146,6 +146,7 @@ add_subdirectory(examples)
 add_subdirectory(dsp24-bmarks)
 add_subdirectory(borai)
 add_subdirectory(borai_block_tests)
+add_subdirectory(i2s-test)
 
 target_link_libraries(app PRIVATE 
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive

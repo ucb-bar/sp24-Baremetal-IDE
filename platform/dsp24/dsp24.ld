@@ -59,11 +59,11 @@ SECTIONS {
   PROVIDE(__boot_hart = 0);
   
   /* Default stack size */
-  __stack_size = DEFINED(__stack_size) ? __stack_size : 4K;
+  __stack_size = DEFINED(__stack_size) ? __stack_size : 64M;
   PROVIDE(__stack_size = __stack_size);
 
   /* Default heap size */
-  __heap_size = DEFINED(__heap_size) ? __heap_size : 4K;
+  __heap_size = DEFINED(__heap_size) ? __heap_size : 192M;
   PROVIDE(__heap_size = __heap_size);
   
   /*
@@ -175,7 +175,7 @@ SECTIONS {
     *(.gnu.linkonce.tb.*)
     *(.tcommon)
     PROVIDE_HIDDEN(__tbss_end = .);
-  }> SCRATCH
+  }> DRAM
   
   PROVIDE(__tbss_size = SIZEOF(.tbss));
 
@@ -184,7 +184,7 @@ SECTIONS {
     PROVIDE_HIDDEN(__bss_start = .);
     *(.sbss .sbss.*)
     *(.gnu.linkonce.sb.*)
-  }> SCRATCH
+  }> DRAM
   
   /* Section for uninitialized data */
   .bss (NOLOAD) : ALIGN(8) {
@@ -192,7 +192,7 @@ SECTIONS {
     *(.gnu.linkonce.b.*)
     *(COMMON)
     PROVIDE_HIDDEN(__bss_end = .);
-  }> SCRATCH
+  }> DRAM
 
   . = ALIGN(8);
   PROVIDE(__end = .);
@@ -203,7 +203,7 @@ SECTIONS {
     . += __heap_size;
     . = ALIGN(4K);
     PROVIDE_HIDDEN(__heap_end = .);
-  }> SCRATCH
+  }> DRAM
   
   /* Reserve stack space */
   .stack (NOLOAD) : ALIGN(16) {
@@ -211,7 +211,7 @@ SECTIONS {
     . += __stack_size * 5; /* Hart 0 */
     PROVIDE(_sp = .);
     PROVIDE_HIDDEN(__stack_end = .);
-  }> SCRATCH
+  }> DRAM
 
   PROVIDE(__stack_shift = LOG2CEIL(__stack_size));
 

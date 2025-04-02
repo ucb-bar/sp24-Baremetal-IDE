@@ -6,11 +6,11 @@
 
 Create a virtual environment using the package manager of your choice from the provided requirements.txt
 
-For example, using `venv`:
+For example, using `venv` from the Baremetal repository root:
 ```sh
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r tester/requirements.txt
 ```
 
 ### PSU
@@ -20,7 +20,38 @@ The PSU will require some preliminary setup to ensure connectivity. Within `util
 - **`IDN`**: The IDN for the PSU you are using.
 - **`VISA_PATH`**: The GPIB LAN path for the PSU for a remote interface.
 
-## Usage
+## Examples
+
+All commands should be run from the Baremetal IDE repository root directory.
+
+
+#### List test suites
+If you want to list all of the registered test suites and their associated tests, you may use the following command:
+```sh
+$ ./tester/tester.py -l
+
+INFO:utils:Registered test suites:
+INFO:utils:     hello (1 tests)
+INFO:utils:             Hello World Test (Test ID: 1 [0x1])
+INFO:utils:     memcpy (4 tests)
+INFO:utils:             CPU memcpy (Test ID: 0 [0x0])
+INFO:utils:             GCC memcpy (Test ID: 1 [0x1])
+INFO:utils:             RVV memcpy (Test ID: 2 [0x2])
+INFO:utils:             DMA memcpy (Test ID: 3 [0x3])
+INFO:utils:     saturn_pvirus_1h (1 tests)
+INFO:utils:             Saturn Power Virus (Test ID: 0 [0x0])
+INFO:utils:     saturn_pvirus_2h (1 tests)
+INFO:utils:             Saturn Power Virus (Test ID: 0 [0x0])
+INFO:utils:     saturn_pvirus_3h (1 tests)
+INFO:utils:             Saturn Power Virus (Test ID: 0 [0x0])
+INFO:utils:     saturn_pvirus_4h (1 tests)
+INFO:utils:             Saturn Power Virus (4 cores) (Test ID: 0 [0x0])
+INFO:utils:     conv_pvirus (1 tests)
+INFO:utils:             1D Convolution Power Virus (Test ID: 0 [0x0])
+```
+
+
+## Reference
 ```
 usage: Jasmine's ShmooTester [-h] [-i INPUT] [-o OUTPUT] [-s SUITE] [-t TESTS] [--min-v MIN_V] [--max-v MAX_V] [--step-v STEP_V] [--min-freq MIN_FREQ] [--max-freq MAX_FREQ] [--step-freq STEP_FREQ] [--max-v-fail MAX_V_FAIL] [--retries RETRIES]
                              [-r NUM_RUNS] [-f] [--psu-mode {INT,EXT}] [--psu-channel PSU_CHANNEL] [--no-psu] [-m] [-d] [-n] [-l] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--logfile LOGFILE]
