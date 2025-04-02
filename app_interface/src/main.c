@@ -31,16 +31,23 @@
 // #define LOGPATH "./fft_log.txt"
 #define DMA_ADDR1 0x87000000L // DMA base address
 #define INPUT_ADDR1 0x08000000U // Where to save data - scratchpad is 0x08000000U
-#define INPUT_DATA fft_data_twinkle
-#define OUTPUT_DATA fft_expected_data_twinkle
-#define NUM_POINTS 128
-#define DMA_NUM 0 // Tested with 0 and 1
-#define MAX_DIFF 5
-#ifndef NUM_TESTS
-#define NUM_TESTS 14 // 14 // will also be overwritten if in data file
-#endif
-#define RM_IMAG 1 // Remove imaginary values for easier output parsing
 
+/* INPUT OPTIONS */
+// #define INPUT_DATA fft_data_twinkle
+#define INPUT_DATA fft_data_131c
+
+/* COMPARABLE OUTPUT OPTIONS */
+// #define OUTPUT_DATA fft_expected_data_twinkle
+#define OUTPUT_DATA fft_expected_data_131c
+
+#ifndef NUM_TESTS
+#define NUM_TESTS 1 // 14 // will also be overwritten if in data file
+#endif
+
+#define NUM_POINTS 128 // Should always be 128 for DSP24
+#define DMA_NUM 0 // Tested with 0 and 1
+#define MAX_DIFF 5 // Might work down to 2-3
+#define RM_IMAG 1 // Remove imaginary values for easier output parsing
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -89,7 +96,6 @@ void app_init() {
 
 int fft_dma_test(int i) {
   int error_cnt = 0;
-  uint64_t mhartid = READ_CSR("mhartid");
 
   // printf("[TEST: %d] [FFT] vs [NUMPY]\r\n", i);
   reset_fft();
@@ -113,9 +119,7 @@ int fft_dma_test(int i) {
   printf("[TEST: %d] [DMA-FFT] vs [NUMPY]\r\n", i);
 
   // while (*(volatile char*) (DMA_BASE+0x1) != 0);
-
   read_fft_real_dma(DMA_NUM, NUM_POINTS, DMA_ADDR1);
-
   // while (*(volatile char*) (DMA_BASE+0x1) != 0);
 
   uint32_t poll_dmafft, real_dmafft, imag_dmafft;
@@ -158,7 +162,6 @@ int fft_dma_test(int i) {
 
 int fft_raw_test(int i) {
   int error_cnt = 0;
-  uint64_t mhartid = READ_CSR("mhartid");
 
   /* Not making use of DMA */
 
@@ -240,7 +243,7 @@ void app_main() {
     printf("------------------------------------------\r\n");
     printf("[ TOTAL ERRORS FOUND ACROSS TESTS : %d ]\r\n", error_cnt);
   }
-  printf("[DONE WITH ALL TESTS!]\r\n");
+  printf("[DONE WITH ALL (FFT vs DMA-FFT vs NUMPY) TESTS!]\r\n");
 
   // Close the log file
   // fclose(log_file);
