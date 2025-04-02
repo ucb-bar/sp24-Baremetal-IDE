@@ -916,7 +916,7 @@ class ShmooTestHarness:
                     ((x, max_consec_voltage_fails) for x in frequencies))
 
                 def test_finish_handler(freq_hz: int, art: TestArtifact, retries: int,
-                                        data=None):
+                                        intermediate:bool, data=None):
                     nonlocal test, voltage_consec_fails, max_consec_voltage_fails, pending_freqs_stack, results, cur_v
                     
                     ShmooTestHarness.log_test_result(test, artifact)
@@ -937,7 +937,8 @@ class ShmooTestHarness:
                         
                         voltage_consec_fails += 1
                     
-                    results.add_result(test, cur_v, freq_hz, artifact, data.T if data is not None else data)
+                    if not intermediate or (art.status != TestStatus.PASS and intermediate):
+                        results.add_result(test, cur_v, freq_hz, artifact, data.T if data is not None else data)
 
                     # If we have exceeded our allowed cumulative fail count,
                     # stop processing freqs for this voltage.
@@ -981,11 +982,12 @@ class ShmooTestHarness:
                             f'Unable to connect to the chip over UART. No destinations available for ENQ connection handshake.',
                             red=True)
                         artifact.status = TestStatus.FAIL_NO_UART
-                        test_finish_handler(freq_hz, artifact, retries)
+                        test_finish_handler(freq_hz, artifact, retries, intermediate=False)
                         continue
 
                     run_errored = False
                     for run_number in range(test_runs):
+                        is_intermediate = not (run_number+1 == test_runs)
 
                         # This will check if a subtest failed. If so, break to outer attempt layer
                         if run_errored:
@@ -1041,7 +1043,8 @@ class ShmooTestHarness:
                                 red=True)
                             run_errored = True
                             artifact.status = TestStatus.FAIL_NO_BEL
-                            test_finish_handler(freq_hz, artifact, retries)
+                            test_finish_handler(freq_hz, artifact, retries,
+                                                intermediate=is_intermediate)
                             break
                         
                         ShmooTestHarness.log_as_chip(
@@ -1081,7 +1084,8 @@ class ShmooTestHarness:
                                 red=True)
                             run_errored = True
                             artifact.status = TestStatus.FAIL_NO_ETB
-                            test_finish_handler(freq_hz, artifact, retries)
+                            test_finish_handler(freq_hz, artifact, retries,
+                                                intermediate=is_intermediate)
                             break
                         
                         ShmooTestHarness.log_as_chip(
@@ -1130,7 +1134,7 @@ class ShmooTestHarness:
                         LOGGER.debug(f'[PSU Measurements] {measurements}')
 
                         # Generate and save a CSV of the PSU data.
-                        if artifact.has_measurements and run_number+1 == test_runs:
+                        if artifact.has_measurements and not is_intermediate:
                             csv_path = ShmooTestHarness.save_data_as_csv(
                                 measurements, artifact.status, results.output_dir,
                                 test.id, cur_v, freq_mhz)
@@ -1138,7 +1142,9 @@ class ShmooTestHarness:
                         
                         # Output appropriate result to the log and keep track of
                         # the result in our results object.
-                        test_finish_handler(freq_hz, artifact, retries, measurements)
+                        test_finish_handler(freq_hz, artifact, retries,
+                                            intermediate=is_intermediate,
+                                            data=measurements)
                     ser.close()
 
         ShmooTestHarness.make_shmoo_plot(results)
