@@ -36,14 +36,23 @@
 #include "../goldenmodel/fft_data_128len_twinkle.h"
 #include "../goldenmodel/fft_expected_data_128len_131c.h"
 #include "../goldenmodel/fft_expected_data_128len_twinkle.h"
+#include "tone_samples.h"
 
 /* INPUT OPTIONS */
 #define INPUT_DATA fft_data_twinkle
 // #define INPUT_DATA fft_data_131c
+// #define INPUT_DATA B3_samples_hex_128 // Still needs work - different format
 
-/* COMPARABLE OUTPUT OPTIONS */
+/* COMPARISON OUTPUT OPTIONS */
 #define OUTPUT_DATA fft_expected_data_twinkle
 // #define OUTPUT_DATA fft_expected_data_131c
+
+#ifdef OUTPUT_DATA
+bool compare_output = true;
+#else 
+bool compare_output = false;
+#define OUTPUT_DATA fft_expected_data_131c // throwaday data 
+#endif 
 
 #ifndef NUM_TESTS
 #define NUM_TESTS 14 // 14 // will also be overwritten if in data file
@@ -94,6 +103,11 @@ void app_init() {
 //   fprintf(log_file, "%s", message);
 // }
 
+/*
+ * 
+ *
+*/
+
 int run_fft_dma_test(int i, bool print) {
   int error_cnt = 0;
 
@@ -130,16 +144,27 @@ int run_fft_dma_test(int i, bool print) {
     poll_dmafft = reg_read32(DMA_ADDR1 + j*4); // DO NOT DO j*8, even if other people do!
     int16_t poll_real_dmafft = poll_dmafft & 0xFFFF; // same effect as "(int16_t) poll"
     int16_t poll_imag_dmafft = poll_dmafft >> 16; // untested - not needed for audio type inputs
-    int16_t expected_real_dmafft = (int16_t) OUTPUT_DATA[i][j];
-    if (poll_real_dmafft - expected_real_dmafft < -MAX_DIFF || poll_real_dmafft - expected_real_dmafft > MAX_DIFF) {
-      printf("[FAIL @ test=%d, idx=%d] [DMA-FFT] Actual: %lx, [NUMPY] Expected: %lx]\r\n", i, j, poll_real_dmafft, expected_real_dmafft);
-      error_cnt++;
-    }
-    if (print) {
-      if (RM_IMAG) {
-        printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real_dmafft, expected_real_dmafft);
-      } else {
-        printf("[idx=%d] Actual (r|i): %d | %d, Expected: %d \r\n", j, poll_real_dmafft, poll_imag_dmafft, expected_real_dmafft);
+    
+    if (compare_output) {
+      int16_t expected_real_dmafft = (int16_t) OUTPUT_DATA[i][j];
+      if (poll_real_dmafft - expected_real_dmafft < -MAX_DIFF || poll_real_dmafft - expected_real_dmafft > MAX_DIFF) {
+        printf("[FAIL @ test=%d, idx=%d] [DMA-FFT] Actual: %lx, [NUMPY] Expected: %lx]\r\n", i, j, poll_real_dmafft, expected_real_dmafft);
+        error_cnt++;
+      }
+      if (print) {
+        if (RM_IMAG) {
+          printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real_dmafft, expected_real_dmafft);
+        } else {
+          printf("[idx=%d] Actual (r|i): %d | %d, Expected: %d \r\n", j, poll_real_dmafft, poll_imag_dmafft, expected_real_dmafft);
+        }
+      }
+    } else {
+      if (print) {
+        if (RM_IMAG) {
+          printf("[idx=%d] Actual: %d\r\n", j, poll_real_dmafft);
+        } else {
+          printf("[idx=%d] Actual (r|i): %d | %d\r\n", j, poll_real_dmafft, poll_imag_dmafft);
+        }
       }
     }
 
@@ -155,13 +180,24 @@ int run_fft_dma_test(int i, bool print) {
 
   uint64_t end_time_dmafft = READ_CSR("mcycle");
   uint64_t end_instructions_dmafft = READ_CSR("minstret");
-  printf("[TEST: %d] Peak at Index %d: Actual: %d, Expected: %d \r\n", i, idx_max_dmafft, poll_real_max_dmafft, OUTPUT_DATA[i][idx_max_dmafft]);
-  printf("ERRORS FOUND: %d\r\n", error_cnt);
+
+  if (compare_output) {
+    printf("[TEST: %d] Peak at Index %d: Actual: %d, Expected: %d \r\n", i, idx_max_dmafft, poll_real_max_dmafft, OUTPUT_DATA[i][idx_max_dmafft]);
+    printf("ERRORS FOUND: %d\r\n", error_cnt);
+  } else {
+    printf("[TEST: %d] Peak at Index %d: Actual: %d \r\n", i, idx_max_dmafft, poll_real_max_dmafft);
+  }
+
   printf("mcycle = %lu\r\n", end_time_dmafft - start_time_dmafft);
   printf("minstret = %lu\r\n", end_instructions_dmafft - start_instructions_dmafft);
 
   return error_cnt;
 }
+
+/*
+ * 
+ *
+*/
 
 int run_fft_raw_test(int i, bool print) {
   int error_cnt = 0;
@@ -192,15 +228,21 @@ int run_fft_raw_test(int i, bool print) {
   for(int j=0; j<NUM_POINTS; j++) {
     poll_fft = read_fft();
     int16_t poll_real_fft = (int16_t) poll_fft;
-    int16_t expected_real_fft = (int16_t) OUTPUT_DATA[i][j];
+    if (compare_output) {
+      int16_t expected_real_fft = (int16_t) OUTPUT_DATA[i][j];
 
-    if (poll_real_fft - expected_real_fft < -MAX_DIFF || poll_real_fft - expected_real_fft > MAX_DIFF) {
-      printf("[FAIL @ test=%d, idx=%d] [FFT] Actual: %lx, [NUMPY] Expected: %lx]\r\n", i, j, poll_real_fft, expected_real_fft);
-      error_cnt++;
-    }
+      if (poll_real_fft - expected_real_fft < -MAX_DIFF || poll_real_fft - expected_real_fft > MAX_DIFF) {
+        printf("[FAIL @ test=%d, idx=%d] [FFT] Actual: %lx, [NUMPY] Expected: %lx]\r\n", i, j, poll_real_fft, expected_real_fft);
+        error_cnt++;
+      }
 
-    if (print) {
-      printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real_fft, expected_real_fft);
+      if (print) {
+        printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, poll_real_fft, expected_real_fft);
+      }
+    } else {
+      if (print) {
+        printf("[idx=%d] Actual: %d\r\n", j, poll_real_fft);
+      }
     }
 
     if (poll_real_fft > poll_real_max_fft) {
@@ -214,13 +256,22 @@ int run_fft_raw_test(int i, bool print) {
 
   uint64_t end_time_fft = READ_CSR("mcycle");
   uint64_t end_instructions_fft = READ_CSR("minstret");
-  printf("[TEST: %d] Peak at Index %d: Actual: %d, Expected: %d \r\n", i, idx_max_fft, poll_real_max_fft, OUTPUT_DATA[i][idx_max_fft]);
-  printf("ERRORS FOUND: %d\r\n", error_cnt);
+  if (compare_output) {
+    printf("[TEST: %d] Peak at Index %d: Actual: %d, Expected: %d \r\n", i, idx_max_fft, poll_real_max_fft, OUTPUT_DATA[i][idx_max_fft]);
+    printf("ERRORS FOUND: %d\r\n", error_cnt);
+  } else {
+    printf("[TEST: %d] Peak at Index %d: Actual: %d\r\n", i, idx_max_fft, poll_real_max_fft);
+  }
   printf("mcycle = %lu\r\n", end_time_fft - start_time_fft);
   printf("minstret = %lu\r\n", end_instructions_fft - start_instructions_fft);
 
   return error_cnt;
 }
+
+/*
+ * 
+ *
+*/
 
 int run_cpu_fft_test(int i, bool print) {
   printf("[TEST: %d] [CPU-FFT] vs [NUMPY]\r\n", i);
@@ -260,33 +311,49 @@ int run_cpu_fft_test(int i, bool print) {
       max = abs(fftoutbuf[j].r);
       index = j;
     }
-    int16_t expected_real_fft = (int16_t) OUTPUT_DATA[i][j];
+    if (compare_output) {
+      int16_t expected_real_fft = (int16_t) OUTPUT_DATA[i][j];
 
-    if (fftoutbuf[j].r - expected_real_fft < -MAX_DIFF || fftoutbuf[j].r - expected_real_fft > MAX_DIFF) {
-      printf("[FAIL @ test=%d, idx=%d] [CPU] Actual: %lx, [NUMPY] Expected: %lx]\r\n", i, j, fftoutbuf[j].r, expected_real_fft);
-      error_cnt++;
-    }
-
-    // printf("DEBUG: [%d] max(f): (%f)  max(d): (%d) while fabs: (%f) \r\n", i, max, max, fabs(fftoutbuf[i].r)); 
-    /* Original defaults to float */
-    // printf("[%d] [CPU] Imag: (%f)  Real: (%f)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r); 
-    /* For uint16_t */
-    if (print) {
-      if (RM_IMAG) {
-        printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, fftoutbuf[j].r, expected_real_fft);
-      } else {
-        printf("[idx=%d] Actual (r|i): %d | %d, Expected: %d \r\n", j, fftoutbuf[j].r, fftoutbuf[j].i, expected_real_fft);
+      if (fftoutbuf[j].r - expected_real_fft < -MAX_DIFF || fftoutbuf[j].r - expected_real_fft > MAX_DIFF) {
+        printf("[FAIL @ test=%d, idx=%d] [CPU] Actual: %lx, [NUMPY] Expected: %lx]\r\n", i, j, fftoutbuf[j].r, expected_real_fft);
+        error_cnt++;
       }
+
+      // printf("DEBUG: [%d] max(f): (%f)  max(d): (%d) while fabs: (%f) \r\n", i, max, max, fabs(fftoutbuf[i].r)); 
+      /* Original defaults to float */
+      // printf("[%d] [CPU] Imag: (%f)  Real: (%f)\r\n", i, fftoutbuf[i].i, fftoutbuf[i].r); 
+      /* For uint16_t below */
+      if (print) {
+        if (RM_IMAG) {
+          printf("[idx=%d] Actual: %d, Expected: %d \r\n", j, fftoutbuf[j].r, expected_real_fft);
+        } else {
+          printf("[idx=%d] Actual (r|i): %d | %d, Expected: %d \r\n", j, fftoutbuf[j].r, fftoutbuf[j].i, expected_real_fft);
+        }
+      } 
+    } else {
+      if (print) {
+        if (RM_IMAG) {
+          printf("[idx=%d] Actual: %d\r\n", j, fftoutbuf[j].r);
+        } else {
+          printf("[idx=%d] Actual (r|i): %d | %d\r\n", j, fftoutbuf[j].r, fftoutbuf[j].i);
+        }
+      } 
     }
   }
+    
+  
   
   // printf("Resulting frequency is about %f @ max = (%d), index = (%d)\r\n", (SAMPLING_FREQ) * index / NFFT, max, index);
 
   /* RESULTS & CLEANUP */
   uint64_t end_time = READ_CSR("mcycle");
   uint64_t end_instructions = READ_CSR("minstret");
-  printf("[TEST: %d] Peak at Index %d: Actual: %d, Expected: %d \r\n", i, index, max, OUTPUT_DATA[i][index]);
-  printf("ERRORS FOUND: %d\r\n", error_cnt);
+  if (compare_output) {
+    printf("[TEST: %d] Peak at Index %d: Actual: %d, Expected: %d \r\n", i, index, max, OUTPUT_DATA[i][index]);
+    printf("ERRORS FOUND: %d\r\n", error_cnt);
+  } else {
+    printf("[TEST: %d] Peak at Index %d: Actual: %d\r\n", i, index, max);
+  }
   printf("mcycle = %lu\r\n", end_time - start_time);
   printf("minstret = %lu\r\n", end_instructions - start_instructions);
 
@@ -327,13 +394,20 @@ void app_main() {
     error_cnt_cpu += run_cpu_fft_test(i, true);
   }
   error_cnt = error_cnt_dma + error_cnt_raw + error_cnt_cpu;
-  printf("\r\n------------------------------------------------\r\n");
-  printf("[ TOTAL ERRORS FOUND ACROSS (%d) TESTS : %d ]\r\n", NUM_TESTS, error_cnt);
-  printf("[      DMA-FFT vs NUMPY : %d ]\r\n", error_cnt_dma);
-  printf("[      RAW-FFT vs NUMPY : %d ]\r\n", error_cnt_raw);
-  printf("[      CPU-FFT vs NUMPY : %d ]\r\n", error_cnt_cpu);
-  printf("[DONE WITH ALL (RAW-FFT vs DMA-FFT vs CPU-FFT vs NUMPY) TESTS!]\r\n");
-  printf("------------------------------------------------\r\n");
+  if (compare_output) {
+    printf("\r\n------------------------------------------------\r\n");
+    printf("[TOTAL ERRORS FOUND ACROSS (%d) TESTS : %d ]\r\n", NUM_TESTS, error_cnt);
+    printf("[      DMA-FFT vs NUMPY : %d ]\r\n", error_cnt_dma);
+    printf("[      RAW-FFT vs NUMPY : %d ]\r\n", error_cnt_raw);
+    printf("[      CPU-FFT vs NUMPY : %d ]\r\n", error_cnt_cpu);
+    printf("[DONE WITH ALL (RAW-FFT vs DMA-FFT vs CPU-FFT vs NUMPY) TESTS!]\r\n");
+    printf("------------------------------------------------\r\n");
+  } else {
+    printf("\r\n------------------------------------------------\r\n");
+    printf("[DONE WITH ALL (RAW-FFT vs DMA-FFT vs CPU-FFT vs NUMPY) TESTS!]\r\n");
+    printf("[COMPARISONS TURNED OFF. PLEASE INSPECT THE (%d) TESTS MANUALLY.]\r\n", NUM_TESTS);
+    printf("\r\n------------------------------------------------\r\n");
+  }
 
   // Close the log file
   // fclose(log_file);
