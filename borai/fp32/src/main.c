@@ -64,6 +64,8 @@
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN PUC */
 
+uint64_t target_frequency = 500000000l;
+
 void malloc_run_state(RunState* s, Config* p) {
     // we calloc instead of malloc to keep valgrind happy
     int kv_dim = (p->dim * p->n_kv_heads) / p->n_heads;
@@ -350,32 +352,6 @@ float* forward(Transformer* transformer, int token, int pos) {
 int compare_tokens(const void *a, const void *b) {
     return strcmp(((TokenIndex*)a)->str, ((TokenIndex*)b)->str);
 }
-
-// void build_tokenizer(Tokenizer* t, char* tokenizer_path, int vocab_size) {
-//     // i should have written the vocab_size into the tokenizer file... sigh
-//     t->vocab_size = vocab_size;
-//     // malloc space to hold the scores and the strings
-//     t->vocab = (char**)malloc(vocab_size * sizeof(char*));
-//     t->vocab_scores = (float*)malloc(vocab_size * sizeof(float));
-//     t->sorted_vocab = NULL; // initialized lazily
-//     for (int i = 0; i < 256; i++) {
-//         t->byte_pieces[i * 2] = (unsigned char)i;
-//         t->byte_pieces[i * 2 + 1] = '\0';
-//     }
-//     // read in the file
-//     FILE *file = fopen(tokenizer_path, "rb");
-//     if (!file) { printf("STDERR: couldn't load %s\n", tokenizer_path); exit(EXIT_FAILURE); }
-//     if (fread(&t->max_token_length, sizeof(int), 1, file) != 1) { printf("STDERR: failed read\n"); exit(EXIT_FAILURE); }
-//     int len;
-//     for (int i = 0; i < vocab_size; i++) {
-//         if (fread(t->vocab_scores + i, sizeof(float), 1, file) != 1) { printf("STDERR: failed read\n"); exit(EXIT_FAILURE);}
-//         if (fread(&len, sizeof(int), 1, file) != 1) { printf("STDERR: failed read\n"); exit(EXIT_FAILURE); }
-//         t->vocab[i] = (char *)malloc(len + 1);
-//         if (fread(t->vocab[i], len, 1, file) != 1) { printf("STDERR: failed read\n"); exit(EXIT_FAILURE); }
-//         t->vocab[i][len] = '\0'; // add the string terminating token
-//     }
-//     fclose(file);
-// }
 
 void build_tokenizer_from_header(Tokenizer* t, int vocab_size) {
   // Potential point of improvement: Write the vocab size into the tokenizer file.
@@ -773,7 +749,7 @@ void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, 
     // report achieved tok/s (pos-1 because the timer starts after first iteration)
     if (pos > 1) {
         long end = CLINT->MTIME;
-        printf("STDERR: achieved tok/s: %f\r\n", (pos-1) / (double)(end-start)*1000);
+        printf("STDERR: achieved tok/s: %f\r\n", (pos-1) / (((double)(end-start)*1000)/target_frequency));
     }
 
     free(prompt_tokens);
@@ -964,26 +940,17 @@ void app_main() {
   */
 int main(int argc, char **argv) {
   /* MCU Configuration--------------------------------------------------------*/
-  CLOCK_SELECTOR->SEL = 0;
-  PLL->PLLEN = 0;
-  PLL->MDIV_RATIO = 1;
-  PLL->RATIO = 10;  // 500MHz
-  PLL->FRACTION = 0;
-  PLL->ZDIV0_RATIO = 1;
-  PLL->ZDIV1_RATIO = 1;
-  PLL->LDO_ENABLE = 1;
-  PLL->PLLEN = 1;
-  PLL->POWERGOOD_VNN = 1;
-  PLL->PLLFWEN_B = 1;
-  CLOCK_SELECTOR->SEL = 1; // Switch to PLL
+  configure_pll(PLL, target_frequency/50000000, 0);
+  set_all_clocks(CLOCK_SELECTOR, 1);
 
-  /* USER CODE BEGIN SysInit */
-  // Initialize UART0 for Serial Monitor
+//   /* USER CODE BEGIN SysInit */
+//   // Initialize UART0 for Serial Monitor
   UART_InitType UART0_init_config;
   UART0_init_config.baudrate = 115200;
   UART0_init_config.mode = UART_MODE_TX_RX;
   UART0_init_config.stopbits = UART_STOPBITS_2;
   uart_init(UART0, &UART0_init_config);
+  UART0->DIV = (target_frequency / 115200) - 1;
 
 // #ifdef ENABLE_BORAVOICE_INTEG
 //   // Initialize UART1 for BoraVoice
@@ -999,7 +966,6 @@ int main(int argc, char **argv) {
   // printf("Initialized heap memory from %x to %x.\r\n", heap_ptr, heap_end);
   /* USER CODE END SysInit */
 
-  printf("Hello World!!!!\r\n");
 //   while(1);
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */

@@ -59,11 +59,9 @@
 const unsigned char *ASCII_CRLF = (const unsigned char *) "\r\n";
 const unsigned char *ASCII_BEL = (const unsigned char *) "\a";
 
-int32_t GS = 0; // group size global for quantization of the weights
+int32_t GS = 64; // group size global for quantization of the weights
 
-#ifdef ENABLE_QT_DOTPROD
-int32_t GS_QTDP_BOUND = 0; // Quantized transformer dot product chunk size
-#endif
+uint64_t target_frequency = 500000000l;
 
 // #ifdef ENABLE_DMA_MATVEC
 // int32_t GS_MATVEC_BOUND = 0;
@@ -447,114 +445,6 @@ void softmax(float* x, int size) {
     }
 }
 
-#ifdef ENABLE_DMA_MATVEC
-DMA_Status dma_get_MAC_result_as_int32(DMA_Type* DMAX, int32_t* dst, uint32_t count) {
-    while (dma_operation_inprogress_and_not_error(DMAX));
-    if (count > 32)
-        count = 32;
-
-    if (dma_operation_complete(DMAX)){
-    for (size_t i = 0; i < count; i++)
-        dst[i] = (int32_t)(DMAX->DEST_REG[i]);
-        return DMA_OK;
-    }
-    else {
-        for (size_t i = 0; i < count; i++)
-            dst[i] = -1;
-        return get_status(DMAX);
-    }
-}
-
-void dma_init_MAC_local(DMA_Type* DMAX, void* src, int8_t* operand, uint64_t src_stride, uint32_t count) {
-    while (dma_operation_inprogress_and_not_error(DMAX));
-
-    // uint64_t* op = (uint64_t*) operand;
-    // for (size_t i = 0; i < 8; i++)
-    // DMAX->OPERAND_REG[i] = op[i];
-    // DMAX->SRC_ADDR = (uint64_t) src;
-    // DMAX->SRCSTRIDE = src_stride;
-    // DMAX->MODE = MODE_MAC;
-    // DMAX->COUNT = count;
-
-    memcpy(DMAX->OPERAND_REG, operand, 64);
-    DMAX->SRC_ADDR = (uint64_t) src;
-    DMAX->SRCSTRIDE = src_stride;
-    DMAX->MODE = MODE_MAC;
-    DMAX->COUNT = count;
-
-}
-
-void dma_verify_MAC(DMA_Type* DMAX, void* src, int8_t* operand, uint64_t src_stride, uint32_t count) {
-    printf("VERIFY: --- DMA Verify MAC Results Utility ---");
-    printf("VERIFY: DMA Stride:\t%u\r\n", DMAX->SRCSTRIDE);
-    printf("VERIFY: Source Address:\t%#016x\r\n", src);
-    printf("VERIFY: Row Count:\t%u\r\n", count);
-    printf("VERIFY: Operand Buffer Input Dump (Int8):");
-    
-    for (size_t i = 0; i < 64; i++) {
-        if (i % 8 == 0) {
-            printf("\r\n%#016x:", (&operand) + i);
-        }
-        printf("\t%d", operand[i]);
-    }
-
-    printf("\r\nVERIFY: DMA Operand Register Dump (Int8):");
-    for (size_t i = 0; i < 64; i++) {
-        if (i % 8 == 0) {
-            printf("\r\n%#016x:", (&DMAX->OPERAND_REG) + i);
-        }
-        printf("\t%d", (int16_t)DMAX->OPERAND_REG[i]);
-    }
-
-    printf("\r\n");
-    int16_t *intended = calloc(count, sizeof(int16_t));
-
-    uint64_t start_time = READ_CSR("mcycle");
-    for (size_t i = 0; i < count; i++) {
-        for (size_t j = 0; j < 64; j++) {
-            size_t in = src_stride * i;
-            int8_t *ptr = (int8_t*) src + in + j;
-            //printf("VERIFY:\t(Col %u)\tAdding\t%d = %d * %d\t\tto\t%d\r\n", j, operand[j] * (*ptr), operand[j], *ptr, intended[i]);
-            intended[i] += operand[j] * (*ptr);
-
-        }
-        
-        if (intended[i] == DMAX->DEST_REG[i]) {
-            printf("VERIFY: [CORRECT :D]");
-        } else {
-            printf("VERIFY: [INVALID D:]");
-        }
-        printf("\t(Row %u)\t\tExpected\t%d\tGot\t%d\r\n", i, intended[i], DMAX->DEST_REG[i]);
-    }
-    uint64_t end_time = READ_CSR("mcycle");
-    printf("VERIFY: Naive comparison completed in %lu cycles (with printf).", end_time - start_time);
-    printf("Intended Result Dump (Int8):");
-    for (size_t i = 0; i < count; i++) {
-        if (i % 8 == 0) {
-            printf("\r\n%#016x:", (&intended) + i);
-        }
-        printf("\t%#x", (uint16_t)intended[i]);
-    }
-    printf("\r\nDMA Destination Register Dump (Int8, Full Register):");
-    for (size_t i = 0; i < 32; i++) {
-        if (i % 8 == 0) {
-            printf("\r\n%#016x:", &DMAX->DEST_REG + i);
-        }
-        printf("\t%d", (int16_t)DMAX->DEST_REG[i]);
-    }
-
-    printf("\r\nDMA Destination Register Dump (Int8 Hexadecimal, Full Register):");
-    for (size_t i = 0; i < 32; i++) {
-        if (i % 8 == 0) {
-            printf("\r\n%#016x:", &DMAX->DEST_REG + i);
-        }
-        printf("\t%#04x", (uint16_t)DMAX->DEST_REG[i]);
-    }
-    printf("\r\nVERIFY: !-- End DMA Verify MAC Results Utility --!\r\n");
-    free(intended);
-}
-#endif
-
 void matmul(float* xout, QuantizedTensor *x, QuantizedTensor *w, int n, int d) {
     // W (d,n) @ x (n,) -> xout (d,)
     // by far the most amount of time is spent inside this little function
@@ -563,98 +453,8 @@ void matmul(float* xout, QuantizedTensor *x, QuantizedTensor *w, int n, int d) {
     // d = num rows, n = num cols
     int i = 0;
 
-#ifdef ENABLE_DMA_MATVEC
-    // Assumption: GS is a multiple of and equal to matvec width (64 int8s).
-    int32_t mv_row = 0;  // Top-left of DMA start point
-    int32_t mv_col;  
-    int32_t mac_out_idx;
-    // bool reset_mac_outputs = true; // Can use this to support variable GS, if need to conditionally reset mac_output.
-    int32_t stride = n * sizeof(int8_t);
-    int32_t mac_output[DMA_NUM_ROWS];
-    int32_t cmul_sum = 0;
-    DMA_Status status;
-
-    // Shift DMA down by size
-    for (; mv_row < d / DMA_NUM_ROWS * DMA_NUM_ROWS; mv_row += DMA_NUM_ROWS) {
-        // Shift DMA over based on multiples of its width and GS.
-        size_t row_offset = mv_row * n;
-
-        for (mv_col = 0; mv_col < n / DMA_NUM_COLS * DMA_NUM_COLS; mv_col += DMA_NUM_COLS) {
-            // (void*)(w->q + in + j + n) - (void*)(w->q + in + j)
-            // DMA Struct, Source Matrix, Operand Vector, Source Row Stride (bytes), Row Count
-            uint64_t start_time = READ_CSR("mcycle");
-            dma_init_MAC_local(DMA0, &w->q[row_offset + mv_col], &x->q[mv_col], stride, DMA_NUM_ROWS);
-
-            // Blocking operation!
-            while (dma_operation_inprogress_and_not_error(DMA0));
-            uint64_t end_time = READ_CSR("mcycle");
-            status = dma_get_MAC_result_as_int32(DMA0, &mac_output, DMA_NUM_ROWS);
-            
-            //printf("Got MAC result!");
-            if (status != DMA_OK) {
-                printf("ERR: DMA returned error status code %d\r\n", status);
-            } else{
-                // printf("DMA OK (Finished in %lu cycles)\r\n", end_time - start_time);
-            }
-            dma_verify_MAC(DMA0, &w->q[row_offset + mv_col], &x->q[mv_col], stride, DMA_NUM_ROWS);
-            size_t xout_vec_col = mv_col / GS;
-            for (mac_out_idx = 0; mac_out_idx < DMA_NUM_ROWS; mac_out_idx++) {
-                xout[mv_row + mac_out_idx] += ((float) mac_output[mac_out_idx]) * w->s[(n * mac_out_idx + mv_col) / GS] * x->s[xout_vec_col];
-            }
-        }
-
-        /// Nested Naive/QTDP Solution for extra columns ///
-
-        if (mv_col >= GS) continue;
-        int32_t lower_col = mv_col;
-
-        for (i = mv_row; i < d; i++) {
-            float val = 0.0f;
-            int32_t ival = 0;
-
-            // in = offset for w matrix accounting for rows
-            int in = i * n;
-
-            // do the matmul in groups of GS
-            int j;
-
-            for (j = lower_col; j <= n - GS; j += GS) {  // Chunks in groups of GS (was n - GS)
-                int k = 0;
-
-// #ifdef ENABLE_QT_DOTPROD
-//                 for (; k < GS_QTDP_BOUND; k += 16) { // Dot product on vector
-//                     int32_t dot_out_temp;
-//                     printf("n = %d, d = %d, i = %d, j = %d, k = %d, upper = %d.\r\n", n, d, i, j, k, GS_QTDP_BOUND);
-//                     asm volatile("fence");
-//                     V_LOAD(1, &(x->q[j + k]));
-//                     V_LOAD(2, &(w->q[in + j + k]));
-//                     V_DOT_PROD(dot_out_temp, 1, 2);
-//                     asm volatile("fence");
-//                     ival += dot_out_temp;
-//                 }
-// #endif
-
-                for (; k < GS; k++) {   // Performs single operations
-                    // if (i == 0 && j == 0) {
-                    //     printf("REAL:\t(Col %u) Adding\t%d = %d * %d\tto\t%d\r\n", k, ((int32_t) x->q[j + k]) * ((int32_t) w->q[in + j + k]), ival);
-                    // }
-                    ival += ((int32_t) x->q[j + k]) * ((int32_t) w->q[in + j + k]);
-                }
-                val += ((float) ival) * w->s[(in + j) / GS] * x->s[j / GS];
-                ival = 0;
-            }
-
-            xout[i] = val;
-        }
-
-    }
-
-    i = mv_row;
-#endif
-    i = 0;
     /// Naive Solution with optional QTDP, which can be used alongside DMA for extra leftover rows.
     for (; i < d; i++) {
-
         float val = 0.0f;
         int32_t ival = 0;
 
@@ -666,37 +466,7 @@ void matmul(float* xout, QuantizedTensor *x, QuantizedTensor *w, int n, int d) {
 
         for (j = 0; j <= n - GS; j += GS) {  // Chunks in groups of GS (was n - GS)
             int k = 0;
-
-#ifdef ENABLE_QT_DOTPROD
-        if (d > n) {
-            for (; k < GS_QTDP_BOUND; k += 8) { // Dot product on vector
-                int64_t dot_out_temp;
-                // printf("n = %d, d = %d, i = %d, j = %d, k = %d, upper = %d.\r\n", n, d, i, j, k, GS_QTDP_BOUND);
-                //
-                asm volatile("fence");
-                V_LOAD(1, &(x->q[j + k]));
-                asm volatile("fence");
-                V_LOAD(2, &(w->q[in + j + k]));
-                asm volatile("fence");
-                V_DOT_PROD(dot_out_temp, 1, 2);
-                asm volatile("fence");
-
-                // Test
-                int32_t temp_sum = 0;
-                for (int ia = 0; ia < 8; ia++) {
-                    printf("\tSumming %d = %d * %d\r\n", ((int32_t) x->q[j + k + ia]) * ((int32_t) w->q[in + j + k + ia]), ((int32_t) x->q[j + k + ia]), ((int32_t) w->q[in + j + k + ia]));
-                    temp_sum += ((int32_t) x->q[j + k + ia]) * ((int32_t) w->q[in + j + k + ia]);
-                }
-                printf("Naive Output: %d, QT Output: %d\r\n", temp_sum, dot_out_temp);
-                ival += dot_out_temp;
-            }
-        }
-#endif
-
             for (; k < GS; k++) {   // Performs single operations
-                // if (i == 0 && j == 0) {
-                //     printf("REAL:\t(Col %u) Adding\t%d = %d * %d\tto\t%d\r\n", k, ((int32_t) x->q[j + k]) * ((int32_t) w->q[in + j + k]), (int32_t) x->q[j + k], (int32_t) w->q[in + j + k], ival);
-                // }
                 ival += ((int32_t) x->q[j + k]) * ((int32_t) w->q[in + j + k]);
             }
             val += ((float) ival) * w->s[(in + j) / GS] * x->s[j / GS];
@@ -865,32 +635,6 @@ typedef struct {
 int compare_tokens(const void *a, const void *b) {
     return strcmp(((TokenIndex*)a)->str, ((TokenIndex*)b)->str);
 }
-
-// void build_tokenizer(Tokenizer* t, char* tokenizer_path, int vocab_size) {
-//     // i should have written the vocab_size into the tokenizer file... sigh
-//     t->vocab_size = vocab_size;
-//     // malloc space to hold the scores and the strings
-//     t->vocab = (char**)malloc(vocab_size * sizeof(char*));
-//     t->vocab_scores = (float*)malloc(vocab_size * sizeof(float));
-//     t->sorted_vocab = NULL; // initialized lazily
-//     for (int i = 0; i < 256; i++) {
-//         t->byte_pieces[i * 2] = (unsigned char)i;
-//         t->byte_pieces[i * 2 + 1] = '\0';
-//     }
-//     // read in the file
-//     FILE *file = fopen(tokenizer_path, "rb");
-//     if (!file) { printf("STDERR: couldn't load %s\n", tokenizer_path); exit(EXIT_FAILURE); }
-//     if (fread(&t->max_token_length, sizeof(int), 1, file) != 1) { printf("STDERR: failed read\n"); exit(EXIT_FAILURE); }
-//     int len;
-//     for (int i = 0; i < vocab_size; i++) {
-//         if (fread(t->vocab_scores + i, sizeof(float), 1, file) != 1) { printf("STDERR: failed read\n"); exit(EXIT_FAILURE);}
-//         if (fread(&len, sizeof(int), 1, file) != 1) { printf("STDERR: failed read\n"); exit(EXIT_FAILURE); }
-//         t->vocab[i] = (char *)malloc(len + 1);
-//         if (fread(t->vocab[i], len, 1, file) != 1) { printf("STDERR: failed read\n"); exit(EXIT_FAILURE); }
-//         t->vocab[i][len] = '\0'; // add the string terminating token
-//     }
-//     fclose(file);
-// }
 
 void build_tokenizer_from_header(Tokenizer* t, int vocab_size) {
   // Potential point of improvement: Write the vocab size into the tokenizer file.
@@ -1296,7 +1040,7 @@ void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, 
         // init the timer here because the first iteration can be slower
         if (start == 0) { start = READ_CSR("mcycle"); }
     }
-    printf("\n");
+    printf("\r\n");
 
     // report achieved tok/s (pos-1 because the timer starts after first iteration)
     if (pos > 1) {
@@ -1304,11 +1048,11 @@ void generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler, 
         printf("\r\nBENCHMARK: Total cycles: %lu\r\n", end-start);
         printf("BENCHMARK: Total tokens:\t%d\r\n", pos-1);
         printf("BENCHMARK: Cycles per token:\t%lu\r\n", (unsigned long)(end-start)/(pos-1));
-        printf("BENCHMARK: Seconds per token:\t%lu\r\n", (unsigned long)((end-start)/MTIME_FREQ)/(pos-1));
-        printf("BENCHMARK: Seconds per token (float):\t%f\r\n", ((float)(end-start)/(float)MTIME_FREQ)/(float)(pos-1));
+        printf("BENCHMARK: Seconds per token:\t%lu\r\n", (unsigned long)((end-start)/target_frequency)/(pos-1));
+        printf("BENCHMARK: Seconds per token (float):\t%f\r\n", ((float)(end-start)/(float)target_frequency)/(float)(pos-1));
 
-        printf("BENCHMARK: MTIME Frequency:\t%u\r\n", MTIME_FREQ);
-        printf("STDERR: achieved tok/s:\t%f\r\n", 1/((float)(end-start)/(float)MTIME_FREQ)/(float)(pos-1));
+        printf("BENCHMARK: CLOCK Frequency:\t%u\r\n", target_frequency);
+        printf("STDERR: achieved tok/s:\t%f\r\n", 1/((float)(end-start)/(float)target_frequency)/(float)(pos-1));
     }
 
     free(prompt_tokens);
@@ -1472,7 +1216,6 @@ void chat(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler,
 
 
 void app_main() {
-  printf("%c%c%c%c%c[0;0H",0x1B,0x5B,0x32,0x4A,0x1B);
   uint64_t mhartid = READ_CSR("mhartid");
   printf("Started BorAIq (Int8 Quantized) Inference Engine on hart ID %lu\r\n", mhartid);
 
@@ -1480,9 +1223,9 @@ void app_main() {
   float temperature = 0.8f;   // 0.0 = greedy deterministic. 1.0 = original. don't set higher
   float topp = 0.9f;          // top-p in nucleus sampling. 1.0 = off. 0.9 works well, but slower
   int steps = 128;            // number of steps to run for (default 512)
-  char *prompt = "If you";        // prompt string
+  char *prompt = NULL;        // prompt string
   unsigned long long rng_seed = CLINT->MTIME; // seed rng with time by default
-  GenMode mode = CHAT;    // generate|chat
+  GenMode mode = GENERATE;    // generate|chat
   char *system_prompt = NULL; // the (optional) system prompt to use in chat mode (I have it set up to ask screen if not given)
 
   // Parameter validation and overrides
@@ -1529,19 +1272,8 @@ void app_main() {
 int main(int argc, char **argv) {
   /* MCU Configuration--------------------------------------------------------*/
   
-  /* Initialize PLL configuration */
-  CLOCK_SELECTOR->SEL = 0;
-  PLL->PLLEN = 0;
-  PLL->MDIV_RATIO = 1;
-  PLL->RATIO = 15;  // 750MHz
-  PLL->FRACTION = 0;
-  PLL->ZDIV0_RATIO = 1;
-  PLL->ZDIV1_RATIO = 1;
-  PLL->LDO_ENABLE = 1;
-  PLL->PLLEN = 1;
-  PLL->POWERGOOD_VNN = 1;
-  PLL->PLLFWEN_B = 1;
-  CLOCK_SELECTOR->SEL = 1; // Switch to PLL
+  configure_pll(PLL, target_frequency/50000000, 0);
+  set_all_clocks(CLOCK_SELECTOR, 1);
 
   /* USER CODE BEGIN SysInit */
   // Initialize UART0 for Serial Monitor
@@ -1550,19 +1282,8 @@ int main(int argc, char **argv) {
   UART0_init_config.mode = UART_MODE_TX_RX;
   UART0_init_config.stopbits = UART_STOPBITS_2;
   uart_init(UART0, &UART0_init_config);
+  UART0->DIV = (target_frequency / 115200) - 1;
 
-#ifdef ENABLE_BORAVOICE_INTEG
-  // Initialize UART1 for BoraVoice
-  UART_InitType UART1_init_config;
-  UART1_init_config.baudrate = 115200;
-  UART1_init_config.mode = UART_MODE_TX_RX;
-  UART1_init_config.stopbits = UART_STOPBITS_2;
-  uart_init(UART1, &UART1_init_config);
-#endif
-
-#ifdef ENABLE_QT_DOTPROD
-  SET_SCALE_FACTOR(1, 0);
-#endif
   /* USER CODE END SysInit */
 
   /* Infinite loop */

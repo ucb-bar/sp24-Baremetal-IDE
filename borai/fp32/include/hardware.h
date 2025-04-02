@@ -14,7 +14,6 @@ extern "C" {
  */
 #include "chip_config.h"
 #include "riscv.h"
-#include "hal_dma.h"
 
 #ifdef __cplusplus
 }

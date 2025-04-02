@@ -22,7 +22,7 @@ target_link_libraries(borai PRIVATE
 target_link_libraries(borai PRIVATE m)
 
 target_link_libraries(boraiq PRIVATE 
-  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive -Wl,--defsym=__boot_hart=$2 -Wl,--defsym=__main=main
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
 )
 ## Include Math.h library
 target_link_libraries(boraiq PRIVATE m)

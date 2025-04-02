@@ -45,13 +45,13 @@ extern "C" {
 
 // newer tok32000 stories260 version
 // #include "weights_15Mq.h"
-// #include "weights_260Kq_32000.h"
-// #include "tokenizer_32000.h"
+#include "weights_260Kq_32000.h"
+#include "tokenizer_32000.h"
 
 
 // Bora Datasets
-#include "bora_tok8096.h"
-#include "bora_260K8096.h"
+// #include "bora_tok8096.h"
+// #include "bora_260K8096.h"
 //#include "bora_3M8096.h"
 //#include "bora_15M8096.h"
 //#include "bora_42M8096.h"

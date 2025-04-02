@@ -49,7 +49,6 @@ extern "C" {
 
 #endif
 
-#include "ll_pll.h"
 
 #ifdef __cplusplus
 }
