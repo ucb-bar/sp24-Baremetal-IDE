@@ -35,18 +35,17 @@ extern "C" {
 #include "hardware.h"
 
 // 15M version
-// #include "weights_15Mq.h"
-// #include "weights_TS_small_q.h"
-// #include "tokenizer_TS.h"
+#include "stories15M_ng.h"
+#include "tokenizer.h"
 
 // 260K version
-// #include "weights_260Kq.h"
-// #include "tokenizer_512.h"
+// #include "stories260kq.h"
+// #include "tok512.h"
 
-// newer tok32000 stories260 version
+// NO ---------------- newer tok32000 stories260 version
 // #include "weights_15Mq.h"
-#include "weights_260Kq_32000.h"
-#include "tokenizer_32000.h"
+//#include "weights_260Kq_32000.h"
+//#include "tokenizer_32000.h"
 
 
 // Bora Datasets
