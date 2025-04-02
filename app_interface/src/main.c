@@ -19,9 +19,14 @@
 #include "dataset2.h"
 #include "../goldenmodel/fft_data_128len_131c.h"
 #include "../goldenmodel/fft_data_128len_twinkle.h"
+#include "../goldenmodel/fft_expected_data_128len_131c.h"
+#include "../goldenmodel/fft_expected_data_128len_twinkle.h"
 #define DMA_ADDR1 0x87000000L // Base Address
+#define INPUT_ADDR1 0x08000000U // Where to save data - scratchpad is 0x08000000U
 #define INPUT_DATA fft_data_131c
+#define OUTPUT_DATA fft_expected_data_131c
 #define NUM_POINTS 128
+#define DMA_NUM 1
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -69,7 +74,7 @@ void app_main() {
   reset_fft();
   // enable_Crack(); // bad idea to enable for initial tests 
 
-  write_fft_dma(1, NUM_POINTS, INPUT_DATA); 
+  write_fft_dma(DMA_NUM, NUM_POINTS, INPUT_DATA); 
   // sim test was like:
   // write_fft_dma(0, NUM_POINTS, (uint32_t*)fft_data[i]);
   uint64_t start_time = READ_CSR("mcycle");
@@ -90,12 +95,15 @@ void app_main() {
   /* Not making use of DMA */
 
   uint32_t poll;
-  poll = read_fft();
-  int16_t poll_real = (int16_t) poll;
   for(int j=0; j<NUM_POINTS; j++) {
     poll = read_fft();
     int16_t poll_real = (int16_t) poll;
-    printf("Actual: %d, Expected: N/A \n\r", poll); // fft_expected_data[i][j]);
+    int16_t expected_real = (int16_t) OUTPUT_DATA[j];
+    // if (poll_real - expected_real < -MAX_DIFF || poll_real - expected_real > MAX_DIFF) {
+    //   printf("[FAIL, test=%d, idx=%d] Expected %lx, received %lx]\n", i, j, fft_expected_data[i][j], poll);
+    //   // error_cnt++;
+    // }
+    printf("Actual: %d, Expected: %d \n", poll_real, expected_real);
   }
 
   printf("[DONE] Waiting Write\n");
