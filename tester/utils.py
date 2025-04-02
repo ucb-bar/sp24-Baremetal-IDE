@@ -890,7 +890,7 @@ class ShmooTestHarness:
         # This routine treats voltages and frequencies as a stack, such that we
         # can re-attempt at will.
         if tests:
-            tests_to_run = [t for t in tests]
+            tests_to_run = []
             for test_id in tests:
                 if test_id not in suite.tests:
                     LOGGER.warning(f'A registered test with ID {test_id} was not found for suite "{suite.name}"')
