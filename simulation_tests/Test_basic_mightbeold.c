@@ -13,10 +13,6 @@
 #include "utils/fft_utils.h"
 #include "utils/conv_utils.h"
 
-
-
-
-
 // Addresses for writing data
 #define DMA_ADDR1 0x87000000L // address for FFT
 #define DMA_ADDR2 0x88000000L // address for Conv
