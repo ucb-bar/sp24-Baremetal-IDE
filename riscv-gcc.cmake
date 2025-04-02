@@ -22,7 +22,6 @@ set(CMAKE_INCLUDE_PATH      "${TOOLCHAIN_PATH}/riscv64-unknown-elf/include/")
 set(CMAKE_LIBRARY_PATH      "${TOOLCHAIN_PATH}/riscv64-unknown-elf/lib/")
 set(CMAKE_PROGRAM_PATH      "${TOOLCHAIN_PATH}/riscv64-unknown-elf/bin/")
 
-
 set(CMAKE_CROSSCOMPILING TRUE)
 
 # prevent the toolchain from searching for programs in the host environment

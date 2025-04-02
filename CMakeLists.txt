@@ -19,7 +19,6 @@ cmake_minimum_required(VERSION 3.10)
 
 project(baremetal-ide LANGUAGES ASM C CXX)
 
-
 #################################
 # Options
 #################################
@@ -35,7 +34,6 @@ option(CHIP                         "Build for a specific platform"           OF
 
 set(CMAKE_EXECUTABLE_SUFFIX            ".elf")
 
-
 #################################
 # Flags
 #################################
@@ -49,7 +47,6 @@ set(ARCH_FLAGS          -march=${ARCH} -mabi=${ABI} -mcmodel=${CMODEL})
 # spec
 set(SPECS               "nosys.specs")
 set(SPEC_FLAGS          -specs=${SPECS})
-
 
 # convert CHIP to lowercase
 string(TOLOWER ${CHIP} CHIP)
@@ -86,27 +83,25 @@ add_link_options(${ARCH_FLAGS})
 add_link_options(${SPEC_FLAGS})
 add_link_options(-T ${LINKER_SCRIPT})
 
-
-
 #################################
 # Build
 #################################
-
-add_executable(app_rushed
-  app_rushed/src/main.c
-)
-
-add_executable(app_naich_comparison
-  app_naich_comparison/src/main.c
-)
 
 add_executable(app_interface
   app_interface/src/main.c
 )
 
-add_executable(shazam_demo
-  shazam_demo/src/main.c
-  shazam_demo/src/kiss_fft.c
+add_executable(app_naichen_at_3am
+  app_naichen_at_3am/src/main.c
+)
+
+add_executable(app_SGEMM_vectorized
+  app_SGEMM_vectorized/src/main.c
+)
+
+add_executable(app_shazam_demo
+  app_shazam_demo/src/main.c
+  app_shazam_demo/src/kiss_fft.c
 )
 
 add_executable(dsp-saturn
@@ -131,11 +126,11 @@ add_executable(dsp-strcmp
 
 target_include_directories(app_interface PUBLIC app_interface/include)
 
-target_include_directories(app_naich_comparison PUBLIC app_naich_comparison/include)
+target_include_directories(app_naichen_at_3am PUBLIC app_naichen_at_3am/include)
 
-target_include_directories(app_rushed PUBLIC app_rushed/include)
+target_include_directories(app_SGEMM_vectorized PUBLIC app_SGEMM_vectorized/include)
 
-target_include_directories(shazam_demo PUBLIC shazam_demo/include)
+target_include_directories(app_shazam_demo PUBLIC app_shazam_demo/include)
 
 target_include_directories(dsp-saturn PUBLIC dsp-saturn/common)
 
