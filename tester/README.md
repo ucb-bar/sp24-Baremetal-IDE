@@ -1,5 +1,13 @@
 # Jasmine Angle's ShmooTester
 
+## Operation
+
+This automated testing program performs a sweep across a range of voltages and frequencies based on a supplied plug-in for each benchmark you wish to run.
+
+## Chip Communication Protocol
+
+<img src="test_protocol.png" alt="Host and Chip UART1 protocol flow diagram" width="400"/>
+
 ## Setup
 
 ### Python Environment
