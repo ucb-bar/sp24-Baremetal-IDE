@@ -158,10 +158,10 @@ class TimedMultiCoreTest(ShmooTest):
 
 ShmooTestHarness.register_test_suite(TestSuite("my_test",
     "build/dsp24-bmarks/path/to/binary.elf",
-    TimedSaturnPVirusTest("My Test with 1 Core", harts=1, runtime=2000),
-    TimedSaturnPVirusTest("My Test with 2 Cores", harts=2, runtime=2000),
-    TimedSaturnPVirusTest("My Test with 3 Cores", harts=3, runtime=2000),
-    TimedSaturnPVirusTest("My Test with 4 Cores", harts=4, runtime=2000),
+    TimedMultiCoreTest("My Test with 1 Core", harts=1, runtime=2000),
+    TimedMultiCoreTest("My Test with 2 Cores", harts=2, runtime=2000),
+    TimedMultiCoreTest("My Test with 3 Cores", harts=3, runtime=2000),
+    TimedMultiCoreTest("My Test with 4 Cores", harts=4, runtime=2000),
 ))
 ```
 
