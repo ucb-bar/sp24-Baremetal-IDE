@@ -1,6 +1,6 @@
 <img src="doc/shmootester_header.png" alt="Host and Chip UART1 protocol flow diagram"/>
 
-# Jasmine Angle's ShmooTester
+# ShmooTester
 
 This automated testing program performs a sweep across a range of voltages and frequencies based on a supplied plugin for each benchmark you wish to run. In tandem with `libbmark`, this permits a fully automated Shmoo plot generation scheme for any arbitrary benchmark with minimal setup required. 
 
