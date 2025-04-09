@@ -17,9 +17,9 @@
 // Add => Normalize => Play it back?
 #include "main.h"
 
-typedef struct {
+typedef struct __attribute__((__packed__)) {
   uint64_t naive_cycles;
-  float naive_performance; 
+  float naive_performance;
   uint64_t vector_cycles;
   float vector_performance;
 } igemm_result_t;
@@ -40,11 +40,80 @@ extern int64_t g_big[] __attribute__((aligned(256)));
   
 #define TILE 8
 
+void benchmark_naive_igemm_big(){
+  int s = 256;
+
+  igemm_result_t result;
+  memset(&result, 0, sizeof(result));
+
+  uint64_t runtime;
+  float performance;
+  uint64_t time;
+
+  for (int rep = 0; rep < 3; rep++) {
+    if (rep == 2) { 
+      time = READ_CSR("mcycle");
+    }
+    for (uint64_t i0 = 0; i0 < M_big; i0 += TILE) {
+      for (uint64_t j0 = 0; j0 < P_big; j0 += TILE) {
+        for (uint64_t k0 = 0; k0 < N_big; k0 += TILE) {
+          for (uint64_t i = i0; i < i0 + TILE && i < M_big; i++) {
+            for (uint64_t j = j0; j < j0 + TILE && j < P_big; j++) {
+              int64_t sum = c_big[i * P_big + j]; 
+              for (uint64_t k = k0; k < k0 + TILE && k < N_big; k++) {
+                sum += a_big[i * N_big + k] * b_big[k * P_big + j];
+              }
+              c_big[i * P_big + j] = sum;
+            }
+          }
+        }
+      }
+    }
+
+    if (rep == 2){
+      runtime = READ_CSR("mcycle") - time;
+      result.naive_cycles = runtime;
+      result.naive_performance = 2.0 * s * s * s / runtime;
+      xmit_payload_packet(&result, 24);
+    }
+  }
+}
+
 void benchmark_vec_igemm_big(){
+  int s = 256;
+
+  igemm_result_t result;
+  memset(&result, 0, sizeof(result));
+
+  uint64_t runtime;
+  uint64_t time;
+
+  for (int rep = 0; rep < 4; rep++) {
+    if (rep == 3) { 
+      start_roi();
+      time = READ_CSR("mcycle");
+    }
+
+    imatmul(c_big, a_big, b_big, s, s, s);
+
+    asm volatile("fence");
+
+    if (rep == 3){
+      runtime = READ_CSR("mcycle") - time;
+      end_roi();
+      result.vector_cycles = runtime;
+      result.vector_performance = 2.0 * s * s * s / runtime;
+      xmit_payload_packet(&result, 24);
+    }
+  }
+}
+
+void benchmark_vec_naive(){
 
   int s = 256;
 
   igemm_result_t result;
+  memset(&result, 0, sizeof(result));
 
   uint64_t runtime;
   float performance;
@@ -70,13 +139,12 @@ void benchmark_vec_igemm_big(){
               c_big[i * P_big + j] = sum;
             }
           }
-  
         }
       }
     }
 
     if (rep == 2){
-      runtime = READ_CSR("mcycle"); - time;
+      runtime = READ_CSR("mcycle") - time;
       result.naive_cycles = runtime;
       result.naive_performance = 2.0 * s * s * s / runtime;
     }
@@ -93,14 +161,14 @@ void benchmark_vec_igemm_big(){
     asm volatile("fence");
 
     if (rep == 3){
-      runtime = READ_CSR("mcycle"); - time;
+      runtime = READ_CSR("mcycle") - time;
+      end_roi();
       result.vector_cycles = runtime;
       result.vector_performance = 2.0 * s * s * s / runtime;
       xmit_payload_packet(&result, 24);
     }
   }
 }
-
 
 /**
   * @brief  The application entry point.
@@ -110,11 +178,20 @@ int main(int argc, char **argv) {
   while (1) {
     test_info t = init_test(UART1);
     switch (t.testid) {
-      default:
+      case 0:
+        benchmark_naive_igemm_big();
+        break;
+      case 1:
         benchmark_vec_igemm_big();
+        break;
+      case 2: 
+        benchmark_vec_naive();
+        break;
+      default:
+        benchmark_vec_naive();
+        break;
     }
   }
-  /* USER CODE END WHILE */
 }
 
 /*
