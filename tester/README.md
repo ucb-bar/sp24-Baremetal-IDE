@@ -67,7 +67,7 @@ The PSU will require some preliminary setup to ensure connectivity. Within `util
 
 To run a new benchmark you must create a new plugin to incorporate it with the ShmooTester. A simple complete example of a plugin can be found in [`plugins/example_plugin.py`](plugins/example_plugin.py).
 
-Within the `plugins/` directory, create a new Python file with a name that suits your new benchmark, and add it to the imports within `__init__.py`. This will include your plugin to be imported upon loading the program.
+Within the `plugins/` directory, create a new Python file with a name that suits your new benchmark, and add it to the imports within `__init__.py`. This will include your plugin to be imported upon loading the program. The `timeout` parameter indicates the number of seconds that the host should wait for a response from the chip.
 
 ### Designing `ShmooTest` Classes
 
@@ -162,6 +162,7 @@ ShmooTestHarness.register_test_suite(TestSuite("my_test",
     TimedMultiCoreTest("My Test with 2 Cores", harts=2, runtime=2000),
     TimedMultiCoreTest("My Test with 3 Cores", harts=3, runtime=2000),
     TimedMultiCoreTest("My Test with 4 Cores", harts=4, runtime=2000),
+    TimedMultiCoreTest("Super Long 4 Core Test", harts=4, runtime=10000, timeout=14),
 ))
 ```
 
