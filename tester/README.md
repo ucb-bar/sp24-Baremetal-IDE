@@ -95,7 +95,7 @@ class HelloTest(ShmooTest):
 >                   expect=b'Hello World!'),
 > ```
 
-This `HelloTest` class implements a common simple functionality for a straightforward `Hello World!` benchmark. Here, our context is empty, so there isn't much purpose here, but if you have a test where the output depends on the host payload that you sent to the chip, you can include arbitrary Python values within the context object to be passed back to `check_output` later on.
+This `HelloTest` class implements a common simple functionality for a straightforward `Hello World!` benchmark. Here, our context is empty, so there isn't much purpose here, but if you have a test where the output depends on the host payload that you sent to the chip, you can include arbitrary Python values within the context object to be passed back to `check_output` later on. If your context value happens to be a dictionary, the tester will automatically populate a `chip_freq` key with the frequency (in Hz) that the test was instructed to run at before calling `check_output`.
 
 Because a single executable may have multiple tests, we must group all of our `ShmooTest` subclass instances into a single `TestSuite`, which gets associated with a particular binary executable. The `TestSuite` instantiation is a variadic function, which takes in all available tests to associate with the executable. We can then register the `TestSuite` instance with the `ShmooTestHarness`, which acts as a wrapper for all benchmarking functionality:
 

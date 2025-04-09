@@ -823,7 +823,7 @@ class ShmooTestHarness:
         return new_arr
 
     @staticmethod
-    def run_suite(suite_name: str, tests: list[int] | None, voltages: list, frequencies: list,
+    def run_suite(suite_name: str, tests: Union[list[int], None], voltages: list, frequencies: list,
                   max_consec_voltage_fails: int, freq_retries: int,
                   psu_mode: PSUSourceMode, psu_dummy: bool, psu_channel: int,
                   output_path: str, debug: bool, no_upload: bool, test_runs: int
@@ -1116,6 +1116,9 @@ class ShmooTestHarness:
 
                         # Check the output against the ShmooTest function.
                         artifact.has_measurements = True
+
+                        if isinstance(context, dict):
+                            context['chip_freq'] = freq_hz
 
                         passed, check_data = test.check_output(context, chip_payload)
                         if passed:

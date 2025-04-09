@@ -7,3 +7,4 @@ from .vec_memcpy import *
 from .saturn_pvirus import *
 from .conv_pvirus import *
 from .conv_bmark import *
+from .llama_bmark import *
