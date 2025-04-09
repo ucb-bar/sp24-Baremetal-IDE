@@ -8,14 +8,14 @@ MEMORY {
 
 SECTIONS {
 
-  /* Contains the tokenizer at 0x84000000 */
+  /* Contains the tokenizer at 0x90000000 */
   .ai.tokenizer : {
     . = ALIGN(4);
     KEEP(*(.ai.tokenizer));
     /* ./models/tokenizer_name_here.bin */
   }> DRAM_TOKENIZER
 
-  /* Contains the weights at 0x90000000 */
+  /* Contains the weights at 0x9a000000 */
   .ai.weights : {
     . = ALIGN(4);
     KEEP(*(.ai.weights));
