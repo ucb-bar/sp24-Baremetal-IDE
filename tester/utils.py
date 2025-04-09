@@ -119,7 +119,7 @@ class PSU:
     Defines the default voltage limit for the SourceMeter.
     """
 
-    VISA_PATH = 'TCPIP::169.254.201.77::lan0::INSTR'
+    VISA_PATH = 'TCPIP::169.254.201.250::lan0::INSTR'
     """
     Defines the default path to use for communication with the SourceMeter.
     """
