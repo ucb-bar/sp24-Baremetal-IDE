@@ -218,7 +218,7 @@ The Shmoo plot output by the ShmooTester after all runs have completed.
 All commands should be run from the Baremetal IDE repository root directory.
 
 
-#### List test suites
+### List test suites
 If you want to list all of the registered test suites and their associated tests, you may use the following command:
 ```sh
 $ ./tester/tester.py -l
@@ -254,6 +254,14 @@ $ ./tester/tester.py -s saturn_pvirus_1h --min-v 0.55 --max-v 1.11 --step-v 0.05
 ```
 
 After the run has completed, data will be output to a directory named `data_<suite_name>_<ISO8601 datetime of test start>`.
+
+### Run a full test suite at a single frequency without a PSU connection
+
+The following command runs all tests in the `memcpy` test suite at 100MHz using a dummy PSU.
+
+```sh
+$ ./tester/tester.py -s memcpy --min-freq 100 --max-freq 101
+```
 
 #### Generate a Shmoo plot from an earlier test run
 
