@@ -54,8 +54,8 @@ int main(int argc, char **argv) {
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  I2S0->CLK_DIV[0] = 176;
-  I2S0->CONFIG[0] = 0x5B;
+  I2S0->CLK_DIV[0] = 244;
+  I2S0->CONFIG[0] = 0x7F;
   printf("Should be configured now!\r\n");
 
   uint64_t* audio = roll_wav;
