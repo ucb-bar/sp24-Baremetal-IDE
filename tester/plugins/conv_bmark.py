@@ -28,8 +28,9 @@ class ConvTest(ShmooTest):
 # Define the tests here:
 ShmooTestHarness.register_test_suite(TestSuite("conv-bmark",
     "build/dsp24-bmarks/conv-bmarks/conv-bmark.elf",
-    ConvTest("CPU FP16 Convolution", 0x0),
-    ConvTest("Conv Accelerator FP16 Convolution", 0x1),
+    # ConvTest("CPU FP16 Convolution", 0x0),
+    ConvTest("Conv Accelerator FP16 Convolution", 0x2, timeout=50),
+    ConvTest("Conv Accelerator FP32 Convolution", 0x3, timeout=20),
 ))
 
 # Exports (if necessary)

@@ -20,7 +20,7 @@ extern "C" {
 #define CONV_DILATION_ADDR   CONV_BASE + 0x7C
 #define CONV_ISFLOAT_ADDR    CONV_BASE + 0x8E
 
-#define READ_CHECK_ADDR   0x0880008D
+#define READ_CHECK_ADDR   CONV_BASE + 0x8D
 
 typedef struct __attribute__((packed)) {
     __IO uint64_t DATA_ENQUEUE;
@@ -33,7 +33,7 @@ typedef struct __attribute__((packed)) {
     uint8_t RESERVED3[1];
     __IO uint8_t START;
     __IO uint8_t CLEAR;
-    uint8_t RESERVED4[9];
+    uint8_t RESERVED4[10];
     __IO uint32_t LENGTH;
     __IO uint16_t DILATION;
     uint8_t RESERVED5[14];
