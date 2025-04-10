@@ -62,7 +62,7 @@ typedef struct {
 } PWM_Type;
 
 
-typedef struct {
+typedef struct __attribute__((packed)) {
   uint8_t pwmscale        : 4;
   uint8_t RESERVED        : 4;
   uint8_t pwmsticky       : 1;
@@ -85,7 +85,7 @@ typedef struct {
   uint8_t pwmcmp1ip       : 1;
   uint8_t pwmcmp2ip       : 1;
   uint8_t pwmcmp3ip       : 1;
-} PWM_InitType __attribute__((packed));
+} PWM_InitType;
 
 static inline void pwm_enable(PWM_Type *PWMx) {
   SET_BITS(PWMx->PWM_CFG, PWM_PWMENALWAYS_MSK);

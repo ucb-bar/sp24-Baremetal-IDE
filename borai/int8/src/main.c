@@ -61,7 +61,7 @@ const unsigned char *ASCII_BEL = (const unsigned char *) "\a";
 
 // int32_t GS = 64; // group size global for quantization of the weights
 
-uint64_t target_frequency = 500000000l;
+uint64_t target_frequency = 800000000l;
 
 // #ifdef ENABLE_DMA_MATVEC
 // int32_t GS_MATVEC_BOUND = 0;
@@ -445,7 +445,6 @@ void matmul(float* xout, QuantizedTensor *x, QuantizedTensor *w, int n, int d) {
     // inputs to this function are both quantized
 
     int i;
-    #pragma omp parallel for private(i)
     for (i = 0; i < d; i++) {
         float val = 0.0f;
         int32_t ival = 0;
@@ -1207,7 +1206,7 @@ void app_main() {
   // Parameters //
   float temperature = 0.8f;   // 0.0 = greedy deterministic. 1.0 = original. don't set higher
   float topp = 0.9f;          // top-p in nucleus sampling. 1.0 = off. 0.9 works well, but slower
-  int steps = 128;            // number of steps to run for (default 512)
+  int steps = 4;            // number of steps to run for (default 512)
   char *prompt = NULL;        // prompt string
   unsigned long long rng_seed = CLINT->MTIME; // seed rng with time by default
   GenMode mode = GENERATE;    // generate|chat

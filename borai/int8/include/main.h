@@ -35,12 +35,12 @@ extern "C" {
 #include "hardware.h"
 
 // 15M version
-#include "stories15M_ng.h"
-#include "tokenizer.h"
+// #include "stories15M_ng.h"
+// #include "tokenizer.h"
 
 // 260K version
-// #include "stories260kq.h"
-// #include "tok512.h"
+#include "stories260kq.h"
+#include "tok512.h"
 
 // NO ---------------- newer tok32000 stories260 version
 // #include "weights_15Mq.h"
