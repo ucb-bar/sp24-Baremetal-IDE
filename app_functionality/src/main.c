@@ -24,6 +24,12 @@
 #include "hal_fft.h"
 #include "kiss_fft.h"
 
+// GOOD SPOT FOR STRUCT
+typedef struct {
+  uint64_t cycles;
+  bool correct;
+} memcpy_result_t;
+
 // #define LOGPATH "./fft_log.txt" // TODO abandoned efforts to output into log files
 #define DMA_ADDR1 0x87000000L // DMA base address
 #define INPUT_ADDR1 0x08000000U // Where to save data - scratchpad is 0x08000000U
@@ -129,12 +135,18 @@ int run_fft_dma_test(int i, bool print) {
 
   /* WRITE INPUT DATA */
 
+  // GOOD SPOT end_roi();
+  // uint64_t start_time_dmafft = READ_CSR("mcycle");
+
   write_fft_dma(DMA_NUM, NUM_POINTS, (uint32_t*) INPUT_DATA[i]); 
 
+  // ANother benchmark for cycles:  uint64_t start_time_dmafft = READ_CSR("mcycle");
   while(fft_busy() || fft_count_left()){
     // continue; // not sure why this was added
     printf("[Blocking] pain:%d, %d \r\n", fft_busy(), fft_count_left());
   }; // This is needed since fft is blocking and is not a very good block
+
+  // ANother benchmark for cycles:  // uint64_t end_time = READ_CSR("mcycle");
 
   /* READ & COMPARE OUTPUT DATA */
 
@@ -145,6 +157,9 @@ int run_fft_dma_test(int i, bool print) {
   // while (*(volatile char*) (DMA_BASE+0x1) != 0);
   read_fft_real_dma(DMA_NUM, NUM_POINTS, DMA_ADDR1);
   // while (*(volatile char*) (DMA_BASE+0x1) != 0);
+
+  // uint64_t end_time = READ_CSR("mcycle");
+  // GOOD SPOT end_roi();
 
   uint32_t poll_dmafft, real_dmafft, imag_dmafft;
   uint32_t poll_real_max_dmafft = 0;
@@ -199,6 +214,12 @@ int run_fft_dma_test(int i, bool print) {
 
   printf("mcycle = %lu\r\n", end_time_dmafft - start_time_dmafft);
   printf("minstret = %lu\r\n", end_instructions_dmafft - start_instructions_dmafft);
+
+  // typedef struct {
+  //   uint64_t cycles;
+  //   bool correct;
+  // } memcpy_result_t;
+  // correct = error_cnt is 0
 
   return error_cnt;
 }
@@ -306,9 +327,12 @@ int run_cpu_fft_test(int i, bool print) {
 
   /* DO THE FFT TRANFORMATION */
   // actually kiss_fft_stride -> kf_work -> openmp -> magic, trust me bro
+
+  // start_roi(); GOOD SPOT
+  // GOOD uint64_t start_time = READ_CSR("mcycle");
   kiss_fft(cfg, fftbuf, fftoutbuf);
   // uint64_t end_time = READ_CSR("mcycle");
-  // uint64_t end_instructions = READ_CSR("minstret");
+  // end_roi(); GOOD SPOT
 
   /* RESULTS */
   printf("CPU FFT Transformation Complete\r\n");
@@ -368,6 +392,10 @@ int run_cpu_fft_test(int i, bool print) {
   free(fftbuf);
   free(fftoutbuf);
   kiss_fft_cleanup();
+  // memcpy_result_t result; 
+  // GOOD SPOT correct = error_cnt is 0
+  result.cycles = end_time - start_time;
+  // xmit_payload_packet(&result, 9); // pointer to payload and size of payload
   return error_cnt;
 }
 
@@ -541,4 +569,47 @@ void __attribute__((weak, noreturn)) __main(void) {
   while (1) {
    asm volatile ("wfi");
   }
-}
+} // no need for attribute or wfi
+
+// /** ADD THIS
+//   * @brief  The application entry point.
+//   * @retval int
+//   */
+//   int main(int argc, char **argv) {
+//     while (1) {
+//       test_info t = init_test(UART1);
+//       int seed = *((int*) &t.payload);
+//       switch (t.testid) {
+//         case 0:
+//           cpu_memcpy(seed);
+//           break;
+//         case 1:
+//           glibc_memcpy(seed);
+//           break;
+//         case 2:
+//           rvv_memcpy(seed);
+//           break;
+//         case 3:
+//           dma_memcpy(seed);
+//           break;
+//         case 4:
+//           cpu_memcpy_mp(seed);
+//           break;
+//         case 5:
+//           rvv_memcpy_mp(seed);
+//           break;
+//         default:
+//           func_test(seed);
+//           break;
+//       }
+//       clean_test(t);
+//     }
+
+
+// Then clone bmarks, add folder there
+// Then make a local CMake
+// Then add to the bmarks cmake
+// Then need to make Python file ( can steal existing as ref then bug ethan )
+
+// They dynamically change the baud rate for communications for example for getting data to stay in a readable format over UART
+// But can also just delete the print statements to avoid slowing stuff down / garbled output
