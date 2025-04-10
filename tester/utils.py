@@ -776,6 +776,7 @@ class ShmooTestHarness:
                 # Run the program
                 try:
                     if not os.path.exists(elf):
+                        ShmooTestHarness.kill_process_with_fire(ocd_proc)
                         raise Exception(f'Unable to find a binary file at "{elf}".')
                     openocd.run('reset run')
                     openocd.run('halt')
