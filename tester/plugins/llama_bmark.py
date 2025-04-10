@@ -34,7 +34,7 @@ class LlamaTest(ShmooTest):
 
 # Define the tests here:
 ShmooTestHarness.register_test_suite(TestSuite("llama_int8",
-    "build/dsp24-bmarks/llama-int8-bmarks/llama-bmark.elf",
+    "build/dsp24-bmarks/borai-int8-bmarks/boraiq_bmark.elf",
     LlamaTest("Int8 Llama2 Inference - 256 Steps", steps=256),
 ))
 
