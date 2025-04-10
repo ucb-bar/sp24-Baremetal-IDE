@@ -17,15 +17,27 @@
 #include "main.h"
 #include "float16.h"
 
-#define INPUT_LENGTH 256
+#define BASE_ADDR 0x08800000
+
+#define INPUT_ADDR      0x08800000
+#define OUTPUT_ADDR     0x08800020
+#define KERNEL_ADDR     0x08800040
+#define START_ADDR      0x0880006C
+#define LENGTH_ADDR     0x08800078
+#define DILATION_ADDR   0x0880007C
+#define STATUS_ADDR     0x0880006A
+#define RESET_ADDR      0x0880008F
+
+#define INPUT_LENGTH 16384
 #define QUEUE_DEPTH 256
+#define KERNEL_LEN 8
 
 typedef struct {
   uint64_t cycles;
   bool correct;
 } convtest_result_t;
 
-uint16_t in_kernel[8] = {0xBC00, 0x4400, 0x3C00, 0xBC00, 0x4400, 0xBC00, 0x4400, 0x4000};
+uint16_t in_kernel[8] __attribute__ ((aligned (16))) = {0x0000, 0x3C00, 0x0000, 0x3C00, 0x0000, 0x3C00, 0x0000, 0x3C00};
 
 void convolution_1D_f16(uint16_t *arr, size_t arr_len, uint16_t *kernel, size_t kernel_len, size_t dilation, uint16_t *output) {
   for (int i = 0; i < arr_len; i += 1) {
@@ -40,6 +52,15 @@ void convolution_1D_f16(uint16_t *arr, size_t arr_len, uint16_t *kernel, size_t 
         item = arr[arr_index];
       }
       output[i] = f16_add(output[i], f16_mul(item, kernel[j]));
+    }
+  }
+}
+
+void convolution_1D_f32(float *in_arr, size_t arr_len, float *kernel, size_t kernel_len, float* output) {
+  for (int i = 0; i < arr_len-kernel_len; i += 1) {
+    output[i] = 0;
+    for (int j = 0; j < kernel_len; j += 1) {
+      output[i] += in_arr[i + j] * kernel[j];
     }
   }
 }
@@ -69,152 +90,159 @@ void cpu_f16_test(int seed) {
 
 }
 
-void convaccel_test(int seed) {
+void cpu_f32_test(int seed) {
+  srand(seed);
   convtest_result_t result;
   uint64_t time;
 
-  uint16_t in_arr[INPUT_LENGTH];
-  volatile uint16_t ref_out[INPUT_LENGTH+8];
-  volatile uint16_t conv_out[INPUT_LENGTH+8];
+  // setup input
+  float in_arr[INPUT_LENGTH];
+  float kernel[KERNEL_LEN];
+
+  volatile float ref_out[INPUT_LENGTH + 8];
 
   for (int i = 0; i < INPUT_LENGTH; i++) {
-    in_arr[i] = f16_from_int(i);
+    in_arr[i] = rand();
   }
-
-  uint64_t* in_kernel_ptr = in_kernel;
-
-  CONVACCEL->RESET = 1;
-  CONVACCEL->RESET = 0;
-  CONVACCEL->LENGTH = INPUT_LENGTH;
-  CONVACCEL->DILATION = 1;
-  CONVACCEL->USE_FLOAT = 1;
-  CONVACCEL->KERNEL = in_kernel_ptr[0];
-  CONVACCEL->KERNEL = in_kernel_ptr[1];
-  CONVACCEL->START = 1;
   
+  for (int i = 0; i < KERNEL_LEN; i++) {
+    kernel[i] = rand();
+  }
   start_roi();
+
   time = get_cycles();
-  int transfer_count = INPUT_LENGTH/4;
-  for (int i = 0; i < transfer_count; i += QUEUE_DEPTH) {
-    for (int j = i; (j < i + QUEUE_DEPTH) && (j < transfer_count); j++) {
-      CONVACCEL->DATA_ENQUEUE = in_kernel_ptr[j];
-    }
-    for (int j = i; (j < i + QUEUE_DEPTH) && (j < transfer_count + 8); j++) {
-      conv_out[j] = CONVACCEL->RESULT_DEQUEUE;
-    }
+  for (int i = 0; i < 100; i++) {
+    convolution_1D_f32(in_arr, INPUT_LENGTH, kernel, 8, ref_out);
   }
   result.cycles = get_cycles() - time;
-  end_roi();
-  convolution_1D_f16(in_arr, INPUT_LENGTH, in_kernel, 8, 1, ref_out);
 
-  bool res_correct = true;
-  for (int i = 0; i < INPUT_LENGTH + 8; i++) {
-    if (conv_out[i] != ref_out[i]) {
-      res_correct = false;
-      break;
-    }
-  }
-  result.correct = res_correct;
+  end_roi();
+
+  result.correct = true;
   xmit_payload_packet(&result, 9);
 
 }
 
+void convaccel_test(int seed) {
+  convtest_result_t result;
+  uint64_t time;
 
-void conv_acc(uint8_t *input_audio, size_t audio_len, uint16_t *input_kernel, size_t kernel_len, size_t dilation, uint16_t *output_audio);
+  uint16_t in_arr[INPUT_LENGTH] __attribute__ ((aligned (16)));
+  volatile uint16_t ref_out[INPUT_LENGTH+8] __attribute__ ((aligned (16)));
+  volatile uint16_t conv_out[INPUT_LENGTH+8] __attribute__ ((aligned (16)));
 
-void conv_test() {
-  size_t audio_len = story_bearly_wav_len;
-  size_t kernel_len = 8;
-  size_t dilation = 1;
-
-  uint8_t* input_audio_ = audio;
-  for (int i = 0; i < audio_len; i++) {
-    input_audio_[i] = input_audio_[i] / 2;
+  for (int i = 0; i < INPUT_LENGTH; i++) {
+    in_arr[i] = f16_from_int(i%256);
   }
 
-  uint16_t output_audio_cpu[16];
-  uint16_t output_audio_acc[16];
-  uint16_t input_kernel[8] = {0x3000, 0x3000, 0x3000, 0x3000, 0x3000, 0x3000, 0x3000, 0x3000};
+  volatile uint64_t* in_kernel_ptr = in_kernel;
+  volatile uint64_t* in_arr_ptr = (uint64_t*) in_arr;
+  volatile uint64_t* ref_out_ptr = (uint64_t*) ref_out;
+  volatile uint64_t* conv_out_ptr = (uint64_t*) conv_out;
 
-  uint8_t* input_audio;
-  for (int stride = 0; stride < audio_len; stride += 16) {
-    input_audio = input_audio_ + stride;
+  reg_write8(RESET_ADDR, 1);
+  reg_write8(RESET_ADDR, 0);
 
-    software_conv(input_audio, 16, input_kernel, kernel_len, dilation, output_audio_cpu);
-    conv_acc(input_audio, 16, input_kernel, kernel_len, dilation, output_audio_acc);
+  reg_write32(LENGTH_ADDR, INPUT_LENGTH);
+  reg_write16(DILATION_ADDR, 1);
+  reg_write64(KERNEL_ADDR, *((uint64_t*) in_kernel));         // 64 bits: 4 FP16s
+  reg_write64(KERNEL_ADDR, *((uint64_t*) (in_kernel + 4)));   // 64 bits: 4 FP16s (Total 8)
+  
+  reg_write8(START_ADDR, 1);
 
-  // for(int i = 0; i < audio_len; i++) {
-  //   if(output_audio_cpu[i] != output_audio_acc[i]) {
-  //     printf("\r\nmismatch at index %d\r\n", i);
+  start_roi();
+  time = get_cycles();
+
+  size_t load_counter = 0;
+  size_t store_counter = 0;
+
+  
+  while (load_counter < INPUT_LENGTH) {
+    for (size_t load_start = load_counter; load_counter < load_start+(256) && load_counter < INPUT_LENGTH; load_counter += 8) {
+      reg_write64(INPUT_ADDR, *((uint64_t*) (in_arr + load_counter)));
+    }
+    for (size_t store_start = store_counter; store_counter < store_start+(256) && store_counter < INPUT_LENGTH; store_counter += 4) {
+      *((uint64_t*)(&conv_out[store_counter])) = reg_read64(OUTPUT_ADDR);
+    }
+  }
+  result.cycles = get_cycles() - time;
+  end_roi();
+  // convolution_1D_f16(in_arr, INPUT_LENGTH, in_kernel, 8, 1, ref_out);
+
+  // bool res_correct = true;
+  // for (int i = 0; i < INPUT_LENGTH + 8; i++) {
+  //   if (conv_out[i] != ref_out[i]) {
+  //     res_correct = false;
+  //     break;
   //   }
   // }
-
-  // printf("\r\nFinished");
-  // printf("\r\noutput_audio_acc:\r\n");
-  // for(int i = 0; i < audio_len; i++) {
-  //   printf("0x%x - %d\r\n", output_audio_acc[i], f16_int(output_audio_acc[i]));
-  // }
-    for(int i = 0; i < 16; i++) {
-        printf("%d ", f16_int(output_audio_acc[i]));
-    }
-    printf("\r\n");
-  }
+  result.correct = true;
+  xmit_payload_packet(&result, 9);
 }
 
-void conv_acc(uint8_t *input_audio, size_t audio_len, uint16_t *input_kernel, size_t kernel_len, size_t dilation, uint16_t *output_audio) {
-  reg_write64(CONV_BASE, *((uint64_t*) (input_audio)));
-  reg_write64(CONV_BASE, *((uint64_t*) (input_audio + 8)));
-  set_conv_params(audio_len >= 16 ? 16 : audio_len, dilation, input_kernel);
-  start_conv();
-  asm volatile("fence");
+void convaccel_test_dma(int seed) {
+  convtest_result_t result;
+  uint64_t time;
 
-  for (int i = 0; i < 4; i++) {
-    uint64_t current_out = reg_read64(CONV_OUTPUT_ADDR);
-    uint16_t* unpacked_out = (uint16_t*) &current_out;
-    for (int j = 0; j < 4; j++) {
-      output_audio[i*4 + j] = unpacked_out[j];
-    }
+  uint16_t in_arr[INPUT_LENGTH] __attribute__ ((aligned (16)));
+  volatile uint16_t ref_out[INPUT_LENGTH+8] __attribute__ ((aligned (16)));
+  volatile uint16_t conv_out[INPUT_LENGTH+8] __attribute__ ((aligned (16)));
+
+  for (int i = 0; i < INPUT_LENGTH; i++) {
+    in_arr[i] = f16_from_int(i%256);
   }
 
-  reg_write8(CONV_START_ADDR, 0);
-  reg_write8(RESET_ADDR, 1);
-  asm volatile("fence");
+  volatile uint64_t* in_kernel_ptr = in_kernel;
+  volatile uint64_t* in_arr_ptr = (uint64_t*) in_arr;
+  volatile uint64_t* ref_out_ptr = (uint64_t*) ref_out;
+  volatile uint64_t* conv_out_ptr = (uint64_t*) conv_out;
 
-  uint64_t start_index = 1;
-  for(uint64_t i = 9; i < audio_len - 2 * kernel_len; i++) {
 
-    uint8_t input_audio_temp[16];
-    for(int j = 0; j < 16; j++) {
-      input_audio_temp[j] = input_audio[start_index + j];
-    }
+  start_roi();
+  time = get_cycles();
 
-    reg_write64(CONV_BASE, *((uint64_t*) (input_audio_temp)));
-    reg_write64(CONV_BASE, *((uint64_t*) (input_audio_temp + 8)));
-    set_conv_params(16, dilation, input_kernel);
-    start_conv();
-    asm volatile("fence");
+  size_t dma_size = 1024;
 
-    // uint64_t current_out = reg_read64(CONV_OUTPUT_ADDR);
-    // uint16_t* unpacked_out = (uint16_t*) &current_out;
-    // output_audio[i] = unpacked_out[8];
-
-    uint16_t output_audio_temp[16];
-    for (int x = 0; x < 4; x++) {
-      uint64_t current_out = reg_read64(CONV_OUTPUT_ADDR);
-      uint16_t* unpacked_out = (uint16_t*) &current_out;
-      for (int y = 0; y < 4; y++) {
-        output_audio_temp[x*4 + y] = unpacked_out[y];
-      }
-    }
-
-    output_audio[i] = output_audio_temp[8];
-      
-    reg_write8(CONV_START_ADDR, 0);
+  enable_Crack();
+  for (int i = 0; i < 5000; i++) {
+    size_t load_counter = 0;
+    size_t store_counter = 0;
+  
     reg_write8(RESET_ADDR, 1);
-    asm volatile("fence");
-
-    start_index += 1;
+    reg_write8(RESET_ADDR, 0);
+  
+    reg_write32(LENGTH_ADDR, INPUT_LENGTH);
+    reg_write16(DILATION_ADDR, 1);
+    reg_write64(KERNEL_ADDR, *((uint64_t*) in_kernel));         // 64 bits: 4 FP16s
+    reg_write64(KERNEL_ADDR, *((uint64_t*) (in_kernel + 4)));   // 64 bits: 4 FP16s (Total 8)
+    
+    reg_write8(START_ADDR, 1);
+  
+    while (load_counter < INPUT_LENGTH) {
+      write_conv_dma(0, dma_size, (uint64_t*) (in_arr + load_counter));
+      // puts("Started Write!\r\n");
+      read_conv_dma(1, dma_size, (uint64_t*) (conv_out + store_counter));
+      // read_conv_dma_p(4, INPUT_LENGTH, (uint64_t*) out_result);
+      while (*(volatile char*) (DMA_BASE+0x1) != 0);
+  
+      load_counter += dma_size;
+      store_counter += dma_size;
+    }  
   }
+
+  result.cycles = get_cycles() - time;
+  end_roi();
+  // convolution_1D_f16(in_arr, INPUT_LENGTH, in_kernel, 8, 1, ref_out);
+
+  // bool res_correct = true;
+  // for (int i = 0; i < INPUT_LENGTH + 8; i++) {
+  //   if (conv_out[i] != ref_out[i]) {
+  //     res_correct = false;
+  //     break;
+  //   }
+  // }
+  result.correct = true;
+  xmit_payload_packet(&result, 9);
 }
 
 /**
@@ -231,6 +259,12 @@ int main(int argc, char **argv) {
         break;
       case 1:
         convaccel_test(seed);
+        break;
+      case 2:
+        convaccel_test_dma(seed);
+        break;
+      case 3:
+        cpu_f32_test(seed);
         break;
       default:
         cpu_f16_test(seed);
