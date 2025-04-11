@@ -1,0 +1,313 @@
+Suite Name	Test Name	Test ID	Voltage	Frequency	Status	Context	Host Payload	Compare Check Data
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	50000000	PASS	{'seed': b'M\xb7\xf1\xa5', 'chip_freq': 50000000}	4db7f1a5	1198398212 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	100000000	PASS	{'seed': b'Wq\xd0\x88', 'chip_freq': 100000000}	5771d088	1198408003 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	150000000	PASS	{'seed': b'\x97\x91v\x92', 'chip_freq': 150000000}	97917692	1198417270 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	200000000	FAIL_NO_BEL	{'seed': b'\xc9\rd\xf5'}	c90d64f5	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	350000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	400000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	450000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	500000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	550000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	600000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	650000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	700000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	750000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	800000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.55	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	50000000	PASS	{'seed': b'p\x95\x86\xc1', 'chip_freq': 50000000}	709586c1	1198398365 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	100000000	PASS	{'seed': b's&{\xb0', 'chip_freq': 100000000}	73267bb0	1198408222 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	150000000	PASS	{'seed': b'w5<\xf4', 'chip_freq': 150000000}	77353cf4	1198417292 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	200000000	PASS	{'seed': b'\xefB\xd9\x9b', 'chip_freq': 200000000}	ef42d99b	1198426275 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	250000000	PASS	{'seed': b'7q\x96N', 'chip_freq': 250000000}	3771964e	1198436021 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	300000000	FAIL_NO_BEL	{'seed': b'>\x8a\x83\xda'}	3e8a83da	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	350000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	400000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	450000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	500000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	550000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	600000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	650000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	700000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	750000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	800000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.60	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	50000000	PASS	{'seed': b'\xb2\x06\xcc^', 'chip_freq': 50000000}	b206cc5e	1198398273 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	100000000	PASS	{'seed': b'\xa9\xf7\xcc\\', 'chip_freq': 100000000}	a9f7cc5c	1198407717 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	150000000	PASS	{'seed': b'\xe1\xd8\xbed', 'chip_freq': 150000000}	e1d8be64	1198416392 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	200000000	PASS	{'seed': b'\xe0\x1a9\x9e', 'chip_freq': 200000000}	e01a399e	1198426270 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	250000000	PASS	{'seed': b'\x8e\x95\x81\x9d', 'chip_freq': 250000000}	8e95819d	1205635758 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	300000000	PASS	{'seed': b'\x07F\xa2W', 'chip_freq': 300000000}	0746a257	1198526238 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	350000000	PASS	{'seed': b'a\xa8\x84,', 'chip_freq': 350000000}	61a8842c	1198455563 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	400000000	PASS	{'seed': b'\xa8f\xffa', 'chip_freq': 400000000}	a866ff61	1198465416 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	450000000	FAIL_NO_BEL	{'seed': b'\x99\xa2s\xab'}	99a273ab	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	500000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	550000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	600000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	650000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	700000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	750000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	800000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.65	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	50000000	PASS	{'seed': b'?\xfd&\xe1', 'chip_freq': 50000000}	3ffd26e1	1198398942 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	100000000	PASS	{'seed': b'O,\xb9\xdb', 'chip_freq': 100000000}	4f2cb9db	1198407671 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	150000000	PASS	{'seed': b'-\xed\xf1Q', 'chip_freq': 150000000}	2dedf151	1198416487 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	200000000	PASS	{'seed': b'\xa6\\\xe4\x89', 'chip_freq': 200000000}	a65ce489	1198426295 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	250000000	PASS	{'seed': b'=\x17\xa9\xe6', 'chip_freq': 250000000}	3d17a9e6	1198115842 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	300000000	PASS	{'seed': b'*\x12g\x00', 'chip_freq': 300000000}	2a126700	1198445970 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	350000000	PASS	{'seed': b'X\x8af\xbd', 'chip_freq': 350000000}	588a66bd	1198455302 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	400000000	PASS	{'seed': b'\x0b0\xeb\x8a', 'chip_freq': 400000000}	0b30eb8a	1198465335 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	450000000	PASS	{'seed': b'9\xb6lp', 'chip_freq': 450000000}	39b66c70	1198474643 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	500000000	PASS	{'seed': b'`*\xe1\xaf', 'chip_freq': 500000000}	602ae1af	1198163527 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	550000000	PASS	{'seed': b')\xf9r\xf5', 'chip_freq': 550000000}	29f972f5	1198493186 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	600000000	FAIL_NO_BEL	{'seed': b'FXU_'}	4658555f	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	650000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	700000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	750000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	800000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.70	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	50000000	PASS	{'seed': b'u\xa7\x90\xad', 'chip_freq': 50000000}	75a790ad	1198398411 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	100000000	PASS	{'seed': b'E\x18\xe3\x04', 'chip_freq': 100000000}	4518e304	1198407531 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	150000000	PASS	{'seed': b't\xa1\xf2\xca', 'chip_freq': 150000000}	74a1f2ca	1198416399 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	200000000	PASS	{'seed': b'y\xdc\xd4\x88', 'chip_freq': 200000000}	79dcd488	1198425982 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	250000000	PASS	{'seed': b'\xf5~\xc0w', 'chip_freq': 250000000}	f57ec077	1198435846 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	300000000	PASS	{'seed': b'[)\xb8\xf1', 'chip_freq': 300000000}	5b29b8f1	1198445898 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	350000000	PASS	{'seed': b'\x18t\xd3\x88', 'chip_freq': 350000000}	1874d388	1198455027 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	400000000	PASS	{'seed': b'\x06\xb6\x10\xa3', 'chip_freq': 400000000}	06b610a3	1198465380 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	450000000	PASS	{'seed': b'\xc0=5\xc3', 'chip_freq': 450000000}	c03d35c3	1198554618 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	500000000	PASS	{'seed': b'1\x029\xc1', 'chip_freq': 500000000}	310239c1	1198483511 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	550000000	PASS	{'seed': b'\x81,\x97W', 'chip_freq': 550000000}	812c9757	1198493165 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	600000000	PASS	{'seed': b'fo\xb0c', 'chip_freq': 600000000}	666fb063	1198503081 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	650000000	PASS	{'seed': b'\x87\xe2P\xc4', 'chip_freq': 650000000}	87e250c4	1198513085 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	700000000	FAIL_NO_BEL	{'seed': b'$\xf2F\x9d'}	24f2469d	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	750000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	800000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.75	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	50000000	PASS	{'seed': b'\xbb\xd793', 'chip_freq': 50000000}	bbd73933	1198398762 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	100000000	PASS	{'seed': b'\xf9\x8d\xba;', 'chip_freq': 100000000}	f98dba3b	1198407291 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	150000000	PASS	{'seed': b'\xb6#\xae\x95', 'chip_freq': 150000000}	b623ae95	1198416395 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	200000000	PASS	{'seed': b'\xe3\x81\xfb\xda', 'chip_freq': 200000000}	e381fbda	1198426364 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	250000000	PASS	{'seed': b'5?\xa6\x1d', 'chip_freq': 250000000}	353fa61d	1198115837 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	300000000	PASS	{'seed': b'\xe6&\xf4?', 'chip_freq': 300000000}	e626f43f	1198445501 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	350000000	PASS	{'seed': b'\x1c\x05\xca\x01', 'chip_freq': 350000000}	1c05ca01	1198455066 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	400000000	PASS	{'seed': b'z\x13\x95"', 'chip_freq': 400000000}	7a139522	1198465384 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	450000000	PASS	{'seed': b'&\xda\x85,', 'chip_freq': 450000000}	26da852c	1198475085 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	500000000	PASS	{'seed': b'Z\x8b\x85\xa7', 'chip_freq': 500000000}	5a8b85a7	1198483728 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	550000000	PASS	{'seed': b'_\x7fsy', 'chip_freq': 550000000}	5f7f7379	1198493802 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	600000000	PASS	{'seed': b'U\xd2\xf1\xe7', 'chip_freq': 600000000}	55d2f1e7	1198503269 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	650000000	PASS	{'seed': b'\xecyeK', 'chip_freq': 650000000}	ec79654b	1198512860 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	700000000	PASS	{'seed': b'\x8d\xc0\x19\xc4', 'chip_freq': 700000000}	8dc019c4	1198521773 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	750000000	PASS	{'seed': b'\xeb!8\xfc', 'chip_freq': 750000000}	eb2138fc	1198611691 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	800000000	FAIL_NO_ETB	{'seed': b' \xda\xb3\xf1'}	20dab3f1	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.80	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	50000000	PASS	{'seed': b'_@\r\xcc', 'chip_freq': 50000000}	5f400dcc	1198079147 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	100000000	PASS	{'seed': b'2\x1fm_', 'chip_freq': 100000000}	321f6d5f	1198407724 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	150000000	PASS	{'seed': b'\x96:_\x19', 'chip_freq': 150000000}	963a5f19	1198417357 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	200000000	PASS	{'seed': b'\x06\t\x96\xe7', 'chip_freq': 200000000}	060996e7	1198426273 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	250000000	PASS	{'seed': b'7\x94\x0c\x84', 'chip_freq': 250000000}	37940c84	1198115867 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	300000000	PASS	{'seed': b'#\x1a\x16\xb3', 'chip_freq': 300000000}	231a16b3	1198525410 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	350000000	PASS	{'seed': b'%\x97dc', 'chip_freq': 350000000}	25976463	1198454993 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	400000000	PASS	{'seed': b'V\xc7L\xc7', 'chip_freq': 400000000}	56c74cc7	1198465381 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	450000000	PASS	{'seed': b'3\xec)K', 'chip_freq': 450000000}	33ec294b	1198475171 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	500000000	PASS	{'seed': b'\xc8\x97\xbe\x90', 'chip_freq': 500000000}	c897be90	1198483139 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	550000000	PASS	{'seed': b'\xac~9\xd0', 'chip_freq': 550000000}	ac7e39d0	1198493187 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	600000000	PASS	{'seed': b'\xbf\x92!\xc5', 'chip_freq': 600000000}	bf9221c5	1198502981 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	650000000	PASS	{'seed': b'\x81\x14\xfcr', 'chip_freq': 650000000}	8114fc72	1198513501 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	700000000	PASS	{'seed': b'\x81\x16bg', 'chip_freq': 700000000}	81166267	1198201686 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	750000000	PASS	{'seed': b'@\x93o~', 'chip_freq': 750000000}	40936f7e	1198531694 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	800000000	PASS	{'seed': b'\xa4T+l', 'chip_freq': 800000000}	a4542b6c	1198540946 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	850000000	PASS	{'seed': b'\xf9\xd3\xaa\x14', 'chip_freq': 850000000}	f9d3aa14	1198550804 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	900000000	FAIL_CHECK	{'seed': b'\xf5\xc3\x8cE', 'chip_freq': 900000000}	f5c38c45	1198561140 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.85	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	50000000	PASS	{'seed': b' \xc2|Z', 'chip_freq': 50000000}	20c27c5a	1198078298 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	100000000	PASS	{'seed': b'hF\x16\x88', 'chip_freq': 100000000}	68461688	1198407740 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	150000000	PASS	{'seed': b'%\x1a\x07\xc7', 'chip_freq': 150000000}	251a07c7	1198416786 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	200000000	PASS	{'seed': b'2N\xaf\xda', 'chip_freq': 200000000}	324eafda	1198426275 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	250000000	PASS	{'seed': b'\xbeg\xb6\xa9', 'chip_freq': 250000000}	be67b6a9	1198115867 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	300000000	PASS	{'seed': b'\xd9\xa8\x81\xe9', 'chip_freq': 300000000}	d9a881e9	1198446350 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	350000000	PASS	{'seed': b'\xc6\xb0\xad\x00', 'chip_freq': 350000000}	c6b0ad00	1198455102 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	400000000	PASS	{'seed': b'\xe9d\xa2&', 'chip_freq': 400000000}	e964a226	1198465036 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	450000000	PASS	{'seed': b'\x97\x89\x84P', 'chip_freq': 450000000}	97898450	1198474717 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	500000000	PASS	{'seed': b'`:\xe7\xac', 'chip_freq': 500000000}	603ae7ac	1198483721 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	550000000	PASS	{'seed': b'\xbd\xfc\xb5\x8b', 'chip_freq': 550000000}	bdfcb58b	1198493912 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	600000000	PASS	{'seed': b'\x92\x9e)\xdb', 'chip_freq': 600000000}	929e29db	1198503579 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	650000000	PASS	{'seed': b'sO\xd56', 'chip_freq': 650000000}	734fd536	1198513527 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	700000000	PASS	{'seed': b'\x01\x14\xf2\x8e', 'chip_freq': 700000000}	0114f28e	1198521554 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	750000000	PASS	{'seed': b'\x11\t\x7fK', 'chip_freq': 750000000}	11097f4b	1198531931 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	800000000	PASS	{'seed': b'\xc2\xb7\xd3\xd8', 'chip_freq': 800000000}	c2b7d3d8	1198541428 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	850000000	PASS	{'seed': b'*?t\\', 'chip_freq': 850000000}	2a3f745c	1198550524 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	900000000	PASS	{'seed': b'1@\x11M', 'chip_freq': 900000000}	3140114d	1198560855 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	950000000	FAIL_CHECK	{'seed': b'\x19\xb7*\xad', 'chip_freq': 950000000}	19b72aad	1198570870 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.90	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	50000000	PASS	{'seed': b'\xacsS\xb5', 'chip_freq': 50000000}	ac7353b5	1198398762 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	100000000	PASS	{'seed': b'\xe9KB\x8e', 'chip_freq': 100000000}	e94b428e	1198407700 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	150000000	PASS	{'seed': b'~\xd8"b', 'chip_freq': 150000000}	7ed82262	1198416819 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	200000000	PASS	{'seed': b'*\xd8q\x1f', 'chip_freq': 200000000}	2ad8711f	1198105929 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	250000000	PASS	{'seed': b'\xd6LQ9', 'chip_freq': 250000000}	d64c5139	1198435814 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	300000000	PASS	{'seed': b'9\xf3&\x0b', 'chip_freq': 300000000}	39f3260b	1198445950 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	350000000	PASS	{'seed': b'\x1b;\\\xd5', 'chip_freq': 350000000}	1b3b5cd5	1198454992 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	400000000	PASS	{'seed': b'\xaa\xf4\x17Q', 'chip_freq': 400000000}	aaf41751	1198465219 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	450000000	PASS	{'seed': b'|\xab\xc6\xdb', 'chip_freq': 450000000}	7cabc6db	1198475172 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	500000000	PASS	{'seed': b'\x1e\xde\x95\x9b', 'chip_freq': 500000000}	1ede959b	1198163911 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	550000000	PASS	{'seed': b'\xbdm\xe4\xb7', 'chip_freq': 550000000}	bd6de4b7	1198492946 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	600000000	PASS	{'seed': b'\xf8\xf5,{', 'chip_freq': 600000000}	f8f52c7b	1198504044 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	650000000	PASS	{'seed': b'\x08\x99eV', 'chip_freq': 650000000}	08996556	1198513099 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	700000000	PASS	{'seed': b'XFFX', 'chip_freq': 700000000}	58464658	1198201226 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	750000000	PASS	{'seed': b'\xa1\x93\r\x1a', 'chip_freq': 750000000}	a1930d1a	1198532406 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	800000000	PASS	{'seed': b'\xabw\xb2\x16', 'chip_freq': 800000000}	ab77b216	1198541261 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	850000000	PASS	{'seed': b'\xd7\xde\xe4\xab', 'chip_freq': 850000000}	d7dee4ab	1198550562 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	900000000	PASS	{'seed': b'\x03\xe4q\xb7', 'chip_freq': 900000000}	03e471b7	1198561138 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	950000000	PASS	{'seed': b"$'\x031", 'chip_freq': 950000000}	24270331	1198570752 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	1000000000	PASS	{'seed': b'N\x04\xe7\xdd', 'chip_freq': 1000000000}	4e04e7dd	1198579724 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	1050000000	FAIL_CHECK	{'seed': b'a\x14,\x1a', 'chip_freq': 1050000000}	61142c1a	1198589628 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	0.95	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	50000000	PASS	{'seed': b'\xa1W\x1ak', 'chip_freq': 50000000}	a1571a6b	1198399041 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	100000000	PASS	{'seed': b's,\xdc|', 'chip_freq': 100000000}	732cdc7c	1198407720 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	150000000	PASS	{'seed': b'\xdcs\x1e\x90', 'chip_freq': 150000000}	dc731e90	1198416774 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	200000000	PASS	{'seed': b'\x7f\xd5\xc4m', 'chip_freq': 200000000}	7fd5c46d	1198425924 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	250000000	PASS	{'seed': b'\xa5)y\x0e', 'chip_freq': 250000000}	a529790e	1198436020 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	300000000	PASS	{'seed': b'^\x99\xfa\xb8', 'chip_freq': 300000000}	5e99fab8	1198445861 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	350000000	PASS	{'seed': b'YZ\tj', 'chip_freq': 350000000}	595a096a	1198135146 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	400000000	PASS	{'seed': b'>m\xff ', 'chip_freq': 400000000}	3e6dff20	1198464933 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	450000000	PASS	{'seed': b'\x02\xd8\xdc>', 'chip_freq': 450000000}	02d8dc3e	1198474576 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	500000000	PASS	{'seed': b'8\xb6\xf4\xd3', 'chip_freq': 500000000}	38b6f4d3	1198483511 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	550000000	PASS	{'seed': b'm]H\xfa', 'chip_freq': 550000000}	6d5d48fa	1198493242 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	600000000	PASS	{'seed': b'\xe9\x90\x0f\x9c', 'chip_freq': 600000000}	e9900f9c	1198503335 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	650000000	PASS	{'seed': b'\x93\xe8a\x12', 'chip_freq': 650000000}	93e86112	1198513334 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	700000000	PASS	{'seed': b'\x10\xa0\x84\xf8', 'chip_freq': 700000000}	10a084f8	1198521720 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	750000000	PASS	{'seed': b'\xdb\x08g\xd3', 'chip_freq': 750000000}	db0867d3	1198532231 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	800000000	PASS	{'seed': b'\r\xa7\x7f^', 'chip_freq': 800000000}	0da77f5e	1198221606 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	850000000	PASS	{'seed': b'\x9b\xe8\xe2l', 'chip_freq': 850000000}	9be8e26c	1198550307 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	900000000	PASS	{'seed': b'\xee\x9d\xf1\x0f', 'chip_freq': 900000000}	ee9df10f	1198560962 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	950000000	PASS	{'seed': b'\xc3O\xf4\x14', 'chip_freq': 950000000}	c34ff414	1198650493 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	1000000000	PASS	{'seed': b'\xf0\xa8\x11\xa6', 'chip_freq': 1000000000}	f0a811a6	1198579067 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	1050000000	PASS	{'seed': b'J\x95\x81\x1e', 'chip_freq': 1050000000}	4a95811e	1198268945 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	1100000000	FAIL_CHECK	{'seed': b'\xb35\xed\xdb', 'chip_freq': 1100000000}	b335eddb	1198598685 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.00	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	50000000	PASS	{'seed': b'\xf4\x8f\x8f\xa3', 'chip_freq': 50000000}	f48f8fa3	1198398762 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	100000000	PASS	{'seed': b'\x1c\xbd\x9c\x1d', 'chip_freq': 100000000}	1cbd9c1d	1198407718 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	150000000	PASS	{'seed': b'\x14\xf5\x08\x1b', 'chip_freq': 150000000}	14f5081b	1198416457 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	200000000	PASS	{'seed': b'L\xff\xdc1', 'chip_freq': 200000000}	4cffdc31	1198425942 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	250000000	PASS	{'seed': b'\xc1\xe2\xd9\x13', 'chip_freq': 250000000}	c1e2d913	1198435912 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	300000000	PASS	{'seed': b'\x8d%{\xc5', 'chip_freq': 300000000}	8d257bc5	1198525835 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	350000000	PASS	{'seed': b'AD@|', 'chip_freq': 350000000}	4144407c	1198455059 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	400000000	PASS	{'seed': b']\\S\x11', 'chip_freq': 400000000}	5d5c5311	1198145330 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	450000000	PASS	{'seed': b'\xc8\x0c\xd7\xdc', 'chip_freq': 450000000}	c80cd7dc	1198475037 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	500000000	PASS	{'seed': b'\x94\xb8f_', 'chip_freq': 500000000}	94b8665f	1198483333 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	550000000	PASS	{'seed': b'{-g\xe8', 'chip_freq': 550000000}	7b2d67e8	1198493652 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	600000000	PASS	{'seed': b'\xe5\xf2-"', 'chip_freq': 600000000}	e5f22d22	1198502795 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	650000000	PASS	{'seed': b'\x1f\n\xa5\xb0', 'chip_freq': 650000000}	1f0aa5b0	1198513389 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	700000000	PASS	{'seed': b'b#\xcct', 'chip_freq': 700000000}	6223cc74	1198521671 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	750000000	PASS	{'seed': b'\x1b/\xec\xb7', 'chip_freq': 750000000}	1b2fecb7	1198612366 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	800000000	PASS	{'seed': b'\xeeK\xdbC', 'chip_freq': 800000000}	ee4bdb43	1198221207 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	850000000	PASS	{'seed': b';iL\x92', 'chip_freq': 850000000}	3b694c92	1198551005 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	900000000	PASS	{'seed': b'h\xa5\xc7\xea', 'chip_freq': 900000000}	68a5c7ea	1198240679 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	950000000	PASS	{'seed': b'\x17\x95\xa8\x14', 'chip_freq': 950000000}	1795a814	1198570365 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	1000000000	PASS	{'seed': b'\xbb\xba\xd1:', 'chip_freq': 1000000000}	bbbad13a	1198580264 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	1050000000	PASS	{'seed': b'e\xdf\x02x', 'chip_freq': 1050000000}	65df0278	1198589398 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	1100000000	PASS	{'seed': b'hc\x11)', 'chip_freq': 1100000000}	68631129	1198599861 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	1150000000	FAIL_CHECK	{'seed': b'\xb6\x97=\x81', 'chip_freq': 1150000000}	b6973d81	1198608132 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.05	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	50000000	PASS	{'seed': b'\xd9xD\x8b', 'chip_freq': 50000000}	d978448b	1198398244 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	100000000	PASS	{'seed': b'\x1a\x05\xde\xb7', 'chip_freq': 100000000}	1a05deb7	1198407693 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	150000000	PASS	{'seed': b'g\xcd6\xf0', 'chip_freq': 150000000}	67cd36f0	1198417263 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	200000000	PASS	{'seed': b'\xc8\xb3M\x88', 'chip_freq': 200000000}	c8b34d88	1198425983 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	250000000	PASS	{'seed': b'f\xc53\xf9', 'chip_freq': 250000000}	66c533f9	1198436216 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	300000000	PASS	{'seed': b'4\x9b9\r', 'chip_freq': 300000000}	349b390d	1198525877 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	350000000	PASS	{'seed': b'}\xbaf\xc1', 'chip_freq': 350000000}	7dba66c1	1198455216 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	400000000	PASS	{'seed': b'\x7f\xf7\x97v', 'chip_freq': 400000000}	7ff79776	1198145373 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	450000000	PASS	{'seed': b'\xbb\xf3\xdf\xa8', 'chip_freq': 450000000}	bbf3dfa8	1198554099 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	500000000	PASS	{'seed': b'\xf6\xfd"\xeb', 'chip_freq': 500000000}	f6fd22eb	1198483652 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	550000000	PASS	{'seed': b'{y\x9b8', 'chip_freq': 550000000}	7b799b38	1198492946 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	600000000	PASS	{'seed': b'\x8c\x88\x0e\xbd', 'chip_freq': 600000000}	8c880ebd	1198503220 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	650000000	PASS	{'seed': b'=\xd8\xd2\xe9', 'chip_freq': 650000000}	3dd8d2e9	1198513435 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	700000000	PASS	{'seed': b'=s|\xe6', 'chip_freq': 700000000}	3d737ce6	1198522161 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	750000000	PASS	{'seed': b'\xd8\xd0Mn', 'chip_freq': 750000000}	d8d04d6e	1198532017 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	800000000	PASS	{'seed': b'\xc2\x03\x0bB', 'chip_freq': 800000000}	c2030b42	1198540854 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	850000000	PASS	{'seed': b'\x8b\xa7Y\xd2', 'chip_freq': 850000000}	8ba759d2	1198551360 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	900000000	PASS	{'seed': b'\xb8\x8aR\xf2', 'chip_freq': 900000000}	b88a52f2	1198560873 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	950000000	PASS	{'seed': b'\xad\x1f7\xce', 'chip_freq': 950000000}	ad1f37ce	1198570229 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	1000000000	PASS	{'seed': b'\xdc\xe89[', 'chip_freq': 1000000000}	dce8395b	1198580012 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	1050000000	PASS	{'seed': b'S!\x032', 'chip_freq': 1050000000}	53210332	1198589251 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	1100000000	PASS	{'seed': b'\xce^\xeb\xc0', 'chip_freq': 1100000000}	ce5eebc0	1198598835 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	1150000000	PASS	{'seed': b'\x87BU5', 'chip_freq': 1150000000}	87425535	1198688127 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	1200000000	FAIL_CHECK	{'seed': b'\x04\xf1\x843', 'chip_freq': 1200000000}	04f18433	1198617442 cycles
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+app-fft-bmark	run_fft_dma_bmark_sequence	0	1.10	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None

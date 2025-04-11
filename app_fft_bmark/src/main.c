@@ -322,11 +322,3 @@ void __attribute__((weak, noreturn)) __main(void) {
    asm volatile ("wfi");
   }
 }
-
-// Then clone bmarks, add folder there
-// Then make a local CMake
-// Then add to the bmarks cmake
-// Then need to make Python file ( can steal existing as ref then bug ethan )
-
-// They dynamically change the baud rate for communications for example for getting data to stay in a readable format over UART
-// But can also just delete the print statements to avoid slowing stuff down / garbled output

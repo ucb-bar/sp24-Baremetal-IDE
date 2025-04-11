@@ -1,0 +1,313 @@
+Suite Name	Test Name	Test ID	Voltage	Frequency	Status	Context	Host Payload	Compare Check Data
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	50000000	PASS	{'seed': b'74\x1e}'}	37341e7d	1703460771 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	100000000	PASS	{'seed': b'V[q\x8f'}	565b718f	1703518801 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	150000000	PASS	{'seed': b'\xe3\xe8\xa0\xa3'}	e3e8a0a3	1703615587 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	200000000	FAIL_NO_BEL	{'seed': b'\xa4S%Z'}	a453255a	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	350000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	400000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	450000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	500000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	550000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	600000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	650000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	700000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	750000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	800000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.55	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	50000000	PASS	{'seed': b'\xf0\xea\x18\xcb'}	f0ea18cb	1703385953 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	100000000	PASS	{'seed': b'\xcf\xba\xa0\xe1'}	cfbaa0e1	1703517355 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	150000000	PASS	{'seed': b'\x82]*\x08'}	825d2a08	1703616942 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	200000000	PASS	{'seed': b'\xa4\xadZ\xc5'}	a4ad5ac5	1703727141 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	250000000	PASS	{'seed': b'\xba\x96\xfc\x15'}	ba96fc15	1703850981 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	300000000	FAIL_NO_BEL	{'seed': b'LJy\xbd'}	4c4a79bd	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	350000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	400000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	450000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	500000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	550000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	600000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	650000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	700000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	750000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	800000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.60	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	50000000	PASS	{'seed': b'\xda\x91ti'}	da917469	1703459845 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	100000000	PASS	{'seed': b'\x0b\x0f\xe0q'}	0b0fe071	1703519153 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	150000000	PASS	{'seed': b'\xee\xe2m\x18'}	eee26d18	1703619602 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	200000000	PASS	{'seed': b'\x7f}\xd4\xa9'}	7f7dd4a9	1703726936 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	250000000	PASS	{'seed': b'\xa8\xd9{N'}	a8d97b4e	1703851232 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	300000000	PASS	{'seed': b'\x9d\r\x14\xfa'}	9d0d14fa	1703982411 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	350000000	PASS	{'seed': b')\xbe\xdb\xd1'}	29bedbd1	1704117947 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	400000000	PASS	{'seed': b'JFwd'}	4a467764	1704258895 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	450000000	FAIL_NO_BEL	{'seed': b'\x0eHu\x95'}	0e487595	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	500000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	550000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	600000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	650000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	700000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	750000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	800000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.65	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	50000000	PASS	{'seed': b'\xbc\x85\x96q'}	bc859671	1703461136 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	100000000	PASS	{'seed': b'[\xbf\xc7\xff'}	5bbfc7ff	1703518581 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	150000000	PASS	{'seed': b'Dg#\xcb'}	446723cb	1703615776 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	200000000	PASS	{'seed': b'\xa4\x82\x96\x81'}	a4829681	1703726836 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	250000000	PASS	{'seed': b'\xf2\x9a\xb3('}	f29ab328	1703850831 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	300000000	PASS	{'seed': b'\xe0K\xfbq'}	e04bfb71	1703983822 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	350000000	PASS	{'seed': b'\x97v\xd7\x91'}	9776d791	1704117975 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	400000000	PASS	{'seed': b'-\xdc$\xc5'}	2ddc24c5	1704258854 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	450000000	PASS	{'seed': b'\xedQ>\x95'}	ed513e95	1704396452 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	500000000	PASS	{'seed': b'[\x94\xb0q'}	5b94b071	1704540491 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	550000000	PASS	{'seed': b'n.\nf'}	6e2e0a66	1704683424 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	600000000	FAIL_NO_BEL	{'seed': b'\x04\xabe\xcb'}	04ab65cb	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	650000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	700000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	750000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	800000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.70	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	50000000	PASS	{'seed': b'P\xe4\xb2\t'}	50e4b209	1703460548 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	100000000	PASS	{'seed': b'\xcek\xa4\xea'}	ce6ba4ea	1703517932 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	150000000	PASS	{'seed': b'\xeb"0i'}	eb223069	1703616138 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	200000000	PASS	{'seed': b'Qs\x0ce'}	51730c65	1703726876 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	250000000	PASS	{'seed': b'\x0f\xe0\x8a\xa0'}	0fe08aa0	1703850905 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	300000000	PASS	{'seed': b'\x9e5\xf1V'}	9e35f156	1703983821 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	350000000	PASS	{'seed': b'\xc1\xdb\x19\t'}	c1db1909	1704118151 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	400000000	PASS	{'seed': b'\xa8k\xd6v'}	a86bd676	1704259494 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	450000000	PASS	{'seed': b'Y\xc9TS'}	59c95453	1704395812 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	500000000	PASS	{'seed': b'\xcc\xc4\xf3\x9d'}	ccc4f39d	1704540186 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	550000000	PASS	{'seed': b'\xa1\xcdY}'}	a1cd597d	1704683501 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	600000000	PASS	{'seed': b'$\xea\x99\x06'}	24ea9906	1704825371 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	650000000	PASS	{'seed': b'(\xb0d\x90'}	28b06490	1704968803 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	700000000	FAIL_NO_BEL	{'seed': b'\xe1-X\x82'}	e12d5882	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	750000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	800000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.75	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	50000000	PASS	{'seed': b'\xf6\xbf/\\'}	f6bf2f5c	1703460617 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	100000000	PASS	{'seed': b'\x08\xea9<'}	08ea393c	1703516376 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	150000000	PASS	{'seed': b'\x16\xfa\xcd\x8b'}	16facd8b	1703616608 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	200000000	PASS	{'seed': b' \x87\xdd\xba'}	2087ddba	1703727219 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	250000000	PASS	{'seed': b'\x16\xc4\x0bl'}	16c40b6c	1703851229 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	300000000	PASS	{'seed': b'}\xa0a4'}	7da06134	1703983695 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	350000000	PASS	{'seed': b'8\x81\xa0\x17'}	3881a017	1704118291 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	400000000	PASS	{'seed': b'\xb0\xc4\xc3\xc8'}	b0c4c3c8	1704259014 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	450000000	PASS	{'seed': b'O\x0b\xf9?'}	4f0bf93f	1704397937 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	500000000	PASS	{'seed': b'gg\x93\xc2'}	676793c2	1704540286 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	550000000	PASS	{'seed': b'Ab\xc3`'}	4162c360	1704683610 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	600000000	PASS	{'seed': b'\x9b6\xab\xe6'}	9b36abe6	1704825911 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	650000000	PASS	{'seed': b'$\xa2\x0b\xc1'}	24a20bc1	1704968399 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	700000000	PASS	{'seed': b'\x89~\\\x8b'}	897e5c8b	1705111927 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	750000000	PASS	{'seed': b'\xc7\xfd\x0f\xe8'}	c7fd0fe8	1705255056 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	800000000	FAIL_NO_ETB	{'seed': b'\x0b\xf7\x07\xc2'}	0bf707c2	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	850000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	900000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.80	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	50000000	PASS	{'seed': b'\x82r\x94|'}	8272947c	1703460549 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	100000000	PASS	{'seed': b'\xb0\xe6\xae\xa4'}	b0e6aea4	1703515493 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	150000000	PASS	{'seed': b'$\xbc<.'}	24bc3c2e	1703615431 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	200000000	PASS	{'seed': b'\xd6\x910\xbe'}	d69130be	1703727197 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	250000000	PASS	{'seed': b'\xe7?\xe3L'}	e73fe34c	1703850830 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	300000000	PASS	{'seed': b'X\xec\xf9Y'}	58ecf959	1703983762 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	350000000	PASS	{'seed': b'\xf3\x11\xb4\xbf'}	f311b4bf	1704117941 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	400000000	PASS	{'seed': b'G\x17!\xb7'}	471721b7	1704258894 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	450000000	PASS	{'seed': b'P\xfeM*'}	50fe4d2a	1704395461 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	500000000	PASS	{'seed': b'h\xecTU'}	68ec5455	1704540691 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	550000000	PASS	{'seed': b'B$Vy'}	42245679	1704683446 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	600000000	PASS	{'seed': b'\t\xcb\xae^'}	09cbae5e	1704825370 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	650000000	PASS	{'seed': b'H4\xf9\x16'}	4834f916	1704968724 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	700000000	PASS	{'seed': b'U\x98FQ'}	55984651	1705111789 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	750000000	PASS	{'seed': b'}\xee\xe93'}	7deee933	1705254832 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	800000000	PASS	{'seed': b'\xcb\x8c\x86\x85'}	cb8c8685	1705404151 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	850000000	PASS	{'seed': b'x\xe7\xca\x87'}	78e7ca87	1705547440 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	900000000	FAIL_NO_ETB	{'seed': b'\xe3\xf4_\xc2'}	e3f45fc2	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	950000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	1000000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.85	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	50000000	PASS	{'seed': b'\xd3\x9e\xb1B'}	d39eb142	1703460326 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	100000000	PASS	{'seed': b'\xbf\xa3R\n'}	bfa3520a	1703517854 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	150000000	PASS	{'seed': b'\x12+w\x81'}	122b7781	1703617732 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	200000000	PASS	{'seed': b'\xe4\x18\xd7\xb0'}	e418d7b0	1703727139 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	250000000	PASS	{'seed': b'\xb4\x8d\x13)'}	b48d1329	1703850631 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	300000000	PASS	{'seed': b'\xc2\xaa\xb5\x9b'}	c2aab59b	1703983911 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	350000000	PASS	{'seed': b'\x98?\x14\x9a'}	983f149a	1704117871 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	400000000	PASS	{'seed': b'R\xd5y&'}	52d57926	1704258246 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	450000000	PASS	{'seed': b'\xcb\x0f\\\xa8'}	cb0f5ca8	1704398016 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	500000000	PASS	{'seed': b'1\xaf\x05\xc3'}	31af05c3	1704540285 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	550000000	PASS	{'seed': b'\xb7\x86d,'}	b786642c	1704683776 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	600000000	PASS	{'seed': b'T\xffy='}	54ff793d	1704825573 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	650000000	PASS	{'seed': b'{\xcc\xf0\xe0'}	7bccf0e0	1704968918 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	700000000	PASS	{'seed': b'3\x89\xac\xb4'}	3389acb4	1705111787 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	750000000	PASS	{'seed': b'\x06\tjP'}	06096a50	1705255282 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	800000000	PASS	{'seed': b'!\x19bZ'}	2119625a	1705403833 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	850000000	PASS	{'seed': b'\x99O\x83\x8d'}	994f838d	1705547669 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	900000000	PASS	{'seed': b'.\xfa\xbd\xb6'}	2efabdb6	1705690858 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	950000000	PASS	{'seed': b'MJ\xd2\xd1'}	4d4ad2d1	1705835803 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	1000000000	FAIL_NO_BEL	{'seed': b'\xf0\x0f$e'}	f00f2465	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	1050000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.90	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	50000000	PASS	{'seed': b'\xff\xb6D^'}	ffb6445e	1703460772 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	100000000	PASS	{'seed': b'd8\xb5B'}	6438b542	1703517424 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	150000000	PASS	{'seed': b'\xbaP\xaa#'}	ba50aa23	1703540342 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	200000000	PASS	{'seed': b'z\xcc4\xc9'}	7acc34c9	1703727096 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	250000000	PASS	{'seed': b'\xf39\x94\xdb'}	f33994db	1703851331 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	300000000	PASS	{'seed': b'\xcc\xf7P:'}	ccf7503a	1703983994 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	350000000	PASS	{'seed': b'\x1b\xf9\xb7@'}	1bf9b740	1704117940 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	400000000	PASS	{'seed': b'j\x13\x94\xc3'}	6a1394c3	1704258973 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	450000000	PASS	{'seed': b'\x910H\xfe'}	913048fe	1704398297 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	500000000	PASS	{'seed': b'\x1e\x1e\xb0\x95'}	1e1eb095	1704540641 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	550000000	PASS	{'seed': b'\xf4\x06b\xa0'}	f40662a0	1704683446 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	600000000	PASS	{'seed': b'\xc9\xb8\xea\xc6'}	c9b8eac6	1704825970 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	650000000	PASS	{'seed': b'l=\x05}'}	6c3d057d	1704968790 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	700000000	PASS	{'seed': b'\x84\xc9\xceW'}	84c9ce57	1705111717 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	750000000	PASS	{'seed': b'\xfe\xb6^\xc5'}	feb65ec5	1705254906 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	800000000	PASS	{'seed': b'\x1a\x18S\x0f'}	1a18530f	1705403483 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	850000000	PASS	{'seed': b'\x88\xe5\xe2\x06'}	88e5e206	1705547866 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	900000000	PASS	{'seed': b'\xafq\xae\xdc'}	af71aedc	1705691039 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	950000000	PASS	{'seed': b'\x8bp[\xe9'}	8b705be9	1705835606 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	1000000000	PASS	{'seed': b'{\x1dJ\x1b'}	7b1d4a1b	1705980094 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	1050000000	FAIL_NO_BEL	{'seed': b'[\xb7\xc5\xfc'}	5bb7c5fc	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	1100000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	0.95	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	50000000	PASS	{'seed': b':$\x96\xc9'}	3a2496c9	1703459458 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	100000000	PASS	{'seed': b'\xb5\xc34\x1e'}	b5c3341e	1703518416 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	150000000	PASS	{'seed': b'aD\xd9`'}	6144d960	1703614409 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	200000000	PASS	{'seed': b'\x00\xe7o}'}	00e76f7d	1703726821 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	250000000	PASS	{'seed': b'\xcb\xfe\xca\x12'}	cbfeca12	1703850830 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	300000000	PASS	{'seed': b'\xdd\xe3o\xea'}	dde36fea	1703984060 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	350000000	PASS	{'seed': b'\x9f\xdb\x12\x9a'}	9fdb129a	1704118186 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	400000000	PASS	{'seed': b'\t\xb4\xbb#'}	09b4bb23	1704258734 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	450000000	PASS	{'seed': b'\xff\xe4o\xcc'}	ffe46fcc	1704395731 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	500000000	PASS	{'seed': b'3\xd2\xa8u'}	33d2a875	1704540642 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	550000000	PASS	{'seed': b'\xec\xd7\xe4\xb4'}	ecd7e4b4	1704683721 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	600000000	PASS	{'seed': b'\x13\xcd\xa1\x8f'}	13cda18f	1704825572 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	650000000	PASS	{'seed': b'\xebF\xc93'}	eb46c933	1704968919 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	700000000	PASS	{'seed': b'\xca\x01\xa1\x9a'}	ca01a19a	1705111437 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	750000000	PASS	{'seed': b'\x10\xfb\x13\x86'}	10fb1386	1705254907 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	800000000	PASS	{'seed': b'\xaaJ2\x1d'}	aa4a321d	1705403592 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	850000000	PASS	{'seed': b'\xf0h\xdac'}	f068da63	1705547925 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	900000000	PASS	{'seed': b'\xe5^\x9f\xe9'}	e55e9fe9	1705690858 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	950000000	PASS	{'seed': b'\xf90\xc9\x88'}	f930c988	1705835891 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	1000000000	PASS	{'seed': b'\xa0\x8c\xb5t'}	a08cb574	1705979068 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	1050000000	PASS	{'seed': b'A<\xef\xfe'}	413ceffe	1706123646 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	1100000000	FAIL_NO_BEL	{'seed': b's\x08_q'}	73085f71	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	1150000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.00	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	50000000	PASS	{'seed': b'@\x10S#'}	40105323	1703460200 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	100000000	PASS	{'seed': b'\x00\x08\x9c\xee'}	00089cee	1703517911 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	150000000	PASS	{'seed': b'\xa5\x02o\xc7'}	a5026fc7	1703617412 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	200000000	PASS	{'seed': b'\xc1JX!'}	c14a5821	1703726921 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	250000000	PASS	{'seed': b'\x0e\xcc\xf2U'}	0eccf255	1703851105 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	300000000	PASS	{'seed': b'r\xfe\x9f\x9a'}	72fe9f9a	1703983850 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	350000000	PASS	{'seed': b'\x12y;$'}	12793b24	1704118011 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	400000000	PASS	{'seed': b'=\xc9\xd6\t'}	3dc9d609	1704258726 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	450000000	PASS	{'seed': b'\x83\x81r\x16'}	83817216	1704395766 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	500000000	PASS	{'seed': b'U@j\xe7'}	55406ae7	1704540437 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	550000000	PASS	{'seed': b'\xac\xe4\xa5w'}	ace4a577	1704683775 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	600000000	PASS	{'seed': b'\xaf9\x84\x7f'}	af39847f	1704825370 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	650000000	PASS	{'seed': b'@3\xfcS'}	4033fc53	1704968463 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	700000000	PASS	{'seed': b'\xe5\xc3\x0c\x1a'}	e5c30c1a	1705111788 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	750000000	PASS	{'seed': b'\x06Z\x9b\xb3'}	065a9bb3	1705255056 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	800000000	PASS	{'seed': b'3\xe7\xc7~'}	33e7c77e	1705403751 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	850000000	PASS	{'seed': b'\xfa\xfc\x02&'}	fafc0226	1705547867 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	900000000	PASS	{'seed': b']\xc5\xd9$'}	5dc5d924	1705691217 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	950000000	PASS	{'seed': b'\xb9EA\xc7'}	b94541c7	1705835511 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	1000000000	PASS	{'seed': b'A\xc9qb'}	41c97162	1705979288 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	1050000000	PASS	{'seed': b'\xf0\x93?T'}	f0933f54	1706123645 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	1100000000	PASS	{'seed': b'\xad\xa3\xf3\x82'}	ada3f382	1706268692 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	1150000000	FAIL_NO_BEL	{'seed': b'b88\x8a'}	6238388a	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.05	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	50000000	PASS	{'seed': b'7SgE'}	37536745	1703460414 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	100000000	PASS	{'seed': b'\x9e\xabK\xc7'}	9eab4bc7	1703516810 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	150000000	PASS	{'seed': b'\x8ei\x94\xe3'}	8e6994e3	1703619394 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	200000000	PASS	{'seed': b'\xb5\x94\xb2\x96'}	b594b296	1703726716 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	250000000	PASS	{'seed': b'\x00&\xb2Q'}	0026b251	1703851256 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	300000000	PASS	{'seed': b'\xae\xa2\xb3H'}	aea2b348	1703983881 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	350000000	PASS	{'seed': b'q\x90I\xea'}	719049ea	1704117766 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	400000000	PASS	{'seed': b'{\n;Y'}	7b0a3b59	1704259094 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	450000000	PASS	{'seed': b'\xeez7\xee'}	ee7a37ee	1704396946 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	500000000	PASS	{'seed': b'D\x15\x8c;'}	44158c3b	1704540436 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	550000000	PASS	{'seed': b'|\xaa\x9fu'}	7caa9f75	1704683908 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	600000000	PASS	{'seed': b'\\\x07PL'}	5c07504c	1704825251 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	650000000	PASS	{'seed': b'\xb6DJ\x10'}	b6444a10	1704968530 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	700000000	PASS	{'seed': b'\xf8\x99\x14\x07'}	f8991407	1705112277 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	750000000	PASS	{'seed': b'\xb0h\xbfU'}	b068bf55	1705254831 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	800000000	PASS	{'seed': b'r\xe3\x14Q'}	72e31451	1705403351 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	850000000	PASS	{'seed': b'\xf9\xa0~\xb0'}	f9a07eb0	1705547329 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	900000000	PASS	{'seed': b'aD\x17\x87'}	61441787	1705690947 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	950000000	PASS	{'seed': b'|\xd2,\x9a'}	7cd22c9a	1705835612 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	1000000000	PASS	{'seed': b'\xb6\x1a \xc0'}	b61a20c0	1705979814 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	1050000000	PASS	{'seed': b'\xfd+\x04\xd6'}	fd2b04d6	1706123542 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	1100000000	PASS	{'seed': b'V>\xabL'}	563eab4c	1706268425 cycles
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	1150000000	FAIL_NO_BEL	{'seed': b'9\xad\xad\xd1'}	39adadd1	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	1200000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	1250000000	SKIP_MAX_FREQ_FAIL	None	None	None
+conv-bmark	Conv Accelerator FP16 Convolution	2	1.10	1300000000	SKIP_MAX_FREQ_FAIL	None	None	None
