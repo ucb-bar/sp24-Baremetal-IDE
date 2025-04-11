@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 # Add any new ShmooTest subclasses with custom behavior here:
 class BufferTest(ShmooTest):
 
-    def __init__(self, name, runtime, *args, timeout=180, **kwargs):
+    def __init__(self, name, runtime, *args, timeout=30, **kwargs):
         super().__init__(name, runtime, *args, timeout=timeout, **kwargs)
         self.runtime = runtime
 

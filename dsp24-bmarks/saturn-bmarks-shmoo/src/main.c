@@ -41,7 +41,7 @@ extern int64_t g_big[] __attribute__((aligned(256)));
 #define TILE 8
 
 void benchmark_naive_igemm_big(){
-  int s = 256;
+  int s = 64;
 
   igemm_result_t result;
   memset(&result, 0, sizeof(result));
@@ -52,18 +52,22 @@ void benchmark_naive_igemm_big(){
 
   for (int rep = 0; rep < 3; rep++) {
     if (rep == 2) { 
+      start_roi();
       time = READ_CSR("mcycle");
     }
-    for (uint64_t i0 = 0; i0 < M_big; i0 += TILE) {
-      for (uint64_t j0 = 0; j0 < P_big; j0 += TILE) {
-        for (uint64_t k0 = 0; k0 < N_big; k0 += TILE) {
-          for (uint64_t i = i0; i < i0 + TILE && i < M_big; i++) {
-            for (uint64_t j = j0; j < j0 + TILE && j < P_big; j++) {
-              int64_t sum = c_big[i * P_big + j]; 
-              for (uint64_t k = k0; k < k0 + TILE && k < N_big; k++) {
-                sum += a_big[i * N_big + k] * b_big[k * P_big + j];
+    for (uint64_t i0 = 0; i0 < s; i0 += TILE) {
+      for (uint64_t j0 = 0; j0 < s; j0 += TILE) {
+        for (uint64_t k0 = 0; k0 < s; k0 += TILE) {
+    
+          for (uint64_t i = i0; i < i0 + TILE && i < s; i++) {
+            for (uint64_t j = j0; j < j0 + TILE && j < s; j++) {
+              int64_t sum = c_big[i * s + j]; 
+    
+              for (uint64_t k = k0; k < k0 + TILE && k < s; k++) {
+                sum += a_big[i * s + k] * b_big[k * s + j];
               }
-              c_big[i * P_big + j] = sum;
+    
+              c_big[i * s + j] = sum;
             }
           }
         }
@@ -72,6 +76,7 @@ void benchmark_naive_igemm_big(){
 
     if (rep == 2){
       runtime = READ_CSR("mcycle") - time;
+      end_roi();
       result.naive_cycles = runtime;
       result.naive_performance = 2.0 * s * s * s / runtime;
       xmit_payload_packet(&result, 24);
@@ -110,7 +115,7 @@ void benchmark_vec_igemm_big(){
 
 void benchmark_vec_naive(){
 
-  int s = 256;
+  int s = 64;
 
   igemm_result_t result;
   memset(&result, 0, sizeof(result));
@@ -124,19 +129,19 @@ void benchmark_vec_naive(){
     if (rep == 2) { 
       time = READ_CSR("mcycle");
     }
-    for (uint64_t i0 = 0; i0 < M_big; i0 += TILE) {
-      for (uint64_t j0 = 0; j0 < P_big; j0 += TILE) {
-        for (uint64_t k0 = 0; k0 < N_big; k0 += TILE) {
-  
-          for (uint64_t i = i0; i < i0 + TILE && i < M_big; i++) {
-            for (uint64_t j = j0; j < j0 + TILE && j < P_big; j++) {
-              int64_t sum = c_big[i * P_big + j]; 
-  
-              for (uint64_t k = k0; k < k0 + TILE && k < N_big; k++) {
-                sum += a_big[i * N_big + k] * b_big[k * P_big + j];
+    for (uint64_t i0 = 0; i0 < s; i0 += TILE) {
+      for (uint64_t j0 = 0; j0 < s; j0 += TILE) {
+        for (uint64_t k0 = 0; k0 < s; k0 += TILE) {
+    
+          for (uint64_t i = i0; i < i0 + TILE && i < s; i++) {
+            for (uint64_t j = j0; j < j0 + TILE && j < s; j++) {
+              int64_t sum = c_big[i * s + j]; 
+    
+              for (uint64_t k = k0; k < k0 + TILE && k < s; k++) {
+                sum += a_big[i * s + k] * b_big[k * s + j];
               }
-  
-              c_big[i * P_big + j] = sum;
+    
+              c_big[i * s + j] = sum;
             }
           }
         }
