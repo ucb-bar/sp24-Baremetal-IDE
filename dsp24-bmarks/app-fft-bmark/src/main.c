@@ -32,17 +32,18 @@ typedef struct {
 
 // #define LOGPATH "./fft_log.txt" // TODO abandoned efforts to output into log files
 #define DMA_ADDR1 0x87000000L // DMA base address
+#define DMA_ADDR2 0x87100000L // DMA base address
 #define INPUT_ADDR1 0x08000000U // Where to save data - scratchpad is 0x08000000U
 #define NUM_POINTS 128 // Should always be 128 for DSP24, == FFT length
 #define DMA_NUM 0 // Tested with 0 and 1
 #define MAX_DIFF 5 // Might work down to 2-3
 #define RM_IMAG 1 // Remove imaginary values for easier output parsing
 
-#include "../goldenmodel/fft_data_128len_131c.h"
+// #include "../goldenmodel/fft_data_128len_131c.h"
 #include "../goldenmodel/fft_data_128len_twinkle.h"
-#include "../goldenmodel/fft_expected_data_128len_131c.h"
+// #include "../goldenmodel/fft_expected_data_128len_131c.h"
 #include "../goldenmodel/fft_expected_data_128len_twinkle.h"
-#include "tone_samples.h" // TODO still debugging..
+// #include "tone_samples.h" // TODO still debugging..
 
 /*
  * PICK YOUR INPUT OPTION BELOW (AND COMPARISON IF APPLICABLE)
@@ -116,64 +117,61 @@ void app_init() {
  * It works.
 */
 
-int run_fft_dma_bmark(int i, int iterations = 100, bool busycycles = false) {
+int run_fft_dma_bmark(int i, int iterations) {
   int error_cnt = 0;
   fft_result_t result;
   memset(&result, 0, sizeof(result));
+
+  uint64_t start_time;
 
   reset_fft();
   reset_DMA(); // reset is at DMA base address 
   // enable_Crack(); // bad idea to enable for initial tests 
 
   /* WRITE INPUT DATA */
+  start_roi(); // start collecting shmoo data
+  start_time = get_cycles();
+
   for(int x=0; x < iterations; x++) {
-    start_roi(); // start collecting shmoo data
-    uint64_t start_time = READ_CSR("mcycle");
 
     write_fft_dma(DMA_NUM, NUM_POINTS, (uint32_t*) INPUT_DATA[i]); 
 
-    if (busycycles) { // might want to wait until fft_busy() explicitly
-      uint64_t start_time = READ_CSR("mcycle");
-    }
     while(fft_busy() || fft_count_left()){
       // continue; // not sure why this was added
-      printf("[Blocking] pain:%d, %d \r\n", fft_busy(), fft_count_left());
     }; // This is needed since fft is blocking and is not a very good block
-    if (busycycles) {
-      uint64_t end_time = READ_CSR("mcycle");
-    }
 
     /* READ & COMPARE OUTPUT DATA */
 
     // while (*(volatile char*) (DMA_BASE+0x1) != 0);
-    read_fft_real_dma(DMA_NUM, NUM_POINTS, DMA_ADDR1);
+    if (x == 0) {
+      read_fft_real_dma(DMA_NUM, NUM_POINTS, DMA_ADDR1);
+    } else {
+      read_fft_real_dma(DMA_NUM, NUM_POINTS, DMA_ADDR2);
+    }
     // while (*(volatile char*) (DMA_BASE+0x1) != 0);
-
-    if (!busycycles) {
-      uint64_t end_time = READ_CSR("mcycle");
-    }
-    end_roi(); // stop collecting shmoo data
-
-    uint32_t poll_dmafft, real_dmafft, imag_dmafft;
-    uint32_t poll_real_max_dmafft = 0;
-    uint32_t idx_max_dmafft = 0;
-    for(int j=0; j < NUM_POINTS; j++) {
-      poll_dmafft = reg_read32(DMA_ADDR1 + j*4); // DO NOT DO j*8, even if other people do!
-      int16_t poll_real_dmafft = poll_dmafft & 0xFFFF; // same effect as "(int16_t) poll"
-      int16_t poll_imag_dmafft = poll_dmafft >> 16; // untested - not needed for audio type inputs
-      
-      if (compare_output) {
-        int16_t expected_real_dmafft = (int16_t) OUTPUT_DATA[i][j];
-        if (poll_real_dmafft - expected_real_dmafft < -MAX_DIFF || poll_real_dmafft - expected_real_dmafft > MAX_DIFF) {
-          error_cnt++;
-        }
-      } 
-    }
   }
+  result.cycles = get_cycles() - start_time;
+  end_roi(); // stop collecting shmoo data
+
+  uint32_t poll_dmafft, real_dmafft, imag_dmafft;
+  uint32_t poll_real_max_dmafft = 0;
+  uint32_t idx_max_dmafft = 0;
+  for(int j=0; j < NUM_POINTS; j++) {
+    poll_dmafft = reg_read32(DMA_ADDR1 + j*4); // DO NOT DO j*8, even if other people do!
+    int16_t poll_real_dmafft = poll_dmafft & 0xFFFF; // same effect as "(int16_t) poll"
+    int16_t poll_imag_dmafft = poll_dmafft >> 16; // untested - not needed for audio type inputs
+    
+    if (compare_output) {
+      int16_t expected_real_dmafft = (int16_t) OUTPUT_DATA[i][j];
+      if (poll_real_dmafft - expected_real_dmafft < -MAX_DIFF || poll_real_dmafft - expected_real_dmafft > MAX_DIFF) {
+        error_cnt++;
+      }
+    } 
+  }
+
   
   /* RESULTS & CLEANUP */
 
-  result.cycles = end_time - start_time;
   result.correct = error_cnt == 0;
   xmit_payload_packet(&result, 9); // pointer to payload and size of payload
   return error_cnt;
@@ -184,7 +182,7 @@ int run_fft_dma_bmark(int i, int iterations = 100, bool busycycles = false) {
  * It does not match Numpy expectations.
 */
 
-int run_cpu_fft_bmark(int i, int iterations = 100, bool busycycles = false) {
+int run_cpu_fft_bmark(int i, int iterations) {
   /* SETUP */
   int error_cnt = 0;
   fft_result_t result;
@@ -249,15 +247,15 @@ int run_cpu_fft_bmark(int i, int iterations = 100, bool busycycles = false) {
  * BENCHMARKING WRAPPERS
 */
 
-void run_fft_dma_bmark_sequence(int iterations = 100, bool busycycles = false) {
-  for (int i = 0; i < NUM_TESTS; i++) {
-    run_fft_dma_bmark(i, iterations, busycycles);
+void run_fft_dma_bmark_sequence(int iterations) {
+  for (int i = 0; i < 1; i++) {
+    run_fft_dma_bmark(i, iterations);
   }
 }
 
-void run_cpu_fft_bmark_sequence(int iterations = 100, bool busycycles = false) {
-  for (int i = 0; i < NUM_TESTS; i++) {
-    run_cpu_fft_bmark(i, iterations, busycycles);
+void run_cpu_fft_bmark_sequence(int iterations) {
+  for (int i = 0; i < 1; i++) {
+    run_cpu_fft_bmark(i, iterations);
   }
 }
 
@@ -298,16 +296,15 @@ int main(int argc, char **argv) {
     int seed = *((int*) &t.payload);
     switch (t.testid) {
       case 0:
-        run_fft_dma_bmark_sequence(10, false);
+        run_fft_dma_bmark_sequence(80000);
         break;
       case 1:
-        run_cpu_fft_bmark_sequence(10, false);
+        run_cpu_fft_bmark_sequence(80000);
         break;
       default:
         break;
     }
     clean_test(t);
-    return 0;
   }
   /* USER CODE END WHILE */
 }
