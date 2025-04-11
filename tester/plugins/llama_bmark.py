@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 class LlamaTest(ShmooTest):
 
     def __init__(self, name, steps, *args, timeout=5, **kwargs):
-        super().__init__(name, 0x0, *args, timeout=timeout, **kwargs)
+        super().__init__(name, 0x1, *args, timeout=timeout, **kwargs)
         self.steps = steps
 
     def create_payload(self):
@@ -23,11 +23,11 @@ class LlamaTest(ShmooTest):
         return steps_bytes, {'steps': self.steps}
     
     def check_output(self, context, value):
-        # float tok_per_s = 1/((float)(end-start)/(float)target_frequency)/(float)(pos-1);
+        # float tok_per_s = (pos-1) / (((double)(end-start))/target_frequency);
         chip_freq = context['chip_freq']
         cycles, steps = struct.unpack('<QI', value)
-        tok_per_sec = 1/(cycles/chip_freq)/steps
-        stat_str = f'{steps} steps in {cycles} cycles, {tok_per_sec} tok/sec'
+        tok_per_sec = steps / (cycles / chip_freq)
+        stat_str = f'{steps} steps in {cycles} cycles [{tok_per_sec} tok/sec]'
         ShmooTestHarness.log_as_misc(f'Llama: {stat_str}')
         return True, stat_str
 
@@ -35,7 +35,7 @@ class LlamaTest(ShmooTest):
 # Define the tests here:
 ShmooTestHarness.register_test_suite(TestSuite("llama_int8",
     "build/dsp24-bmarks/borai-int8-bmarks/boraiq_bmark.elf",
-    LlamaTest("Int8 Llama2 Inference - 256 Steps", steps=256),
+    LlamaTest("Int8 Llama2 Inference - 256 Steps", steps=256, timeout=15),
 ))
 
 # Exports (if necessary)

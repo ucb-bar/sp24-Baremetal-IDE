@@ -35,25 +35,11 @@ extern "C" {
 #include "hardware.h"
 #include "libbmark.h"
 
-typedef struct {
+typedef struct __attribute__((__packed__)) {
   uint64_t cycles;
   uint32_t steps_measured;
 } test_payload;
 
-// http://elm-chan.org/junk/32bit/binclude.html
-#define IMPORT_BIN(section, filename, symbol) asm (\
-  ".section "#section"\n"                   /* Change section */\
-  ".balign 4\n"                             /* Word alignment */\
-  ".global "#symbol"\n"                     /* Export the object address */\
-  ".global "#symbol"_start\n"               /* Export the object address */\
-  #symbol"_start:\n"                         /* Define the object label */\
-  #symbol":\n"                              /* Define the object label */\
-  ".incbin \""filename"\"\n"                /* Import the file */\
-  ".global "#symbol"_end\n"                 /* Export the object address */\
-  #symbol"_end:\n"                          /* Define the object label */\
-  ".balign 4\n"                             /* Word alignment */\
-  ".section \".text\"\n"                    /* Restore section */\
-)
 
 // 15M version
 // #include "weights_15Mq.h"
@@ -61,13 +47,13 @@ typedef struct {
 // #include "tokenizer_TS.h"
 
 // 260K version
-// #include "weights_260Kq.h"
-// #include "tokenizer_512.h"
+#include "weights_260Kq.h"
+#include "tok512.h"
 
 // newer tok32000 stories260 version
 // #include "weights_15Mq.h"
-#include "weights_260Kq_32000.h"
-#include "tokenizer_32000.h"
+//#include "weights_260Kq_32000.h"
+//#include "tokenizer_32000.h"
 
 //// Use the following if you wish to have an externally included model ////
 // IMPORT_BIN(".ai.tokenizer", "../models/tok512.bin", TOKENIZER);

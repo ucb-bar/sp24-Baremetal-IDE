@@ -59,9 +59,9 @@
 const unsigned char *ASCII_CRLF = (const unsigned char *) "\r\n";
 const unsigned char *ASCII_BEL = (const unsigned char *) "\a";
 
-int32_t GS = 64; // group size global for quantization of the weights
+// int32_t GS = 64; // group size global for quantization of the weights
 
-//uint64_t target_frequency = 500000000l;
+// uint64_t target_frequency = 800000000l;
 
 // #ifdef ENABLE_DMA_MATVEC
 // int32_t GS_MATVEC_BOUND = 0;
@@ -94,7 +94,7 @@ typedef struct {
 
 typedef struct {
     int8_t* q;    // quantized values
-    float* s; // scaling factors
+    float s; // scaling factors
 } QuantizedTensor;
 
 typedef struct {
@@ -157,8 +157,8 @@ void malloc_run_state(RunState* s, Config* p) {
     s->xb2 = calloc(p->dim, sizeof(float));
     s->hb = calloc(p->hidden_dim, sizeof(float));
     s->hb2 = calloc(p->hidden_dim, sizeof(float));
-    s->xq = (QuantizedTensor) { .q = calloc(p->dim, sizeof(int8_t)), .s = calloc(p->dim, sizeof(float)) };
-    s->hq = (QuantizedTensor) { .q = calloc(p->hidden_dim, sizeof(int8_t)), .s = calloc(p->hidden_dim, sizeof(float)) };
+    s->xq = (QuantizedTensor) { .q = calloc(p->dim, sizeof(int8_t)), .s = 0.0f };
+    s->hq = (QuantizedTensor) { .q = calloc(p->hidden_dim, sizeof(int8_t)), .s = 0.0f };
     s->q = calloc(p->dim, sizeof(float));
     s->k = calloc(kv_dim, sizeof(float));
     s->v = calloc(kv_dim, sizeof(float));
@@ -170,10 +170,10 @@ void malloc_run_state(RunState* s, Config* p) {
     if (!s->x || !s->xb || !s->xb2 || !s->hb || !s->hb2 || !s->q
      || !s->k || !s->v || !s->att || !s->logits || !s->key_cache
      || !s->value_cache) {
-        //printf("STDERR: malloc failed!\r\n");
-        //printf("size: %d\r\n", p->n_layers * p->seq_len * kv_dim * sizeof(float));
-        //printf("s->q: %x\r\n", s->q);
-        //printf("key_cache: %x\r\n", s->key_cache);
+        // printf("STDERR: malloc failed!\r\n");
+        // printf("size: %d\r\n", p->n_layers * p->seq_len * kv_dim * sizeof(float));
+        // printf("s->q: %x\r\n", s->q);
+        // printf("key_cache: %x\r\n", s->key_cache);
 
         // exit(EXIT_FAILURE);
     }
@@ -186,9 +186,7 @@ void free_run_state(RunState* s) {
     free(s->hb);
     free(s->hb2);
     free(s->xq.q);
-    free(s->xq.s);
     free(s->hq.q);
-    free(s->hq.s);
     free(s->q);
     free(s->k);
     free(s->v);
@@ -203,35 +201,31 @@ void free_run_state(RunState* s) {
 
 void dequantize(QuantizedTensor *qx, float* x, int n) {
     for (int i = 0; i < n; i++) {
-        x[i] = qx->q[i] * qx->s[i / GS];
+        x[i] = qx->q[i] * qx->s;
     }
 }
 
 void quantize(QuantizedTensor *qx, float* x, int n) {
-    int num_groups = n / GS;
     float Q_MAX = 127.0f;
 
-    for (int group = 0; group < num_groups; group++) {
-
-        // find the max absolute value in the current group
-        float wmax = 0.0;
-        for (int i = 0; i < GS; i++) {
-            float val = fabs(x[group * GS + i]);
-            if (val > wmax) {
-                wmax = val;
-            }
+    // find the max absolute value
+    float wmax = 0.0;
+    for (int i = 0; i < n; i++) {
+        float val = fabs(x[i]);
+        if (val > wmax) {
+            wmax = val;
         }
+    }
 
-        // calculate and write the scaling factor
-        float scale = wmax / Q_MAX;
-        qx->s[group] = scale;
+    // calculate and write the scaling factor
+    float scale = wmax / Q_MAX;
+    qx->s = scale;
 
-        // calculate and write the quantized values
-        for (int i = 0; i < GS; i++) {
-            float quant_value = x[group * GS + i] / scale; // scale
-            int8_t quantized = (int8_t) round(quant_value); // round and clamp
-            qx->q[group * GS + i] = quantized;
-        }
+    // calculate and write the quantized values
+    for (int i = 0; i < n; i++) {
+        float quant_value = x[i] / scale; // scale
+        int8_t quantized = (int8_t) round(quant_value); // round and clamp
+        qx->q[i] = quantized;
     }
 }
 
@@ -244,8 +238,8 @@ QuantizedTensor *init_quantized_tensors(void **ptr, int n, int size_each) {
         res[i].q = (int8_t*)p;
         p = (int8_t*)p + size_each;
         /* map scale factors */
-        res[i].s = (float*)p;
-        p = (float*)p + size_each / GS;
+        res[i].s = *(float*)p;
+        p = (float*)p + 1;
     }
     *ptr = p; // advance ptr to current position
     return res;
@@ -309,16 +303,16 @@ void read_checkpoint_from_header(Config* config, TransformerWeights* weights, fl
   //printf("Loading checkpoint data...\r\n");
   // Check magic number
   uint32_t magic = *((uint32_t*)(WEIGHTS + cumulative_offset));
-  if (magic != MODEL_MAGIC_NUMBER) {
-    //printf("Model magic number does not match! Please preprocess with export.py.\r\n");
-  }
-  //printf("Magic number verified\r\n");
+//   if (magic != MODEL_MAGIC_NUMBER) {
+//     printf("Model magic number does not match! Please preprocess with export.py.\r\n");
+//   }
+//   printf("Magic number verified\r\n");
   cumulative_offset += sizeof(uint32_t);
 
   uint32_t version = *((uint32_t*)(WEIGHTS + cumulative_offset));
-  if (version != MODEL_VERSION_INT8) {
-    //printf("Model version is not an Int8 Quantized model. Version (hex) = %x", version);
-  }
+//   if (version != MODEL_VERSION_INT8) {
+//     printf("Model version is not an Int8 Quantized model. Version (hex) = %x", version);
+//   }
 //   printf("Model is properly formatted as Int8 Quantized (Version 2).\r\n");
   cumulative_offset += sizeof(uint32_t);
   
@@ -339,12 +333,8 @@ void read_checkpoint_from_header(Config* config, TransformerWeights* weights, fl
   if (shared_classifier != 1) {
     //printf("Non-shared classifier detected. Shared classifier byte value = %x", shared_classifier);
   }
+  //printf("Proper shared classifier detected.\r\n");
   cumulative_offset += sizeof(uint8_t);
-
-  // Read group size
-  int32_t group_size = *((int32_t*)(WEIGHTS + cumulative_offset));
-  GS = group_size;
-  cumulative_offset += sizeof(int32_t);
 
   // int shared_weights = config->vocab_size > 0 ? 1 : 0;
   config->vocab_size = abs(config->vocab_size);
@@ -425,30 +415,19 @@ void matmul(float* xout, QuantizedTensor *x, QuantizedTensor *w, int n, int d) {
     // by far the most amount of time is spent inside this little function
     // inputs to this function are both quantized
 
-    // d = num rows, n = num cols
-    int i = 0;
-
-    /// Naive Solution with optional QTDP, which can be used alongside DMA for extra leftover rows.
-    for (; i < d; i++) {
+    int i;
+    for (i = 0; i < d; i++) {
         float val = 0.0f;
         int32_t ival = 0;
-
-        // in = offset for w matrix accounting for rows
         int in = i * n;
 
-        // do the matmul in groups of GS
+        // do the matmul
         int j;
-
-        for (j = 0; j <= n - GS; j += GS) {  // Chunks in groups of GS (was n - GS)
-            int k = 0;
-            for (; k < GS; k++) {   // Performs single operations
-                ival += ((int32_t) x->q[j + k]) * ((int32_t) w->q[in + j + k]);
-            }
-            val += ((float) ival) * w->s[(in + j) / GS] * x->s[j / GS];
-            ival = 0;
+        for (j = 0; j <= n; j++) {
+            ival += ((int32_t) x->q[j]) * ((int32_t) w->q[in + j]);
         }
 
-        xout[i] = val;
+        xout[i] = ((float) ival) * w->s * x->s;
     }
 }
 
@@ -696,7 +675,10 @@ int str_lookup(char *str, TokenIndex *sorted_vocab, int vocab_size) {
 void encode(Tokenizer* t, char *text, int8_t bos, int8_t eos, int *tokens, int *n_tokens) {
     // encode the string text (input) into an upper-bound preallocated tokens[] array
     // bos != 0 means prepend the BOS token (=1), eos != 0 means append the EOS token (=2)
-    if (text == NULL) { exit(EXIT_FAILURE); }
+    if (text == NULL) {
+      //printf("STDERR: cannot encode NULL text\r\n");
+      //exit(EXIT_FAILURE);
+    }
 
     if (t->sorted_vocab == NULL) {
         // lazily malloc and sort the vocabulary
@@ -978,10 +960,10 @@ float generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler,
     int num_prompt_tokens = 0;
     int* prompt_tokens = (int*)malloc((strlen(prompt)+3) * sizeof(int)); // +3 for '\0', ?BOS, ?EOS
     encode(tokenizer, prompt, 1, 0, prompt_tokens, &num_prompt_tokens);
-    if (num_prompt_tokens < 1) {
-        // printf("STDERR: something is wrong, expected at least 1 prompt token\r\n");
-        // exit(EXIT_FAILURE);
-    }
+    // if (num_prompt_tokens < 1) {
+    //     // printf("STDERR: something is wrong, expected at least 1 prompt token\r\n");
+    //     // exit(EXIT_FAILURE);
+    // }
 
     // start the main loop
     unsigned long start = 0;  // used to time our code, only initialized after first iteration
@@ -1041,7 +1023,12 @@ float generate(Transformer *transformer, Tokenizer *tokenizer, Sampler *sampler,
 
 }
 
-void app_main() {
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
+int main(int argc, char **argv) {
+  
   // Parameters //
   float temperature = 0.8f;   // 0.0 = greedy deterministic. 1.0 = original. don't set higher
   float topp = 0.9f;          // top-p in nucleus sampling. 1.0 = off. 0.9 works well, but slower
@@ -1080,7 +1067,7 @@ void app_main() {
 
     // Pre-Processing and Startup
     sampler.rng_state = CLINT->MTIME;
-    steps = (uint32_t)t.payload;
+    steps = *((uint32_t*) t.payload);
 
     // Execution
     switch (t.testid) {
@@ -1090,37 +1077,10 @@ void app_main() {
   }
 }
 
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(int argc, char **argv) {
-  /* MCU Configuration--------------------------------------------------------*/
-  
-  //configure_pll(PLL, target_frequency/50000000, 0);
-//   set_all_clocks(CLOCK_SELECTOR, 1);
-
-  /* USER CODE BEGIN SysInit */
-  // Initialize UART0 for Serial Monitor
-//   UART_InitType UART0_init_config;
-//   UART0_init_config.baudrate = 115200;
-//   UART0_init_config.mode = UART_MODE_TX_RX;
-//   UART0_init_config.stopbits = UART_STOPBITS_2;
-//   uart_init(UART0, &UART0_init_config);
-//   UART0->DIV = (target_frequency / 115200) - 1;
-
-  /* USER CODE END SysInit */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  app_main();
-  /* USER CODE END WHILE */
-}
-
 
 // Alternative HART runner. Multithreading, anyone?
 void __attribute__((weak, noreturn)) __main(void) {
   while (1) {
-   asm volatile ("wfi");
+    asm volatile ("wfi");
   }
 }
