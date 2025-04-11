@@ -26,8 +26,8 @@ class BufferTest(ShmooTest):
 # Define the tests here:
 ShmooTestHarness.register_test_suite(TestSuite("app-fft-bmark",
     "build/dsp24-bmarks/app-fft-bmark/app-fft-bmark.elf",
-    BufferTest("run_fft_dma_bmark_sequence", 0x0),
-    BufferTest("run_cpu_fft_bmark_sequence", 0x1),
+    BufferTest("run_fft_dma_bmark_sequence", 0x0, timeout=25),
+    BufferTest("run_cpu_fft_bmark_sequence", 0x1, timeout=80),
 ))
 
 # Exports (if necessary)
