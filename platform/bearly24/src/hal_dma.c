@@ -55,17 +55,8 @@ DMA_Status dma_get_MAC_result(DMA_Type* DMAX, int16_t* dst, uint32_t count) {
     count = 32;
   
   if (dma_operation_complete(DMAX)){
-<<<<<<< HEAD
     for (size_t i = 0; i < count; i++)
       dst[i] = DMAX->DEST_REG[i];
-=======
-    // Copy count * 2^4 (count * 16 byte vals)
-    memcpy(dst, DMAX->DEST_REG, count << 4);
-    // int64_t* op = (int64_t *) operand;
-    // int64_t* reg = (int64_t *) DMAX->OPERAND_REG;
-    // for (size_t i = 0; i < count; i++)
-    //   dst[i] = ((int16_t *) DMAX->DEST_REG)[i];
->>>>>>> borai
     return DMA_OK;
   }
   else {
@@ -73,8 +64,4 @@ DMA_Status dma_get_MAC_result(DMA_Type* DMAX, int16_t* dst, uint32_t count) {
         dst[i] = -1;
     return get_status(DMAX);
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> borai
