@@ -969,7 +969,7 @@ class ShmooTestHarness:
                     ### Serial Port Evaluation / FTDI Reset / PSU Setup ###
                     
                     # Set PSU Limits based on sweep.
-                    dbg_bp('set PSU limits')
+                    dbg_bp('set PSU limits and enable PSU')
                     psu.set_limits(psu_channel, voltage=cur_v)
                     psu.enable(psu_channel)
                     sleep(0.3)
@@ -1066,14 +1066,19 @@ class ShmooTestHarness:
                         done = False
                         etb_data = None
                         timeout_time = start_time + timedelta(seconds=test.timeout)
+                        if debug:
+                            timeout_time = start_time + timedelta(years=1)
+                        else:
+                            timeout_time = start_time + timedelta(seconds=test.timeout)
                         end_time = None
-                        while debug or (not done and datetime.now() <= timeout_time):
+                        
+                        while (not done and datetime.now() <= timeout_time):
                             while not ser.in_waiting and datetime.now() <= timeout_time:
                                 meas_v.append(psu.query(f"MEAS:VOLT? CH{psu_channel}"))
                                 meas_i.append(psu.query(f"MEAS:CURR? CH{psu_channel}"))
 
                             # If we still don't have UART data, then test timed out.
-                            if not debug and not ser.in_waiting:
+                            if not ser.in_waiting:
                                 break
 
                             while ser.in_waiting:

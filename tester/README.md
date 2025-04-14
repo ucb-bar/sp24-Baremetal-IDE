@@ -177,6 +177,43 @@ $ ./tester/tester.py -s my_test -t 2
 > $ ./tester/tester.py -c bearly24 -s my_test -t 2
 > ```
 
+### Real-Time Debugging
+
+The ShmooTester includes built-in live debugging capabilities to allow you to step through the copmlete test flow using an external debugger using the `-d` flag. When this flag is specified, the user will be prompted to confirm each action that the ShmooTester completes along the testing flow prior to its execution. Specifically, the user will be prompted about the following actions:
+
+- Prior to the PSU output being enabled.
+- Prior to resetting and programming the chip (if the `--no-upload` or `-n` flag is not specified).
+- Prior to attempting an ENQ/ACK-verified UART connection.
+  - Note: This step requires a running program on the chip side, at least at the point of awaiting a command on the `init_test` side.
+- Prior to sending the host payload to the chip over UART.
+
+Timeouts for a chip payload will be overridden to be one year (infinity) to allow for on-chip debugging while the host waits for a response.
+
+A typical workflow with this command would be to use it in tandem with the `--no-upload` or `-n` flag, which disables uploading and resetting the chip, alongside using an external OpenOCD and GDB session. When the host is waiting to attempt an ENQ/ACK UART connection, allow the program to execute `init_test`. Then, the host payload can be sent from the host manually, triggering a custom breakpoint within your benchmark:
+
+<pre><code>$ ./tester/tester.py -s hello -d -n --no-psu
+Please confirm the following parameter sweep:
+Voltages: [0.85]
+Frequencies: [100 150]
+PSU Source Settings: 2-Wire Local Sensing Mode (Channel 1)
+Dummy PSU (Log Redirect): True (SCPI commands will be redirected to a log. No power data will be collected.)
+Debugging Mode Enabled
+ (y/n): y
+INFO:utils:--- Starting enumeration for test suite "hello" ---
+INFO:utils:[Dummy PSU] Dummy PSU has been created.
+INFO:utils:[Dummy PSU] QUERY: *IDN?
+INFO:utils:[Dummy PSU] QUERY: DISP:VIEW METER3
+INFO:utils:[Dummy PSU] QUERY: VOLT:SENS:SOUR INT,(@1)
+INFO:utils:[Misc] Output will be stored within "..."
+INFO:utils:--- [Test ID 1] Running at 100 MHz and 0.85 V ---
+<b>[DBG] Press Enter to set PSU limits and enable PSU.</b>
+INFO:utils:[Dummy PSU] QUERY: APPL Ch1, 0.85, 2
+INFO:utils:[Dummy PSU] QUERY: VOLT:PROT 1.5, (@1)
+INFO:utils:[Dummy PSU] QUERY: OUTP ON,(@1)
+INFO:utils:[Misc] No Upload is True, skipping chip programming step.
+<b>[DBG] Press Enter to attempt ENQ/ACK-verified UART connection (Program needs to be within init_test for this to work).</b>
+</code></pre>
+
 ### Output Folder Structure
 
 The ShmooTester generates multiple files as output collateral, each containing varying pieces of information about the test:
