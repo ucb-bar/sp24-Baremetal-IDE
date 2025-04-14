@@ -14,8 +14,8 @@ LOGGER = logging.getLogger(__name__)
 # Add any new ShmooTest subclasses with custom behavior here:
 class LlamaTest(ShmooTest):
 
-    def __init__(self, name, steps, *args, timeout=5, **kwargs):
-        super().__init__(name, 0x1, *args, timeout=timeout, **kwargs)
+    def __init__(self, name, id, steps, *args, timeout=5, **kwargs):
+        super().__init__(name, id, *args, timeout=timeout, **kwargs)
         self.steps = steps
 
     def create_payload(self):
@@ -35,7 +35,9 @@ class LlamaTest(ShmooTest):
 # Define the tests here:
 ShmooTestHarness.register_test_suite(TestSuite("llama_int8",
     "build/dsp24-bmarks/borai-int8-bmarks/boraiq_bmark.elf",
-    LlamaTest("Int8 Llama2 Inference - 256 Steps", steps=256, timeout=15),
+    LlamaTest("Int8 Llama2 Inference - 256 Steps", 0x0, steps=256, timeout=65),
+    LlamaTest("Int8 Llama2 Inference - 8 Steps", 0x1, steps=8, timeout=1),
+    LlamaTest("Int8 Llama2 Inference - 16 Steps", 0x2, steps=16, timeout=1),
 ))
 
 # Exports (if necessary)
