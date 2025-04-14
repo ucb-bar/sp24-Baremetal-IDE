@@ -603,6 +603,11 @@ class ShmooTestHarness:
     TEST_PASSED_STR = Fore.GREEN + Style.BRIGHT + '[+++PASSED+++]' + Style.RESET_ALL
     TEST_FAILED_STR = Fore.RED + Style.BRIGHT + '[---FAILED---]' + Style.RESET_ALL
 
+    CHIP_NAME = 'dsp24'
+    """
+    Name of the chip to test.
+    """
+
     @staticmethod
     def register_test_suite(suite: TestSuite):
         ShmooTestHarness.TEST_SUITES[suite.name] = suite
@@ -748,7 +753,8 @@ class ShmooTestHarness:
         
             ocd_proc = None
             while not ocd_proc:
-                openocd_args = shlex.split("openocd -f ./platform/dsp24/dsp24.cfg")
+                chipname = ShmooTestHarness.CHIP_NAME
+                openocd_args = shlex.split(f"openocd -f ./platform/{chipname}/{chipname}.cfg")
                 ocd_proc = subprocess.Popen(openocd_args, cwd=os.getcwd(),
                                             stdout=subprocess.PIPE,
                                             stderr=subprocess.STDOUT,
@@ -974,7 +980,7 @@ class ShmooTestHarness:
                         dbg_bp('reset and program the chip')
                         ShmooTestHarness.reset_and_program_elf(suite.elf)
 
-                    dbg_bp('attempt ENQ/ACK-verified UART connection')
+                    dbg_bp('attempt ENQ/ACK-verified UART connection (Program needs to be within init_test for this to work)')
                     ser = SerialDebug.create(ShmooTestHarness.UART_BAUD_RATE,
                                              timeout=test_timeout)
 

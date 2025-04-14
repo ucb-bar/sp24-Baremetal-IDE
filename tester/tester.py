@@ -36,6 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', type=str, default=None, help='Path for storing output files. If the path does not already exist, it will be created. If unspecified, a default path containing the suite name and test start timestamp will be created.')
 
     args_test = parser.add_argument_group('Shmoo Testing Options')
+    args_test.add_argument('-c', '--chip', default='dsp24', help='Chip to run the test on. This is used to locate a configuration file with the path `./platform/chipname/chipname.cfg`. Defaults to `dsp24`.')
     args_test.add_argument('-s', '--suite', help='Name of the test suite to run')
     args_test.add_argument('-t', '--test', type=int, dest='tests', action='append', help='ID of the test you wish to run (as a decimal number). This argument can be passed multiple times to run multiple specific tests within a test suite. If unspecified, all tests will run.')
     args_test.add_argument('--min-v', dest='min_v', type=float, default='0.85', help='Voltage lower bound')
@@ -113,6 +114,7 @@ if __name__ == '__main__':
                 voltages, frequencies, psu_mode, args.no_psu, args.psu_channel,
                 args.debug):
             exit()
+        ShmooTestHarness.CHIP_NAME = args.chip
         results = ShmooTestHarness.run_suite(args.suite, args.tests,
                                    voltages, frequencies,
                                    max_consec_voltage_fails=args.max_v_fail,

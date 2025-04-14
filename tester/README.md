@@ -172,6 +172,11 @@ With this definition, if we wanted to run a test with only 2 cores, we can use:
 $ ./tester/tester.py -s my_test -t 2
 ```
 
+> **Note:** By default, this assumes that you want to run a test on DSP24. For other chips, you can specify the `-c` flag with the driver name of that chip. For example, if you want to run the same test on BearlyML'24, you can use:
+> ```sh
+> $ ./tester/tester.py -c bearly24 -s my_test -t 2
+> ```
+
 ### Output Folder Structure
 
 The ShmooTester generates multiple files as output collateral, each containing varying pieces of information about the test:
@@ -273,12 +278,13 @@ The plot(s) will be generated as `test_<test id>_plot.png` within the folder, ov
 
 ## CLI Reference
 ```
-usage: Jasmine's ShmooTester [-h] [-i INPUT] [-o OUTPUT] [-s SUITE] [-t TESTS] [--min-v MIN_V] [--max-v MAX_V] [--step-v STEP_V] [--min-freq MIN_FREQ] [--max-freq MAX_FREQ] [--step-freq STEP_FREQ] [--max-v-fail MAX_V_FAIL] [--retries RETRIES]
-                             [-r NUM_RUNS] [-f] [--psu-mode {INT,EXT}] [--psu-channel PSU_CHANNEL] [--no-psu] [-m] [-d] [-n] [-l] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--logfile LOGFILE]
+(.venv) (/tools/C/ee290-fa24-2/.conda-env) angle@bwrc-lab04:/tools/C/angle/dspbench $ ./tester/tester.py -c bearly24 -s hello --no-psu --log DEBUG -h
+usage: Jasmine's ShmooTester [-h] [-i INPUT] [-o OUTPUT] [-c CHIP] [-s SUITE] [-t TESTS] [--min-v MIN_V] [--max-v MAX_V] [--step-v STEP_V] [--min-freq MIN_FREQ] [--max-freq MAX_FREQ] [--step-freq STEP_FREQ] [--max-v-fail MAX_V_FAIL] [--retries RETRIES] [-r NUM_RUNS] [-f] [--psu-mode {INT,EXT}]
+                             [--psu-channel PSU_CHANNEL] [--no-psu] [-m] [-d] [-n] [-l] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--logfile LOGFILE]
 
 Performs Shmoo testing using the default BEL/ETB Bringup communication protocol.
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
                         Path to an existing Shmoo test run to import for Shmoo plot generation. If specified, this will only generate a Shmoo plot from existing data and not run any tests.
@@ -286,6 +292,7 @@ options:
                         Path for storing output files. If the path does not already exist, it will be created. If unspecified, a default path containing the suite name and test start timestamp will be created.
 
 Shmoo Testing Options:
+  -c CHIP, --chip CHIP  Chip to run the test on. This is used to locate a configuration file with the path `./platform/chipname/chipname.cfg`. Defaults to `dsp24`.
   -s SUITE, --suite SUITE
                         Name of the test suite to run
   -t TESTS, --test TESTS
