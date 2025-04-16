@@ -374,6 +374,11 @@ class TestStatus(enum.Enum):
     Test was skipped due to the lowest tested frequency failing for the given
     voltage.
     """
+
+    FAIL_INVALID_CHIP_PKT = 7
+    """
+    The chip sent an invalid packet to the host.
+    """
     
 
 class TestArtifact:
@@ -752,7 +757,9 @@ class ShmooTestHarness:
             # Attempt to launch OpenOCD subprocess
         
             ocd_proc = None
-            while not ocd_proc:
+            ocd_failed_attempts = 0
+            ocd_max_failures = 5
+            while not ocd_proc and ocd_failed_attempts < ocd_max_failures:
                 chipname = ShmooTestHarness.CHIP_NAME
                 openocd_args = shlex.split(f"openocd -f ./platform/{chipname}/{chipname}.cfg")
                 ocd_proc = subprocess.Popen(openocd_args, cwd=os.getcwd(),
@@ -771,9 +778,15 @@ class ShmooTestHarness:
                             "OpenOCD failed to launch. Retrying.")
                         ShmooTestHarness.kill_process_with_fire(ocd_proc)
                         ocd_proc = None
+                        ocd_failed_attempts += 1
                     elif 'Info : Listening on port 4444 for telnet connections' in line:
                         break
             
+            if not ocd_proc:
+                ShmooTestHarness.log_as_misc(
+                    f"OpenOCD failed {ocd_max_failures} times. Attempting another reset.")
+                continue
+
             ShmooTestHarness.log_as_misc(
                 "OpenOCD successfully connected to JTAG controller.")
 
@@ -1103,13 +1116,26 @@ class ShmooTestHarness:
                         ShmooTestHarness.log_as_chip(
                             f'Sent ETB (23, 0x17) test completion acknowledgment!')
                         
-                        test_time = end_time - start_time
-                        ShmooTestHarness.log_as_misc(f'Test completed in {test_time.microseconds} μs')
+                        if end_time and start_time:
+                            test_time = end_time - start_time
+                            ShmooTestHarness.log_as_misc(f'Test completed in {test_time.microseconds} μs')
 
                         # Chip sends size of payload packet (in bytes) (32-bit int)
                         ShmooTestHarness.log_as_host(
                             f'Awaiting chip payload packet size...')
+                        
                         payload_size_bytes = ser.read(4)
+                        if len(payload_size_bytes) < 4:
+                            # Invalid payload size
+                            ShmooTestHarness.log_as_chip(
+                                f'Invalid chip payload size received: {payload_size_bytes}. Expected 4 bytes wide.',
+                                red=True)
+                            run_errored = True
+                            artifact.status = TestStatus.FAIL_INVALID_CHIP_PKT
+                            test_finish_handler(freq_hz, artifact, retries,
+                                                intermediate=is_intermediate)
+                            break
+
                         payload_size = struct.unpack('<I', payload_size_bytes)[0]
                         ShmooTestHarness.log_as_chip(
                             f'Payload packet size is {payload_size} ({payload_size_bytes})')
