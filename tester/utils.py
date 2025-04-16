@@ -156,7 +156,7 @@ class PSU:
         self.display_meter()
 
     def dummy_log(self, val):
-        LOGGER.info(f'{self.DUMMMY_LOG_PREFIX} {val}')
+        LOGGER.debug(f'{self.DUMMMY_LOG_PREFIX} {val}')
 
     def query(self, querystr: str) -> str:
         """
@@ -1067,7 +1067,7 @@ class ShmooTestHarness:
                         etb_data = None
                         timeout_time = start_time + timedelta(seconds=test.timeout)
                         if debug:
-                            timeout_time = start_time + timedelta(years=1)
+                            timeout_time = start_time + timedelta(days=7)
                         else:
                             timeout_time = start_time + timedelta(seconds=test.timeout)
                         end_time = None

@@ -13,11 +13,6 @@ import colorama
 from utils import *
 from plugins import *
 
-#from openocd import OpenOcdTclRpc
-
-# from pyftdi.ftdi import Ftdi
-# from pyftdi.gpio import *
-# from time import sleep
 
 # Logging Setup
 LOGGER = logging.getLogger(__name__)

@@ -3,6 +3,7 @@ Plugin management for the ShmooTester.
 """
 
 from .example_plugin import *
+from .example_plugin_timed import *
 from .vec_memcpy import *
 from .saturn_pvirus import *
 from .conv_pvirus import *

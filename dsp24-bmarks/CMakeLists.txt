@@ -1,4 +1,5 @@
 add_subdirectory(example-bmark)
+add_subdirectory(example-bmark-timed)
 add_subdirectory(bandwidth-bmarks)
 add_subdirectory(bmark-lib)
 add_subdirectory(saturn-pvirus)
