@@ -315,7 +315,6 @@ The plot(s) will be generated as `test_<test id>_plot.png` within the folder, ov
 
 ## CLI Reference
 ```
-(.venv) (/tools/C/ee290-fa24-2/.conda-env) angle@bwrc-lab04:/tools/C/angle/dspbench $ ./tester/tester.py -c bearly24 -s hello --no-psu --log DEBUG -h
 usage: Jasmine's ShmooTester [-h] [-i INPUT] [-o OUTPUT] [-c CHIP] [-s SUITE] [-t TESTS] [--min-v MIN_V] [--max-v MAX_V] [--step-v STEP_V] [--min-freq MIN_FREQ] [--max-freq MAX_FREQ] [--step-freq STEP_FREQ] [--max-v-fail MAX_V_FAIL] [--retries RETRIES] [-r NUM_RUNS] [-f] [--psu-mode {INT,EXT}]
                              [--psu-channel PSU_CHANNEL] [--no-psu] [-m] [-d] [-n] [-l] [--log {DEBUG,INFO,WARNING,ERROR,CRITICAL}] [--logfile LOGFILE]
 
