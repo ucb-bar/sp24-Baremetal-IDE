@@ -14,8 +14,8 @@ void uart_tsi_init(void) {
   printf("Start UART TSI Setup\n");
 
   UART_InitType UART1_init_config;
-  UART1_init_config.baudrate = 921600;
-  // UART1_init_config.baudrate = 115200;
+  // UART1_init_config.baudrate = 921600;
+  UART1_init_config.baudrate = 115200;
   UART1_init_config.mode = UART_MODE_TX_RX;
   UART1_init_config.stopbits = UART_STOPBITS_2;
   uart_init(UART1, &UART1_init_config);

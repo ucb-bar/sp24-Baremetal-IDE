@@ -3,7 +3,7 @@
 
 
 
-int SW_REMAP[8] = {0, 1, 2, 3, 4, 5, 7, 6};
+int SW_REMAP[8] = {5, 4, 7, 6, 1, 0, 2, 3};
 uint8_t vals;
 
 uint8_t send_cmd[20] = {0x00};

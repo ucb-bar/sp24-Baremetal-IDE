@@ -30,14 +30,14 @@ void app_init() {
   // | Initialize the controller
   // +------------------------------------------------+
   printf("[START INIT]\n");
-  // switches_init();
-  // joints_init();
+  switches_init();
+  joints_init();
 
   // +------------------------------------------------+
   // | Start initial homing sequence
   // +------------------------------------------------+
   printf("[START HOME]\n");
-  // home_motors();    
+  home_motors();    
 
   sleep(1);
   
@@ -45,15 +45,42 @@ void app_init() {
 
 void app_main() {
   uint64_t mhartid = READ_CSR("mhartid");
-  // motor_set_state(1);
-  // motor_set_en(1);
 
   while (1) {
     // step();
     // print_home_buttons();
     // print_encoders();
-    printf("sadly unalive myself from hart : %d\r\n", mhartid);
-    msleep(1000);
+    // printf("sadly unalive myself from hart : %d\r\n", mhartid);
+    // msleep(100);
+
+    // for(int i = 0; i < 8; i++) {
+    //   set_motor_pos(i, 0);
+    // }
+
+    set_motor_pos(0, 0);
+    set_motor_pos(1, 0);
+    set_motor_pos(2, 0);
+    set_motor_pos(3, 0);
+    set_motor_pos(4, 0);
+    set_motor_pos(5, 0);
+    set_motor_pos(6, 0);
+    set_motor_pos(7, 0);
+
+    msleep(3000);
+    set_motor_pos(0, 500);
+    // set_motor_pos(1, 500);
+    set_motor_pos(2, 500);
+    // set_motor_pos(3, 500);
+    set_motor_pos(4, 500);
+    // set_motor_pos(6, 500);
+
+    // for(int i = 0; i < 8; i++) {
+    //   set_motor_pos(i, 500);
+    // }
+
+    msleep(3000);
+
+
 
   }
 }
@@ -88,20 +115,6 @@ void passthrough_positions() {
 
 
 void setup_pll() {
-  // Initialize PLL
-  CLOCK_SELECTOR->SEL = 0;
-  PLL->PLLEN = 0;
-  PLL->MDIV_RATIO = 1;
-  PLL->RATIO = 4;  // 500MHz
-  PLL->FRACTION = 0;
-  PLL->ZDIV0_RATIO = 1;
-  PLL->ZDIV1_RATIO = 1;
-  PLL->LDO_ENABLE = 1;
-  PLL->PLLEN = 1;
-  PLL->POWERGOOD_VNN = 1;
-  PLL->PLLFWEN_B = 1;
-  CLOCK_SELECTOR->SEL = 1; // Switch to PLL
-
   printf("Finished setting up PLL\r\n");
 }
 

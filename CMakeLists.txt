@@ -93,12 +93,12 @@ add_link_options(-T ${LINKER_SCRIPT})
 #################################
 
 add_executable(app
-  app/src/controller.c
-  app/src/home.c
-  app/src/joints.c
+  app/src/controllers/controller.c
+  app/src/controllers/home.c
+  app/src/lib/joints.c
+  app/src/lib/switch.c
+  app/src/lib/uart_tsi.c
   app/src/main.c
-  app/src/switch.c
-  app/src/uart_tsi.c
   # app/src/bmi088.cpp
   # app/src/madgwick_ahrs.cpp
 )

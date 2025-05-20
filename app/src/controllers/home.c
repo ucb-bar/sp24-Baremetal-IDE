@@ -4,7 +4,6 @@
 #include "home.h"
 
 int EN_HOME[8] = {1, 1, 1, 1, 1, 1, 1, 1};
-int switch_map[8] = {1, 5, 0, 4, 3, 6, 2, 7};
 
 void home_motors() {
   motor_set_state(0);
@@ -17,6 +16,7 @@ void home_motors() {
   }
 
   reset_encoders();
+  motor_set_state(1);
 }
 
 
