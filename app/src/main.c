@@ -57,21 +57,24 @@ void app_main() {
     //   set_motor_pos(i, 0);
     // }
 
-    set_motor_pos(0, 0);
-    set_motor_pos(1, 0);
-    set_motor_pos(2, 0);
     set_motor_pos(3, 0);
-    set_motor_pos(4, 0);
-    set_motor_pos(5, 0);
-    set_motor_pos(6, 0);
-    set_motor_pos(7, 0);
+    // set_motor_pos(1, 0);
+    // set_motor_pos(2, 0);
+    // set_motor_pos(3, 0);
+    // set_motor_pos(4, 0);
+    // set_motor_pos(5, 0);
+    // set_motor_pos(6, 0);
+    // set_motor_pos(7, 0);
 
     msleep(3000);
-    set_motor_pos(0, 500);
+    set_motor_pos(3, 500);
+    msleep(1);
     // set_motor_pos(1, 500);
-    set_motor_pos(2, 500);
-    // set_motor_pos(3, 500);
-    set_motor_pos(4, 500);
+    // set_motor_pos(2, 500);
+    // msleep(1);
+    // // set_motor_pos(3, 500);
+    // set_motor_pos(4, 500);
+    // msleep(1);
     // set_motor_pos(6, 500);
 
     // for(int i = 0; i < 8; i++) {
