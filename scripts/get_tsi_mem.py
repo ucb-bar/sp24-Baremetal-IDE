@@ -37,27 +37,28 @@ if __name__ == "__main__":
     print("start")
 
     print("\nTest DRAM")
-    ADDR = 0x80000000
-    writeWord(ser, ADDR, 0xdeadbeef)
-    print(readWord(ser, ADDR))
-    print(readWord(ser, 0x10080000))
+    ADDR = 0x8000000
+    # print(readWord(ser, ADDR))
+    writeWord(ser, 0x8000000, 0xaaaaaaaa)
+    print(readWord(ser, 0x8000000))
+    # print(readWord(ser, 0x10080000))
 
     MOTORNUM = 0
     # 5, 4, 3
     
-    for i in range(NUM_MOTORS):
-        set_motor_speed(ser, i, 0)
-    writeJoint(ser, MOTORNUM, ENABLE, 1)
-    writeJoint(ser, MOTORNUM, STATE, 0)
+    # for i in range(NUM_MOTORS):
+    #     set_motor_speed(ser, i, 0)
+    # writeJoint(ser, MOTORNUM, ENABLE, 1)
+    # writeJoint(ser, MOTORNUM, STATE, 0)
 
-    for i in range(1000):
-        set_motor_pos(ser, MOTORNUM, 0)
-        time.sleep(2)
-        set_motor_pos(ser, MOTORNUM, 1000)
-        time.sleep(2)
+    # for i in range(1000):
+    #     set_motor_pos(ser, MOTORNUM, 0)
+    #     time.sleep(2)
+    #     set_motor_pos(ser, MOTORNUM, 1000)
+    #     time.sleep(2)
 
-    # Test which reads encoder positions
-    print("Start polling")
+    # # Test which reads encoder positions
+    # print("Start polling")
     # for i in range(1000):
 
     #     # set_motor_pos(MOTORNUM, 800)
