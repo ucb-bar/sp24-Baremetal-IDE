@@ -20,26 +20,12 @@
 #include "bmi088.h"
 #include <math.h>
 
-int motor_speeds[8];
-int motor_positions[8];
 
 
 void app_init() {
-
   // +------------------------------------------------+
-  // | Initialize the controller
+  // | Startup
   // +------------------------------------------------+
-  printf("[START INIT]\n");
-  switches_init();
-  joints_init();
-
-  // +------------------------------------------------+
-  // | Start initial homing sequence
-  // +------------------------------------------------+
-  printf("[START HOME]\n");
-  home_motors();    
-
-  sleep(1);
   
 }
 
@@ -47,75 +33,11 @@ void app_main() {
   uint64_t mhartid = READ_CSR("mhartid");
 
   while (1) {
-    // step();
-    // print_home_buttons();
-    // print_encoders();
-    // printf("sadly unalive myself from hart : %d\r\n", mhartid);
-    // msleep(100);
-
-    // for(int i = 0; i < 8; i++) {
-    //   set_motor_pos(i, 0);
-    // }
-
-    set_motor_pos(3, 0);
-    // set_motor_pos(1, 0);
-    // set_motor_pos(2, 0);
-    // set_motor_pos(3, 0);
-    // set_motor_pos(4, 0);
-    // set_motor_pos(5, 0);
-    // set_motor_pos(6, 0);
-    // set_motor_pos(7, 0);
-
-    msleep(3000);
-    set_motor_pos(3, 500);
-    msleep(1);
-    // set_motor_pos(1, 500);
-    // set_motor_pos(2, 500);
-    // msleep(1);
-    // // set_motor_pos(3, 500);
-    // set_motor_pos(4, 500);
-    // msleep(1);
-    // set_motor_pos(6, 500);
-
-    // for(int i = 0; i < 8; i++) {
-    //   set_motor_pos(i, 500);
-    // }
-
-    msleep(3000);
-
-
+    printf("Hello from hart : %d\r\n", mhartid);
+    msleep(100);
 
   }
 }
-
-
-void print_encoders() {
-  int enc[8];
-
-  for (int i = 0; i < 8; i++) {
-    enc[i] = get_encoder(i);
-  }
-
-  printf("[%d, %d, %d, %d, %d, %d, %d, %d]\n", enc[0], enc[1], enc[2], enc[3], enc[4], enc[5], enc[6], enc[7]);
-}
-
-void print_home_buttons() {
-  printf("[%d, %d, %d, %d, %d, %d, %d, %d]\n", read_switch(0), read_switch(1), read_switch(2), read_switch(3), read_switch(4), read_switch(5), read_switch(6), read_switch(7));
-}
-
-void passthrough_speeds() {
-  for (int i = 0; i < 8; i++) {
-    set_motor_speed(i, motor_speeds[i]);
-  }
-}
-
-void passthrough_positions() {
-  for (int i = 0; i < 8; i++) {
-    set_motor_pos(i, motor_positions[i]);
-  }
-}
-
-
 
 void setup_pll() {
   printf("Finished setting up PLL\r\n");

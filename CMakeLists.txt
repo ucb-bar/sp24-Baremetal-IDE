@@ -93,14 +93,7 @@ add_link_options(-T ${LINKER_SCRIPT})
 #################################
 
 add_executable(app
-  app/src/controllers/controller.c
-  app/src/controllers/home.c
-  app/src/lib/joints.c
-  app/src/lib/switch.c
-  app/src/lib/uart_tsi.c
   app/src/main.c
-  # app/src/bmi088.cpp
-  # app/src/madgwick_ahrs.cpp
 )
 
 target_include_directories(app PUBLIC app/include)

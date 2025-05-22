@@ -13,6 +13,28 @@ baudrate = 921600
 
 ser = serial.Serial(port=port, baudrate=baudrate)
 
+
+def main():
+    SCRATCH =   0x8000000
+    FLASH =     0x20000000
+    DRAM =      0x80000000
+
+
+    print("start")
+
+    print("\nTest SCRATCH")
+    writeWord(ser, SCRATCH, 0xdeadbeef)
+    print(readWord(ser, SCRATCH))
+
+    
+
+    print("\nTest DRAM")
+    writeWord(ser, DRAM, 0xdeadbeef)
+    print(readWord(ser, DRAM))
+
+
+
+
 def test_dram():
     logfile = open("logs/dram.log", "w")
 
@@ -33,46 +55,7 @@ def test_dram():
 
 
 if __name__ == "__main__":
-
-    print("start")
-
-    print("\nTest DRAM")
-    ADDR = 0x8000000
-    # print(readWord(ser, ADDR))
-    writeWord(ser, 0x8000000, 0xaaaaaaaa)
-    print(readWord(ser, 0x8000000))
-    # print(readWord(ser, 0x10080000))
-
-    MOTORNUM = 0
-    # 5, 4, 3
-    
-    # for i in range(NUM_MOTORS):
-    #     set_motor_speed(ser, i, 0)
-    # writeJoint(ser, MOTORNUM, ENABLE, 1)
-    # writeJoint(ser, MOTORNUM, STATE, 0)
-
-    # for i in range(1000):
-    #     set_motor_pos(ser, MOTORNUM, 0)
-    #     time.sleep(2)
-    #     set_motor_pos(ser, MOTORNUM, 1000)
-    #     time.sleep(2)
-
-    # # Test which reads encoder positions
-    # print("Start polling")
-    # for i in range(1000):
-
-    #     # set_motor_pos(MOTORNUM, 800)
-    #     time.sleep(0.1)
-
-    #     pr = "-\n"
-    #     for i in range(NUM_MOTORS):
-    #         pr += str(twos_complement(readJoint(ser, ENC_POS, i), 32)) + ", "
-    #     # pr += "\n"
-
-    #     # for i in range(NUM_MOTORS):
-    #     #     pr += str(twos_complement(readJoint(ser, ENC_VEL, i), 32)) + ", "
-    #     print(pr)
-
-    
+    main()
 
 
+   
