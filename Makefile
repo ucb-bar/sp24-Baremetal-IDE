@@ -15,6 +15,11 @@ build:
 	cmake -S ./ -B ./build/ -D CMAKE_BUILD_TYPE=$(TYPE) -D CMAKE_TOOLCHAIN_FILE=./riscv-gcc.cmake -DCHIP=$(CHIP)
 	cmake --build ./build/ --target $(TARGET)
 
+.PHONY: mav
+mav:
+	cmake -S ./ -B ./build/ -D CMAKE_BUILD_TYPE=$(TYPE) -D CMAKE_TOOLCHAIN_FILE=./riscv-gcc.cmake -DCHIP=maveric
+	cmake --build ./build/ --target $(TARGET)
+
 .PHONY: ocd
 ocd:
 	openocd -f ./platform/$(CHIP)/$(CHIP).cfg
