@@ -8,14 +8,15 @@ from motor_interface import *
 
 port = "/dev/tty.usbserial-0ABC011"
 # port = "/dev/tty.usbserial-101"
-baudrate = 921600
-# baudrate = 115200
+# baudrate = 921600
+baudrate = 115200
 
 ser = serial.Serial(port=port, baudrate=baudrate)
 
 
 def main():
-    SCRATCH =   0x8000000
+    SCRATCH =   0x10020000
+    SCRATCH2 =  0x10080000
     FLASH =     0x20000000
     DRAM =      0x80000000
 
@@ -23,14 +24,14 @@ def main():
     print("start")
 
     print("\nTest SCRATCH")
-    writeWord(ser, SCRATCH, 0xdeadbeef)
-    print(readWord(ser, SCRATCH))
+    writeWord(ser, 0x10080000, 0xdeadbeef)
+    print(readWord(ser, 0x10080000))
 
     
 
-    print("\nTest DRAM")
-    writeWord(ser, DRAM, 0xdeadbeef)
-    print(readWord(ser, DRAM))
+    # print("\nTest DRAM")
+    # writeWord(ser, DRAM, 0xdeadbeef)
+    # print(readWord(ser, DRAM))
 
 
 
