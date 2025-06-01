@@ -1206,7 +1206,7 @@ void app_main() {
   // Parameters //
   float temperature = 0.8f;   // 0.0 = greedy deterministic. 1.0 = original. don't set higher
   float topp = 0.9f;          // top-p in nucleus sampling. 1.0 = off. 0.9 works well, but slower
-  int steps = 4;            // number of steps to run for (default 512)
+  int steps = 512;            // number of steps to run for (default 512)
   char *prompt = NULL;        // prompt string
   unsigned long long rng_seed = CLINT->MTIME; // seed rng with time by default
   GenMode mode = GENERATE;    // generate|chat

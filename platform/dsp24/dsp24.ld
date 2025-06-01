@@ -47,11 +47,10 @@ OUTPUT_ARCH("riscv")
 ENTRY(_start)
 
 MEMORY {
-  LIBIFROM (rwx): ORIGIN = 0x00020000, LENGTH = 64K
-  LIBIFRAM (rwx): ORIGIN = 0x00030000, LENGTH = 64K
   SCRATCH  (rwx): ORIGIN = 0x08000000, LENGTH = 32K
   FLASH    (rwx): ORIGIN = 0x20000000, LENGTH = 128M
-  DRAM     (rwx): ORIGIN = 0x80000000, LENGTH = 2048M
+  PSRAM    (rwx): ORIGIN = 0x40000000, LENGTH = 64M
+  DRAM     (rwx): ORIGIN = 0x80000000, LENGTH = 256M
 }
 
 SECTIONS {
@@ -59,11 +58,11 @@ SECTIONS {
   PROVIDE(__boot_hart = 0);
   
   /* Default stack size */
-  __stack_size = DEFINED(__stack_size) ? __stack_size : 4M;
+  __stack_size = DEFINED(__stack_size) ? __stack_size : 1K;
   PROVIDE(__stack_size = __stack_size);
 
   /* Default heap size */
-  __heap_size = DEFINED(__heap_size) ? __heap_size : 64M;
+  __heap_size = DEFINED(__heap_size) ? __heap_size : 1K;
   PROVIDE(__heap_size = __heap_size);
   
   /*
@@ -104,7 +103,7 @@ SECTIONS {
     
     *(.gnu.linkonce.t.*)
     PROVIDE(__text_end = .);
-  }> DRAM
+  }> FLASH
   PROVIDE(__text_load_start = LOADADDR(.text));
 
   /* Section containing read-only data */
@@ -118,7 +117,7 @@ SECTIONS {
     *(.srodata.cst4)
     *(.srodata.cst2)
     *(.srodata .srodata.*)
-  }> DRAM
+  }> FLASH
 
   /* Section for initialized data */
   .data : ALIGN(8) {
@@ -145,7 +144,7 @@ SECTIONS {
     KEEP(*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
     KEEP(*(.fini_array EXCLUDE_FILE(*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
     PROVIDE_HIDDEN(__fini_array_end = .);
-  }> DRAM
+  }> DRAM AT> FLASH
   
   PROVIDE(__data_load_start = LOADADDR(.data));
 
@@ -154,7 +153,7 @@ SECTIONS {
     PROVIDE(__global_pointer$ = . + 0x800);
     *(.sdata .sdata.*)
     *(.gnu.linkonce.s.*)
-  }> DRAM
+  }> DRAM AT> FLASH
 
   /* Section for initialized thread-local small data */
   .tdata : {
@@ -163,7 +162,7 @@ SECTIONS {
     *(.gnu.linkonce.td.*)
     PROVIDE_HIDDEN(__tdata_end = .);
     PROVIDE(__data_end = .);
-  }> DRAM
+  }> DRAM AT> FLASH
 
   PROVIDE(__tdata_size = SIZEOF(.tdata));
 
