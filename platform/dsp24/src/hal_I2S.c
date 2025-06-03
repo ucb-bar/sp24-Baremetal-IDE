@@ -30,38 +30,39 @@ void set_I2S_en(int channel, int tx_en, int rx_en) {
     reg_write16(I2S_BASE + (channel*0x2), params);
 }
 
-uint64_t read_I2S_tx(int channel, int left) {
-    if (left)
-        return reg_read64(I2S_TX_L + (channel * 0x10));
-    else
-        return reg_read64(I2S_TX_R + (channel * 0x10));
-}
+/* TODO: Something in the DMA I2S Code causes linker errors FIXME*/
+// uint64_t read_I2S_tx(int channel, int left) {
+//     if (left)
+//         return reg_read64(I2S_TX_L + (channel * 0x10));
+//     else
+//         return reg_read64(I2S_TX_R + (channel * 0x10));
+// }
 
-void write_I2S_rx(int channel, int left, uint64_t data) {
-    if (left)
-        return reg_write64(I2S_TX_L + (channel * 0x10), data);
-    else
-        return reg_write64(I2S_TX_R + (channel * 0x10), data);
-}
+// void write_I2S_rx(int channel, int left, uint64_t data) {
+//     if (left)
+//         return reg_write64(I2S_TX_L + (channel * 0x10), data);
+//     else
+//         return reg_write64(I2S_TX_R + (channel * 0x10), data);
+// }
 
-uint64_t write_I2S_tx_DMA(int channel, int dma_num, int length, uint64_t* read_addr, int left, int poll) {
-    if (left) {
-        printf("Writing to left queue\n");
-        set_DMAP(dma_num, read_addr, I2S_TX_L, I2S_WATERMARK_TX_L, 8, 0, length, 3, poll);
-    } else {
-        printf("Writing to right queue\n");
-        set_DMAP(dma_num, read_addr, I2S_TX_R, I2S_WATERMARK_TX_R, 8, 0, length, 3, poll);
-    start_DMA(dma_num); }
-}
+// uint64_t write_I2S_tx_DMA(int channel, int dma_num, int length, uint64_t* read_addr, int left, int poll) {
+//     if (left) {
+//         printf("Writing to left queue\n");
+//         set_DMAP(dma_num, read_addr, I2S_TX_L, I2S_WATERMARK_TX_L, 8, 0, length, 3, poll);
+//     } else {
+//         printf("Writing to right queue\n");
+//         set_DMAP(dma_num, read_addr, I2S_TX_R, I2S_WATERMARK_TX_R, 8, 0, length, 3, poll);
+//     start_DMA(dma_num); }
+// }
 
 
-uint64_t read_I2S_rx_DMA(int channel, int dma_num, int length, uint64_t* write_addr, int left, int poll) {
-    if (left)
-        set_DMAP(dma_num, I2S_RX_L, write_addr, I2S_WATERMARK_RX_L, 0, 8, length, 3, poll);
-    else
-        set_DMAP(dma_num, I2S_RX_R, write_addr, I2S_WATERMARK_RX_R, 0, 8, length, 3, poll);
-    start_DMA(dma_num);
-}
+// uint64_t read_I2S_rx_DMA(int channel, int dma_num, int length, uint64_t* write_addr, int left, int poll) {
+//     if (left)
+//         set_DMAP(dma_num, I2S_RX_L, write_addr, I2S_WATERMARK_RX_L, 0, 8, length, 3, poll);
+//     else
+//         set_DMAP(dma_num, I2S_RX_R, write_addr, I2S_WATERMARK_RX_R, 0, 8, length, 3, poll);
+//     start_DMA(dma_num);
+// }
 
 void set_I2S_fp(int channel, int tx_fp, int rx_fp) {
     uint16_t params = reg_read16(I2S_BASE + channel*0x2);
