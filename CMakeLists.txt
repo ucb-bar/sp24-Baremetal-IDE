@@ -132,11 +132,11 @@ endif()
 # Build
 #################################
 
-add_executable(app
-  app/src/main.c
+add_executable(hello-world
+  hello-world/src/main.c
 )
 
-target_include_directories(app PUBLIC app/include)
+target_include_directories(hello-world PUBLIC hello-world/include)
 
 #################################
 # Dependencies
@@ -151,12 +151,12 @@ add_subdirectory(borai)
 add_subdirectory(borai_block_tests)
 add_subdirectory(i2s-test)
 
-target_link_libraries(app PRIVATE 
+target_link_libraries(hello-world PRIVATE 
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive
 )
 
 if (PROF_COV)
-  target_link_libraries(app PRIVATE gcov)
+  target_link_libraries(hello-world PRIVATE gcov)
 endif()
 
 #################################
