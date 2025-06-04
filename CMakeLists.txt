@@ -107,6 +107,8 @@ if(NOT "${AFDO_PATH}" STREQUAL "")
 endif()
 add_compile_options(-s)
 
+# make compatible with riscv64-unknown-elf-gcc (g04696df09) 14.2.0 -- ignore the previous warnings that now have become errors - https://gcc.gnu.org/gcc-14/porting_to.html
+add_compile_options(-fpermissive)
 # add_compile_options(-ffunction-sections -fdata-sections -fno-common -fno-builtin-printf -fno-pie)
 # add_compile_options(-Wall -Wextra -Warray-bounds -Wno-unused-parameter -Wcast-qual)
 add_compile_options(${ARCH_FLAGS})
