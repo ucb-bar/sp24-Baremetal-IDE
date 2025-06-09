@@ -21,7 +21,7 @@ void home_motors() {
 
 
 void home_joint(int num) {
-  printf("Homing motor [%d]\n", num);
+  printf("Homing motor [%d]\r\n", num);
 
   int counter = 0;
   while (counter < 10) {
@@ -36,7 +36,6 @@ void home_joint(int num) {
   set_motor_speed(num, 0);
   reset_encoder(num);
   msleep(300);
-  
 
-  printf("Finished Homing: [%d]\n", num);
+  printf("Finished Homing: [%d]\r\n", num);
 }
