@@ -144,7 +144,7 @@ SECTIONS {
     KEEP(*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
     KEEP(*(.fini_array EXCLUDE_FILE(*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
     PROVIDE_HIDDEN(__fini_array_end = .);
-  }> DRAM AT> FLASH
+  }> SCRATCH AT> FLASH
   
   PROVIDE(__data_load_start = LOADADDR(.data));
 
@@ -153,7 +153,7 @@ SECTIONS {
     PROVIDE(__global_pointer$ = . + 0x800);
     *(.sdata .sdata.*)
     *(.gnu.linkonce.s.*)
-  }> DRAM AT> FLASH
+  }> SCRATCH AT> FLASH
 
   /* Section for initialized thread-local small data */
   .tdata : {
@@ -162,7 +162,7 @@ SECTIONS {
     *(.gnu.linkonce.td.*)
     PROVIDE_HIDDEN(__tdata_end = .);
     PROVIDE(__data_end = .);
-  }> DRAM AT> FLASH
+  }> SCRATCH AT> FLASH
 
   PROVIDE(__tdata_size = SIZEOF(.tdata));
 
@@ -174,7 +174,7 @@ SECTIONS {
     *(.gnu.linkonce.tb.*)
     *(.tcommon)
     PROVIDE_HIDDEN(__tbss_end = .);
-  }> DRAM
+  }> SCRATCH
   
   PROVIDE(__tbss_size = SIZEOF(.tbss));
 
@@ -183,7 +183,7 @@ SECTIONS {
     PROVIDE_HIDDEN(__bss_start = .);
     *(.sbss .sbss.*)
     *(.gnu.linkonce.sb.*)
-  }> DRAM
+  }> SCRATCH
   
   /* Section for uninitialized data */
   .bss (NOLOAD) : ALIGN(8) {
@@ -191,7 +191,7 @@ SECTIONS {
     *(.gnu.linkonce.b.*)
     *(COMMON)
     PROVIDE_HIDDEN(__bss_end = .);
-  }> DRAM
+  }> SCRATCH
 
   . = ALIGN(8);
   PROVIDE(__end = .);
@@ -202,7 +202,7 @@ SECTIONS {
     . += __heap_size;
     . = ALIGN(4K);
     PROVIDE_HIDDEN(__heap_end = .);
-  }> DRAM
+  }> SCRATCH
   
   /* Reserve stack space */
   .stack (NOLOAD) : ALIGN(16) {
@@ -210,7 +210,7 @@ SECTIONS {
     . += __stack_size * 5; /* Hart 0 */
     PROVIDE(_sp = .);
     PROVIDE_HIDDEN(__stack_end = .);
-  }> DRAM
+  }> SCRATCH
 
   PROVIDE(__stack_shift = LOG2CEIL(__stack_size));
 

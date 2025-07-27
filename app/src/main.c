@@ -17,7 +17,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "chip_config.h"
-#include "bmi088.h"
 #include <math.h>
 
 

@@ -15,8 +15,8 @@ ser = serial.Serial(port=port, baudrate=baudrate)
 
 
 def main():
-    SCRATCH =   0x10020000
-    SCRATCH2 =  0x10080000
+    SCRATCH =   0x8000000
+    SCRATCH2 =  0x90000000
     FLASH =     0x20000000
     DRAM =      0x80000000
 
@@ -24,8 +24,16 @@ def main():
     print("start")
 
     print("\nTest SCRATCH")
-    writeWord(ser, 0x10080000, 0xdeadbeef)
-    print(readWord(ser, 0x10080000))
+    writeWord(ser, SCRATCH2, 0xdeadbeef)
+    print(readWord(ser, SCRATCH2))
+    writeWord(ser, SCRATCH2, 0xdededead)
+    print(readWord(ser, SCRATCH2))
+    writeWord(ser, SCRATCH2, 0xdeadbeef)
+    print(readWord(ser, SCRATCH2))
+
+    # print("\nTest SoC Scratch")
+    # writeWord(ser, SCRATCH, 0xdeadbeef)
+    # print(readWord(ser, SCRATCH))
 
     
 
