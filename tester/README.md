@@ -285,7 +285,7 @@ INFO:utils:     conv_pvirus (1 tests)
 INFO:utils:             1D Convolution Power Virus (Test ID: 0 [0x0])
 ```
 
-#### Sweep all tests in a test suite for a voltage and frequency range
+### Sweep all tests in a test suite for a voltage and frequency range
 
 > Note: If a PSU sensing mode is not specified using `--psu-mode`, it will default to 2-wire internal sensing mode. Voltage sweep settings default to support stepping by 0.05V.
 
@@ -302,10 +302,10 @@ After the run has completed, data will be output to a directory named `data_<sui
 The following command runs all tests in the `memcpy` test suite at 100MHz using a dummy PSU.
 
 ```sh
-$ ./tester/tester.py -s memcpy --min-freq 100 --max-freq 101
+$ ./tester/tester.py -s memcpy --min-freq 100 --max-freq 101 --no-psu
 ```
 
-#### Generate a Shmoo plot from an earlier test run
+### Generate a Shmoo plot from an earlier test run
 
 ```sh
 $ ./tester/tester.py -s saturn_pvirus_1h -i <path to output data folder>
