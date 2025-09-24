@@ -15,4 +15,3 @@ target_include_directories(chip-config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${PLAT
 
 target_link_libraries(chip-config PUBLIC rocketcore)
 target_link_libraries(chip-config PUBLIC clint)
-target_link_libraries(chip-config PUBLIC uart)

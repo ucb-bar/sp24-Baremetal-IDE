@@ -16,10 +16,10 @@ extern "C" {
 //  System Clock
 // ================================
 // system clock frequency in Hz
-#define SYS_CLK_FREQ   16000000
+#define SYS_CLK_FREQ   50000000
 
 // CLINT time base frequency in Hz
-#define MTIME_FREQ     16000000
+#define MTIME_FREQ     50000
 
 
 // ================================
@@ -32,7 +32,6 @@ extern "C" {
 #define CACHE_CONTROLLER_BASE   0x02010000U
 #define SCRATCH_BASE            0x08000000U
 #define PLIC_BASE               0x0C000000U
-#define UART_BASE               0x10020000U
 #define QSPI_FLASH_BASE         0x20000000U
 #define DRAM_BASE               0x80000000U
 
