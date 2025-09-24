@@ -89,8 +89,8 @@ typedef struct {
 
 static inline void pwm_enable(PWM_Type *PWMx) {
   SET_BITS(PWMx->PWM_CFG, PWM_PWMENALWAYS_MSK);
-  SET_BITS(PWMx->PWM_CFG, PWM_PWMZEROCMP_MSK);
-  SET_BITS(PWMx->PWM_CFG, PWM_PWMDEGLITCH_MSK);
+  //SET_BITS(PWMx->PWM_CFG, PWM_PWMZEROCMP_MSK);
+  //SET_BITS(PWMx->PWM_CFG, PWM_PWMDEGLITCH_MSK);
 }
 
 static inline void pwm_disable(PWM_Type *PWMx) {
@@ -131,7 +131,7 @@ void pwm_init(PWM_Type *PWMx, PWM_InitType *PWM_init);
 
 void pwm_stop(PWM_Type *PWMx, uint32_t idx);
 
-void pwm_set_frequency(PWM_Type *PWMx, uint32_t idx, uint32_t freq);
+void pwm_set_frequency(PWM_Type *PWMx, uint32_t idx, double freq);
 
 uint32_t pwm_get_frequency(PWM_Type *PWMx, uint32_t idx);
 

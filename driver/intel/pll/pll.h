@@ -76,6 +76,7 @@ typedef struct {
   __IO uint32_t PLLFWEN_B;                              // 0x100
 } PLL_Type;
 
+void configure_pll(PLL_Type* pll, uint32_t ratio, uint32_t fraction);
 
 #ifdef __cplusplus
 }

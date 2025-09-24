@@ -12,16 +12,17 @@ extern "C" {
 #include "uart.h"
 #include "gpio.h"
 #include "pwm.h"
+#include "pll.h"
 
 
 // ================================
 //  System Clock
 // ================================
 // system clock frequency in Hz
-#define SYS_CLK_FREQ   50000000
+#define SYS_CLK_FREQ   450000000
 
 // CLINT time base frequency in Hz
-#define MTIME_FREQ     50000
+#define MTIME_FREQ     450000
 
 
 // ================================

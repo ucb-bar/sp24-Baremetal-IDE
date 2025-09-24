@@ -66,32 +66,24 @@ void app_init() {
   gpio_init(GPIOC, &gpio2_init_config, GPIO_PIN_2);
   gpio_init(GPIOC, &gpio2_init_config, GPIO_PIN_3);
 
-  printf("Setting up PWM");
   pwm_enable(PWM0_BASE);
-  pwm_set_frequency(PWM0_BASE, 0, 30000);
+  pwm_set_frequency(PWM0_BASE, 0, 3000);
   pwm_get_frequency(PWM0_BASE, 0);
-  //pwm_set_duty_cycle(PWM0_BASE, 0, 30, 0);
-  //pwm_get_duty_cycle(PWM0_BASE, 0);
+  pwm_set_duty_cycle(PWM0_BASE, 0, 10, 0);
+  pwm_get_duty_cycle(PWM0_BASE, 0);
   pwm_set_duty_cycle(PWM0_BASE, 1, 50, 0);
   pwm_get_duty_cycle(PWM0_BASE, 1);
   pwm_set_duty_cycle(PWM0_BASE, 2, 70, 0);
   pwm_get_duty_cycle(PWM0_BASE, 2);
-  //pwm_set_duty_cycle(PWM0_BASE, 3, 100, 0);
-  //pwm_get_duty_cycle(PWM0_BASE, 3);
+  pwm_set_duty_cycle(PWM0_BASE, 3, 30, 0);
+  pwm_get_duty_cycle(PWM0_BASE, 3);
 
-  CLOCK_SELECTOR->SEL = 0;
-  PLL->PLLEN = 0;
-  PLL->MDIV_RATIO = 1;
-  PLL->RATIO = 9;  // 450MHz
-  PLL->FRACTION = 0;
-  PLL->ZDIV0_RATIO = 1;
-  PLL->ZDIV1_RATIO = 1;
-  PLL->LDO_ENABLE = 1;
-  PLL->POWERGOOD_VNN = 1;
-  PLL->PLLEN = 1;
-  PLL->PLLFWEN_B = 1;
-  CLOCK_SELECTOR->SEL = 1;
   
+  QSPI0->SCKDIV = SYS_CLK_FREQ / (2 * 1000000) - 1;
+
+  set_all_clocks(CLOCK_SELECTOR_BASE, 0);
+  configure_pll(PLL, 9, 0);
+  set_all_clocks(CLOCK_SELECTOR_BASE, 1);
 }
 
 void handle_sigint(int sig) {
@@ -105,6 +97,17 @@ void app_main() {
     gpio_write_pin(GPIOC, GPIO_PIN_1, 1);
     gpio_write_pin(GPIOC, GPIO_PIN_2, 1);
     gpio_write_pin(GPIOC, GPIO_PIN_3, 0);
+    printf("First LEDs\n"); 
+    /*Always need a new line after print statement 
+    to ensure it doesn't try to fill buffer and 
+    prints every new line*/
+    msleep(1000);
+    gpio_write_pin(GPIOC, GPIO_PIN_0, 1);
+    gpio_write_pin(GPIOC, GPIO_PIN_1, 0);
+    gpio_write_pin(GPIOC, GPIO_PIN_2, 0);
+    gpio_write_pin(GPIOC, GPIO_PIN_3, 1);
+    printf("Second LEDs\n");
+    msleep(1000);
   }
 }
 /* USER CODE END PUC */
@@ -128,6 +131,8 @@ int main(int argc, char **argv) {
   UART0_init_config.stopbits = UART_STOPBITS_2;
   uart_init(UART0, &UART0_init_config);
 
+  int uart_divisor = (SYS_CLK_FREQ / 115200) - 1;
+
   UART_InitType UART1_init_config;
   UART1_init_config.baudrate = 115200;
   UART1_init_config.mode = UART_MODE_TX_RX;
@@ -139,10 +144,10 @@ int main(int argc, char **argv) {
   PWM_init_config.pwmscale = 0;
   PWM_init_config.RESERVED = 0;
   PWM_init_config.pwmsticky = 0;
-  PWM_init_config.pwmzerocmp = 1;
+  PWM_init_config.pwmzerocmp = 0;
   PWM_init_config.pwmdeglitch = 0;
   PWM_init_config.RESERVED1 = 0;
-  PWM_init_config.pwmenalways = 1;
+  PWM_init_config.pwmenalways = 0;
   PWM_init_config.pwmenoneshot = 0;
   PWM_init_config.RESERVED2 = 0;
   PWM_init_config.pwmcmp0center = 0;
@@ -159,7 +164,6 @@ int main(int argc, char **argv) {
   PWM_init_config.pwmcmp2ip = 0;
   PWM_init_config.pwmcmp3ip = 0;
   pwm_init(PWM0_BASE, &PWM_init_config);
-  *((uint32_t*) (PWM0_BASE+0x08)) = 0;
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */

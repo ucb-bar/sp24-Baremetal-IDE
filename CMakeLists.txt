@@ -28,6 +28,7 @@ option(BAREMETAL_BUILD_RISCV        "Build for RISC-V platform"               ON
 option(BAREMETAL_BUILD_X86          "Build for x86 platform"                  OFF )
 
 option(CHIP                         "Build for a specific platform"           OFF )
+option(LINKER                "Linker to store program on DRAM or FLASH"       OFF )
 
 #################################
 # Toolchain Targets
@@ -53,6 +54,7 @@ set(SPEC_FLAGS          -specs=${SPECS})
 
 # convert CHIP to lowercase
 string(TOLOWER ${CHIP} CHIP)
+string(TOLOWER ${LINKER} LINKER)
 
 # linker script
 # HACK: ideally this should be handled by glossy, but currently i couldn't 
@@ -63,7 +65,7 @@ if (NOT CHIP)
 
   set(LINKER_SCRIPT       "${CMAKE_SOURCE_DIR}/glossy/glossy.ld")
 else()
-  set(LINKER_SCRIPT       "${CMAKE_SOURCE_DIR}/platform/${CHIP}/${CHIP}.ld")
+  set(LINKER_SCRIPT       "${CMAKE_SOURCE_DIR}/platform/${CHIP}/${CHIP}-${LINKER}.ld")
 endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/platform/${CHIP})

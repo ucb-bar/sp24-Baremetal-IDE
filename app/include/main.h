@@ -37,7 +37,6 @@ extern "C" {
 #include <signal.h>
 
 #include "riscv.h"
-#include "ll_pll.h"
 
 
 /**

@@ -206,7 +206,10 @@ SECTIONS {
   /* Reserve stack space */
   .stack (NOLOAD) : ALIGN(16) {
     PROVIDE_HIDDEN(__stack_start = .);
-    . += __stack_size * 5; /* Hart 0 */
+    . = __stack_size * 5; /* Hart 0 */ 
+    /* To fill the rest of Scratchpad with the stack (aka to fill any leftover space) 
+    replace "__stack_size * 5" with the last valid memory address of the 
+    memory area (0x08007FFF for scratchpad) */
     PROVIDE(_sp = .);
     PROVIDE_HIDDEN(__stack_end = .);
   }> SCRATCH
@@ -222,3 +225,4 @@ SECTIONS {
     *(.eh_frame .eh_frame.*)
   }
 }
+
