@@ -10,11 +10,12 @@ void delay(uint64_t ticks) {
 }
 
 void main() {
+    int counter = 0;
+
     *GPIOA_OUTPUT_EN = 0b1;
-    *GPIOA_INPUT_EN = 0b10;
 
     while (1) {
-        if ((*GPIOA_INPUT_VAL & 0b10U)) {
+        if (counter % 2 == 0) {
             *GPIOA_OUTPUT_VAL = 0b1;
         } else {
             *GPIOA_OUTPUT_VAL = 0b0;
