@@ -52,10 +52,6 @@ set(SPECS               "nosys.specs")
 set(SPEC_FLAGS          -specs=${SPECS})
 
 
-# convert CHIP to lowercase
-string(TOLOWER ${CHIP} CHIP)
-string(TOLOWER ${LINKER} LINKER)
-
 # linker script
 # HACK: ideally this should be handled by glossy, but currently i couldn't 
 # figure out a way to propagate the LINKER_SCRIPT variable to the compile and link commands
@@ -65,9 +61,14 @@ if (NOT CHIP)
 
   set(LINKER_SCRIPT       "${CMAKE_SOURCE_DIR}/glossy/glossy.ld")
 else()
-  if (CHIP=="labchip")
+  # convert CHIP to lowercase
+  string(TOLOWER ${CHIP} CHIP)
+  if (NOT LINKER)
+    message(STATUS "Linker not specified, using chip name for configuration")
     set(LINKER_SCRIPT       "${CMAKE_SOURCE_DIR}/platform/${CHIP}/${CHIP}.ld")
   else()
+    # convert LINKER to lowercase
+    string(TOLOWER ${LINKER} LINKER)
     set(LINKER_SCRIPT       "${CMAKE_SOURCE_DIR}/platform/${CHIP}/${CHIP}-${LINKER}.ld")
   endif()
 endif()
