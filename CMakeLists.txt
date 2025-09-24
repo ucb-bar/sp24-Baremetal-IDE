@@ -65,7 +65,11 @@ if (NOT CHIP)
 
   set(LINKER_SCRIPT       "${CMAKE_SOURCE_DIR}/glossy/glossy.ld")
 else()
-  set(LINKER_SCRIPT       "${CMAKE_SOURCE_DIR}/platform/${CHIP}/${CHIP}-${LINKER}.ld")
+  if (CHIP=="labchip")
+    set(LINKER_SCRIPT       "${CMAKE_SOURCE_DIR}/platform/${CHIP}/${CHIP}.ld")
+  else()
+    set(LINKER_SCRIPT       "${CMAKE_SOURCE_DIR}/platform/${CHIP}/${CHIP}-${LINKER}.ld")
+  endif()
 endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/platform/${CHIP})
