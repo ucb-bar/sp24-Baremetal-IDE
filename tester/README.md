@@ -179,7 +179,7 @@ $ ./tester/tester.py -s my_test -t 2
 
 ### Real-Time Debugging
 
-The ShmooTester includes built-in live debugging capabilities to allow you to step through the copmlete test flow using an external debugger using the `-d` flag. When this flag is specified, the user will be prompted to confirm each action that the ShmooTester completes along the testing flow prior to its execution. Specifically, the user will be prompted about the following actions:
+The ShmooTester includes built-in live debugging capabilities to allow you to step through the entire test flow using an external debugger using the `-d` flag. When this flag is specified, the user will be prompted to confirm each action that the ShmooTester completes along the testing flow prior to its execution. Specifically, the user will be prompted about the following actions:
 
 - Prior to the PSU output being enabled.
 - Prior to resetting and programming the chip (if the `--no-upload` or `-n` flag is not specified).
@@ -189,7 +189,7 @@ The ShmooTester includes built-in live debugging capabilities to allow you to st
 
 Timeouts for a chip payload will be overridden to be one year (infinity) to allow for on-chip debugging while the host waits for a response.
 
-A typical workflow with this command would be to use it in tandem with the `--no-upload` or `-n` flag, which disables uploading and resetting the chip, alongside using an external OpenOCD and GDB session. When the host is waiting to attempt an ENQ/ACK UART connection, allow the program to execute `init_test`. Then, the host payload can be sent from the host manually, triggering a custom breakpoint within your benchmark:
+A typical workflow with this command would be to use it in tandem with the `--no-upload` or `-n` flag, which disables uploading and resetting the chip, alongside using an external OpenOCD and GDB session. When the host is waiting to attempt an ENQ/ACK UART connection, use a separate GDB instance to manually allow the program to execute `init_test`. Then, the host payload can be sent from the host manually, triggering a custom breakpoint within your benchmark:
 
 <pre><code>$ ./tester/tester.py -s hello -d -n --no-psu
 Please confirm the following parameter sweep:
