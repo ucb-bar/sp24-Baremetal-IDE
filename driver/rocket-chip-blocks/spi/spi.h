@@ -51,7 +51,10 @@ typedef struct {
   __IO uint32_t RXDATA;
   __IO uint32_t TXMARK;
   __IO uint32_t RXMARK;
-  uint32_t RESERVED4[6];
+  uint32_t RESERVED4[2];
+  __IO uint32_t FCTRL;
+  __IO uint32_t FFMT;
+  uint32_t RESERVED5[2];
   __IO uint32_t IE;
   __IO uint32_t IP;  
 } QSPI_Type;
@@ -73,7 +76,10 @@ typedef struct {
   __IO uint32_t RXDATA;
   __IO uint32_t TXMARK;
   __IO uint32_t RXMARK;
-  uint32_t RESERVED4[6];
+  uint32_t RESERVED4[2];
+  __IO uint32_t FCTRL;
+  __IO uint32_t FFMT;
+  uint32_t RESERVED5[2];
   __IO uint32_t IE;
   __IO uint32_t IP;  
 } SPI_Type;

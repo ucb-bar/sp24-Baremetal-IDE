@@ -78,8 +78,17 @@ void app_init() {
   pwm_set_duty_cycle(PWM0_BASE, 3, 30, 0);
   pwm_get_duty_cycle(PWM0_BASE, 3);
 
-  
+  //#define QSPI_FMT_PROTO_MSK  0x00000009U;
+  //#define QSPI_FFMT_PROTO_MSK  0x00941770U;
+  //#define QSPI_FMT_POS_PROTO_MSK  0x00020008U;
+  //#define QSPI_POS_FFMT_PROTO_MSK  0x006B2887U;
+
   QSPI0->SCKDIV = SYS_CLK_FREQ / (2 * 1000000) - 1;
+
+  //QSPI0->FMT = QSPI_FMT_POS_PROTO_MSK; // set to quad mode
+  //QSPI0->FFMT = QSPI_POS_FFMT_PROTO_MSK;
+  
+ 
 
   set_all_clocks(CLOCK_SELECTOR_BASE, 0);
   configure_pll(PLL, 9, 0);
