@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "metal.h"
+#include "clint.h"
 
 #define I2C_CTRL_IEN_POS                        (6U)
 #define I2C_CTRL_IEN_MSK                        (0x1U << I2C_CTRL_IEN_POS)
@@ -71,18 +72,19 @@ static inline State i2c_get_flag(I2C_Type *I2Cx, I2C_Flag flag) {
 
 void i2c_init(I2C_Type *I2Cx, I2C_InitType *I2C_init);
 
-Status i2c_wait_for_flag(I2C_Type *I2Cx, I2C_Flag flag, State state, uint32_t timestart, uint32_t timeout);
+Status i2c_wait_for_flag(I2C_Type *I2Cx, CLINT_Type *clint, I2C_Flag flag, State state, uint32_t timestart, uint32_t timeout);
 
-Status i2c_wait_for_transaction(I2C_Type *I2Cx, uint32_t timestart, uint32_t timeout);
+Status i2c_wait_for_transaction(I2C_Type *I2Cx, CLINT_Type *clint, uint32_t timestart, uint32_t timeout);
 
-Status i2c_master_receive(I2C_Type *I2Cx, uint16_t device_addr, uint8_t *buffer, uint16_t size, uint64_t timeout);
+Status i2c_master_receive(I2C_Type *I2Cx, CLINT_Type *clint, uint16_t device_addr, uint8_t *buffer, uint16_t size, uint64_t timeout);
 
-Status i2c_master_transmit(I2C_Type *I2Cx, uint16_t device_addr, uint8_t *buffer, uint16_t size, uint64_t timeout);
+Status i2c_master_transmit(I2C_Type *I2Cx, CLINT_Type *clint, uint16_t device_addr, uint8_t *buffer, uint16_t size, uint64_t timeout);
 
-Status i2c_read_memory(I2C_Type *I2Cx, uint16_t device_addr, uint8_t mem_addr, uint8_t *buffer, uint16_t size, uint64_t timeout);
+Status i2c_read_memory(I2C_Type *I2Cx, CLINT_Type *clint, uint16_t device_addr, uint8_t mem_addr, uint8_t *buffer, uint16_t size, uint64_t timeout);
 
-Status i2c_write_memory(I2C_Type *I2Cx, uint16_t device_addr, uint8_t mem_addr, uint8_t *buffer, uint16_t size, uint32_t timeout);
+Status i2c_write_memory(I2C_Type *I2Cx, CLINT_Type *clint, uint16_t device_addr, uint8_t mem_addr, uint8_t *buffer, uint16_t size, uint32_t timeout);
 
+Status scan_i2c_bus(I2C_Type *I2Cx, CLINT_Type *clint, uint64_t timeout, uint64_t first, uint64_t last);
 
 #ifdef __cplusplus
 }

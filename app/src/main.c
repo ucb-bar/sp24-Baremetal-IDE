@@ -78,21 +78,42 @@ void app_init() {
   pwm_set_duty_cycle(PWM0_BASE, 3, 30, 0);
   pwm_get_duty_cycle(PWM0_BASE, 3);
 
-  //#define QSPI_FMT_PROTO_MSK  0x00000009U;
+  /*//#define QSPI_FMT_PROTO_MSK  0x00000009U;
   //#define QSPI_FFMT_PROTO_MSK  0x00941770U;
-  //#define QSPI_FMT_POS_PROTO_MSK  0x00020008U;
-  //#define QSPI_POS_FFMT_PROTO_MSK  0x006B2887U;
+  #define QSPI_FMT_POS_PROTO_MSK  0x00080002;
+  #define QSPI_POS_FFMT_PROTO_MSK  0x006B2887U;
 
-  QSPI0->SCKDIV = SYS_CLK_FREQ / (2 * 1000000) - 1;
+  //QSPI0->FCTRL = 0;
+
+  // 2. Wait for TX FIFO to empty
+  while ((int)(QSPI0->TXDATA & (1u << 31)) != 0) {
+      // TX FIFO still has space (not full), but may still be busy sending.
+      // If you want to be extra safe, insert a small delay here.
+  }
+
+  // 3. Drain RX FIFO if anything pending
+  while ((QSPI0->RXDATA & (1u << 31)) == 0) {
+      volatile uint32_t dummy = QSPI0->RXDATA; // read and discard
+  }
+  */
+  /* How to solve QSPI problem need to partition two sets of code, "bootloader" 
+  and "user program" The bootloader is in a page of FLASH (needs to fill up a 
+  whole number of pages to avoid being overwritten) that loads into scratchpad
+  and starts executing after the reset vector/upon reset. This is minimum code to
+  set up bare peripherals and how we boot. Then, the code should jump from this bootloader
+  to the "user program" stored in FLASH.*/
 
   //QSPI0->FMT = QSPI_FMT_POS_PROTO_MSK; // set to quad mode
   //QSPI0->FFMT = QSPI_POS_FFMT_PROTO_MSK;
+  //QSPI0->SCKDIV = SYS_CLK_FREQ / (2 * 1000000) - 1;
   
- 
+  //QSPI0->FCTRL = 1;
 
-  set_all_clocks(CLOCK_SELECTOR_BASE, 0);
-  configure_pll(PLL, 9, 0);
-  set_all_clocks(CLOCK_SELECTOR_BASE, 1);
+  
+
+  //set_all_clocks(CLOCK_SELECTOR_BASE, 0);
+  //configure_pll(PLL, 9, 0);
+  //set_all_clocks(CLOCK_SELECTOR_BASE, 1);
 }
 
 void handle_sigint(int sig) {
@@ -101,6 +122,7 @@ void handle_sigint(int sig) {
 }
 
 void app_main() {
+  scan_i2c_bus(I2C0, CLINT, 10000, 0, 144);
   while (1) {
     gpio_write_pin(GPIOC, GPIO_PIN_0, 0);
     gpio_write_pin(GPIOC, GPIO_PIN_1, 1);
@@ -173,6 +195,10 @@ int main(int argc, char **argv) {
   PWM_init_config.pwmcmp2ip = 0;
   PWM_init_config.pwmcmp3ip = 0;
   pwm_init(PWM0_BASE, &PWM_init_config);
+
+  I2C_InitType I2C0_init_config;
+  I2C0_init_config.clock = 100000;
+  i2c_init(I2C0, &I2C0_init_config);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
