@@ -10,6 +10,8 @@
 
 #include "i2c.h"
 
+extern uint64_t sys_clk_freq;
+
 void i2c_init(I2C_Type *I2Cx, I2C_InitType *I2C_init) {
   // need to disable I2C before make any change to prescaler
   i2c_disable(I2Cx);
@@ -17,7 +19,8 @@ void i2c_init(I2C_Type *I2Cx, I2C_InitType *I2C_init) {
   //36000000 / (5 * 100000) - 1 
   I2Cx->PRESCAL_HI = 0;
   // I2Cx->PRESCAL_LO = 0x3F;  // 112kHz
-  I2Cx->PRESCAL_LO = 71;  // 112kHz
+  //I2Cx->PRESCAL_LO = 71;  // 112kHz
+  I2Cx->PRESCAL_LO = (sys_clk_freq / (5 * I2C_init->clock)) - 1;  // set prescaler for desired clock
   
   i2c_enable(I2Cx);
 }

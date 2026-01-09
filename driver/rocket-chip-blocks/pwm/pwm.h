@@ -89,12 +89,20 @@ typedef struct {
 
 static inline void pwm_enable(PWM_Type *PWMx) {
   SET_BITS(PWMx->PWM_CFG, PWM_PWMENALWAYS_MSK);
-  //SET_BITS(PWMx->PWM_CFG, PWM_PWMZEROCMP_MSK);
-  //SET_BITS(PWMx->PWM_CFG, PWM_PWMDEGLITCH_MSK);
+  CLEAR_BITS(PWMx->PWM_CFG, PWM_PWMZEROCMP_MSK);
+}
+
+static inline void pwm_zerocmp(PWM_Type *PWMx) {
+  SET_BITS(PWMx->PWM_CFG, PWM_PWMZEROCMP_MSK);
+}
+
+static inline void pwm_deglitch(PWM_Type *PWMx) {
+  SET_BITS(PWMx->PWM_CFG, PWM_PWMDEGLITCH_MSK);
 }
 
 static inline void pwm_disable(PWM_Type *PWMx) {
   CLEAR_BITS(PWMx->PWM_CFG, PWM_PWMENALWAYS_MSK);
+  CLEAR_BITS(PWMx->PWM_CFG, PWM_PWMENONESHOT_MSK);
 }
 
 static inline void pwm_set_scale(PWM_Type *PWMx, uint32_t value) {
@@ -123,7 +131,8 @@ static inline void pwm_set_compare_value(PWM_Type *PWMx, uint32_t idx,
   }
 }
 
-static inline void pwm_trigger_oneshot(PWM_Type *PWMx, uint32_t idx) {
+static inline void pwm_oneshot(PWM_Type *PWMx) {
+  CLEAR_BITS(PWMx->PWM_CFG, PWM_PWMENALWAYS_MSK);
   SET_BITS(PWMx->PWM_CFG, PWM_PWMENONESHOT_MSK);
 }
 

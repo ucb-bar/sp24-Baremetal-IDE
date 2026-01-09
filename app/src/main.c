@@ -164,11 +164,11 @@ int main(int argc, char **argv) {
 
   int uart_divisor = (SYS_CLK_FREQ / 115200) - 1;
 
-  UART_InitType UART1_init_config;
-  UART1_init_config.baudrate = 115200;
-  UART1_init_config.mode = UART_MODE_TX_RX;
-  UART1_init_config.stopbits = UART_STOPBITS_1;
-  uart_init(UART1, &UART1_init_config);
+  //UART_InitType UART1_init_config;
+  //UART1_init_config.baudrate = 115200;
+  //UART1_init_config.mode = UART_MODE_TX_RX;
+  //UART1_init_config.stopbits = UART_STOPBITS_1;
+  //uart_init(UART1, &UART1_init_config);
 
   // Initialize PWM0 for Motor Control
   PWM_InitType PWM_init_config;

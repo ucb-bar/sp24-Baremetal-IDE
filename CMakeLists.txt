@@ -98,7 +98,32 @@ add_executable(app
   app/src/main.c
 )
 
+add_executable(quad
+  app/src/quad.c
+)
+
+add_executable(quad_simple_test
+  app/src/quad_simple_test.c
+)
+
+add_executable(test_sensor_fusion
+  app/src/test_sensor_fusion.c
+)
+
+add_executable(quad_sitl
+  app/src/quad_sitl.c
+)
+
+add_executable(motor_calibration
+  app/src/motor_calibration.c
+)
+
 target_include_directories(app PUBLIC app/include)
+target_include_directories(quad PUBLIC app/include)
+target_include_directories(quad_simple_test PUBLIC app/include)
+target_include_directories(test_sensor_fusion PUBLIC app/include)
+target_include_directories(quad_sitl PUBLIC app/include)
+target_include_directories(motor_calibration PUBLIC app/include)
 
 
 #################################
@@ -115,6 +140,30 @@ target_link_libraries(app PRIVATE
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
 )
 
+target_link_libraries(quad PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
+)
+
+target_link_libraries(quad_simple_test PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
+)
+
+target_link_libraries(test_sensor_fusion PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
+)
+
+target_link_libraries(quad_sitl PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
+)
+
+target_link_libraries(motor_calibration PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
+)
+
+target_link_libraries(quad PUBLIC icm42688)
+target_link_libraries(quad PUBLIC vl53l1x)
+target_link_libraries(quad_simple_test PUBLIC icm42688)
+target_link_libraries(test_sensor_fusion PUBLIC icm42688)
 
 #################################
 # Library Installation

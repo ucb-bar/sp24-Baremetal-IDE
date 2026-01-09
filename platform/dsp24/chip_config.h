@@ -36,6 +36,7 @@ extern "C" {
 #define SCRATCH_BASE            0x08000000U
 #define PLIC_BASE               0x0C000000U
 #define UART_BASE               0x10020000U
+#define QSPI_PSRAM_BASE         0x40000000U
 #define QSPI_FLASH_BASE         0x20000000U
 #define DRAM_BASE               0x80000000U
 #define GPIO_BASE               0x10012000U
@@ -50,9 +51,13 @@ extern "C" {
 #define I2S_BASE                0x10042000U
 #define UART0_BASE              (UART_BASE)
 #define UART1_BASE              (0x10021000U)
+#define UART2_BASE              (0x10022000U)
 #define GPIOC_BASE              (0x10012000U)
 #define PWM0_BASE               (PWM_BASE)
 #define I2C0_BASE               (I2C_BASE)
+#define I2C1_BASE               (0x10041000U)
+#define SPI2_BASE               (0x10032000U)
+#define QSPI1_BASE              (0x10031000U)
 
 /* Peripheral Pointer Definition */
 #define UART0_BASE              (UART_BASE)
@@ -67,8 +72,12 @@ extern "C" {
 #define GPIOC                   ((GPIO_Type *)GPIOC_BASE)
 #define PWM0                    ((PWM_Type *)PWM0_BASE)
 #define UART1                   ((UART_Type *)UART1_BASE)
+#define UART2                   ((UART_Type *)UART2_BASE)
 #define CLOCK_SELECTOR          ((ClockSel_Type*)CLOCK_SELECTOR_BASE)
 #define I2C0                    ((I2C_Type *)I2C0_BASE)
+#define I2C1                    ((I2C_Type *)I2C1_BASE)
+#define SPI2                    ((SPI_Type *)SPI2_BASE)
+#define QSPI1                   ((QSPI_Type *)QSPI1_BASE)
 
 
 #ifdef __cplusplus

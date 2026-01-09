@@ -12,6 +12,12 @@ __attribute__((weak)) ssize_t _write(int fd, const void *ptr, size_t len) {
   #elif defined(TERMINAL_DEVICE_UART0)
     uart_transmit(UART0, (uint8_t *)ptr, len, 100);
     return len;
+  #elif defined(TERMINAL_DEVICE_UART1)
+    uart_transmit(UART1, (uint8_t *)ptr, len, 100);
+    return len;
+  #elif defined(TERMINAL_DEVICE_UART2)
+    uart_transmit(UART2, (uint8_t *)ptr, len, 100);
+    return len;
   #elif defined(TERMINAL_DEVICE_NS16550A)
     ns16550a_puts((uint8_t *)ptr, len);
     return len;

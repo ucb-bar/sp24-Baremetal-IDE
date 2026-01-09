@@ -31,7 +31,7 @@ void pwm_init(PWM_Type *PWMx, PWM_InitType *PWM_init) {
 }
 
 void pwm_stop(PWM_Type *PWMx, uint32_t idx) {
-  // TODO: implementation
+  pwm_set_compare_value(PWMx, idx, 0);
 }
 
 void pwm_set_frequency(PWM_Type *PWMx, uint32_t idx, double freq) {
@@ -74,7 +74,7 @@ uint32_t pwm_get_frequency(PWM_Type *PWMx, uint32_t idx) {
 }
 
 void pwm_set_duty_cycle(PWM_Type *PWMx, uint32_t idx, uint32_t duty, int phase_corr) {
-  // TODO: implementation
+  // TODO: check edge cases 0 and 100% duty cycle for 100% cmp=0 and for 0% cmpX > cmp0 or > 65535
   uint16_t pwmscale = READ_BITS(PWMx->PWM_CFG, PWM_PWMSCALE_MSK);
   uint32_t cmpvalue = 0;
   uint32_t freq = pwm_get_frequency(PWMx, idx);
@@ -83,6 +83,12 @@ void pwm_set_duty_cycle(PWM_Type *PWMx, uint32_t idx, uint32_t duty, int phase_c
   if (READ_BITS(PWMx->PWM_CFG, PWM_PWMZEROCMP_MSK) == 0){
     cmpvalue = ((double) duty/100) * (double) sys_clk_freq / ((1<<pwmscale) * freq); //The expression after duty cycle is equivalent to 65535 since that is the pwms max value
     //printf("CMP Value %d", cmpvalue);
+    if (cmpvalue > 65535) {
+      cmpvalue = 65535;
+    }
+    if (cmpvalue < 0) {
+      cmpvalue = 0;
+    }
     pwm_set_compare_value(PWMx, idx, cmpvalue);
   } else {
     if (idx == 0) {
@@ -90,6 +96,12 @@ void pwm_set_duty_cycle(PWM_Type *PWMx, uint32_t idx, uint32_t duty, int phase_c
     } else {
       cmpvalue = ((double) duty/100) * PWMx->PWM_CMP0;
       //printf("CMP Value %d", cmpvalue);
+      if (cmpvalue > 65535) {
+      cmpvalue = 65535;
+      }
+      if (cmpvalue < 0) {
+        cmpvalue = 0;
+      }
       pwm_set_compare_value(PWMx, idx, cmpvalue);
     }
   }
@@ -100,31 +112,31 @@ uint32_t pwm_get_duty_cycle(PWM_Type *PWMx, uint32_t idx) {
   if (READ_BITS(PWMx->PWM_CFG, PWM_PWMZEROCMP_MSK) == 0){
     switch (idx) {
     case 0:
-      return 100*((double)(PWMx->PWM_CMP0) / (double)(65535));
+      return 100-100*((double)(PWMx->PWM_CMP0) / (double)(65535));
       break;
     case 1:
-      return 100*((double)(PWMx->PWM_CMP1) / (double)(65535));
+      return 100-100*((double)(PWMx->PWM_CMP1) / (double)(65535));
       break;
     case 2:
-      return 100*((double)(PWMx->PWM_CMP2) / (double)(65535));
+      return 100-100*((double)(PWMx->PWM_CMP2) / (double)(65535));
       break;
     case 3:
-      return 100*((double)(PWMx->PWM_CMP3) / (double)(65535));
+      return 100-100*((double)(PWMx->PWM_CMP3) / (double)(65535));
       break;
     }
   } else {
     switch (idx) {
     case 0:
-      return 100*((double)(PWMx->PWM_CMP0) / (double)(PWMx->PWM_CMP0));
+      return 100-100*((double)(PWMx->PWM_CMP0) / (double)(PWMx->PWM_CMP0));
       break;
     case 1:
-      return 100*((double)(PWMx->PWM_CMP1) / (double)(PWMx->PWM_CMP0));
+      return 100-100*((double)(PWMx->PWM_CMP1) / (double)(PWMx->PWM_CMP0));
       break;
     case 2:
-      return 100*((double)(PWMx->PWM_CMP2) / (double)(PWMx->PWM_CMP0));
+      return 100-100*((double)(PWMx->PWM_CMP2) / (double)(PWMx->PWM_CMP0));
       break;
     case 3:
-      return 100*((double)(PWMx->PWM_CMP3) / (double)(PWMx->PWM_CMP0));
+      return 100-100*((double)(PWMx->PWM_CMP3) / (double)(PWMx->PWM_CMP0));
       break;
     }
   }
