@@ -19,6 +19,36 @@ __attribute__((weak)) unsigned int sleep(unsigned int seconds) {
   return 0;
 }
 
+__attribute__((weak)) uint64_t get_time() {
+  #ifdef CLINT_BASE
+    return clint_get_time((CLINT_Type *)CLINT_BASE)/mtime_freq;
+  #else
+    #warning "No CLINT peripheral found. Delay function is not available."
+  #endif
+
+  return 0;
+}
+
+__attribute__((weak)) uint64_t get_time_ms() {
+  #ifdef CLINT_BASE
+    return clint_get_time((CLINT_Type *)CLINT_BASE)*1000/mtime_freq;
+  #else
+    #warning "No CLINT peripheral found. Delay function is not available."
+  #endif
+
+  return 0;
+}
+
+__attribute__((weak)) uint64_t get_time_us() {
+  #ifdef CLINT_BASE
+    return clint_get_time((CLINT_Type *)CLINT_BASE)*1000000/mtime_freq;
+  #else
+    #warning "No CLINT peripheral found. Delay function is not available."
+  #endif
+
+  return 0;
+}
+
 __attribute__((weak)) int msleep(useconds_t msec) {
   #ifdef CLINT_BASE
     uint64_t target_tick = clint_get_time((CLINT_Type *)CLINT_BASE) + ((msec * mtime_freq) / 1000);

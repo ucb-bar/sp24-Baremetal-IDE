@@ -109,6 +109,10 @@ typedef struct {
   #define QSPI0_BASE                0x10030000U
   #define QSPI0                     ((QSPI_Type *)QSPI0_BASE)
 #endif
+#ifndef QSPI1_BASE
+  #define QSPI1_BASE                0x10031000U
+  #define QSPI1                     ((QSPI_Type *)QSPI1_BASE)
+#endif
 
 void spi_init(SPI_Type *SPIx, SPI_InitType *SPI_init);
 

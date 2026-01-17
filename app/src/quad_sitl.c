@@ -24,9 +24,9 @@
  * MOCK CONFIG & CONSTANTS (Copied from quad.c)
  * ========================================================================= */
 
-const float mass = 35e-3f;
+const float mass = 260e-3f;
 const float gravity = 9.81f;
-const float l = 33e-3f; // Arm length
+const float l = 88.9e-3f; // Arm length
 const float k = 0.01f;  // Torque constant ratio
 
 // PID Constants
@@ -39,35 +39,54 @@ const float tau_yawRate = 0.05f;
 const float natFreq_height = 2.0f;
 const float dampingRatio_height = 0.7f;
 
-// Mixing Matrix
+// MIXING MATRIX (Corrected for M1=FR, M2=BL, M3=FL, M4=RR)
+// Rows: 0=M1, 1=M2, 2=M3, 3=M4
+// Cols: Thrust, Roll, Pitch, Yaw
+// Signs:
+// Roll:  Right(-), Left(+)
+// Pitch: Front(+), Back(-)
+// Yaw:   CCW(+),   CW(-)  <-- Assuming M1/M2 are CCW, M3/M4 are CW
 const float M[4][4] = {
-    {0.25f, 0.25f/l, -0.25f/l, 0.25f/k},
-    {0.25f, -0.25f/l, -0.25f/l, -0.25f/k},
-    {0.25f, -0.25f/l, 0.25f/l, 0.25f/k},
-    {0.25f, 0.25f/l, 0.25f/l, -0.25f/k}
+    // Thrust, Roll,      Pitch,     Yaw
+    {0.25f,   -0.25f/l,   0.25f/l,   0.25f/k}, // M1: Front Right (R-, P+, Y+)
+    {0.25f,    0.25f/l,  -0.25f/l,   0.25f/k}, // M2: Back Left   (R+, P-, Y+)
+    {0.25f,    0.25f/l,   0.25f/l,  -0.25f/k}, // M3: Front Left  (R+, P+, Y-)
+    {0.25f,   -0.25f/l,  -0.25f/l,  -0.25f/k}  // M4: Back Right  (R-, P-, Y-)
 };
 
+// MOMENT OF INERTIA (J)
+// Calculated based on 260g total mass, 7.15g motors, and measured hub dimensions.
 const float J[3][3] = {
-    {16e-6f, 0, 0}, {0, 16e-6f, 0}, {0, 0, 29e-6f}
+    {0.000370f, 0, 0}, // Ixx (Roll Inertia)
+    {0, 0.000239f, 0}, // Iyy (Pitch Inertia - Lower because body is narrower in Width)
+    {0, 0, 0.000497f}  // Izz (Yaw Inertia)
 };
 
 /* =========================================================================
  * UTILS
  * ========================================================================= */
 
-int pwmCommandFromSpeed(float desiredSpeed_rad_per_sec) {
-    float a = -100.849f; float b = 0.1261846f;
-    return (int)(a + b * desiredSpeed_rad_per_sec);
-}
-
-float speedFromForce(float desiredForce_N) {
-    if (desiredForce_N <= 0) return 0.0f;
-    return sqrtf(desiredForce_N / 2.0e-08f);
-}
+// Motor Specs:
+// Max Thrust (100%): 165g -> 1.62N
+// Mid Thrust (50%):   63g -> 0.62N
+//
+// Linear model fails here (0.62 / 1.62 = 38%, but reality is 50%).
+// We use a Power Law approximation: Cmd = (Force / Max)^0.714
+#define MAX_THRUST_PER_MOTOR_N  1.62f 
 
 float forceToVoltage(float forceNewtons) {
-    float cmd = pwmCommandFromSpeed(speedFromForce(forceNewtons)) / 255.0f;
-    if (cmd > 1.0f) cmd = 1.0f; else if (cmd < 0.0f) cmd = 0.0f;
+    if (forceNewtons <= 0.0f) return 0.0f;
+    
+    // Normalized Force (0.0 - 1.0 relative to max capability)
+    float f_norm = forceNewtons / MAX_THRUST_PER_MOTOR_N;
+    
+    // Apply Power Law Curve to match 50% throttle point
+    // Exponent 0.714 derived from 63g @ 0.5 cmd
+    float cmd = powf(f_norm, 0.714f);
+    
+    if (cmd > 1.0f) cmd = 1.0f; 
+    else if (cmd < 0.0f) cmd = 0.0f;
+    
     return cmd;
 }
 
@@ -124,12 +143,12 @@ void run_simulation_step(const char* test_name, float roll, float pitch, float y
     }
 
     // 3. PRINT OUTPUTS
-    float m1 = forceToVoltage(0.9f * ctrl[1]);
-    float m2 = forceToVoltage(0.9f * ctrl[2]);
-    float m3 = forceToVoltage(0.9f * ctrl[3]);
-    float m4 = forceToVoltage(0.9f * ctrl[0]);
+    float m1 = forceToVoltage(0.9f * ctrl[0]);
+    float m2 = forceToVoltage(0.9f * ctrl[1]);
+    float m3 = forceToVoltage(0.9f * ctrl[2]);
+    float m4 = forceToVoltage(0.9f * ctrl[3]);
 
-    printf("Motors (0.0-1.0): M1:%.2f  M2:%.2f  M3:%.2f  M4:%.2f\n", m1, m2, m3, m4);
+    printf("Motors (0.0-1.0): M1:%f  M2:%f  M3:%f  M4:%f\n", m1, m2, m3, m4);
     
     // 4. ANALYSIS
     // Assuming Standard Quad X config:
@@ -155,16 +174,15 @@ void app_main() {
     run_simulation_step("HOVER (Level)", 0.0f, 0.0f, 0.0f);
 
     // Case 2: Tilted RIGHT (Positive Roll)
-    // The drone thinks it is tilted Right. It should try to roll Left.
-    // Right motors (M1, M3) should speed UP? NO.
-    // If I am tilted Right, I need to generate a Moment to rotate Left (CCW roll).
-    // To roll Left, Right motors must generate MORE LIFT than Left motors.
-    // So M1/M3 > M2/M4.
+    // Controller wants to roll LEFT.
+    // Right motors (M1, M4) must SPEED UP (Increase lift).
+    // Left motors (M2, M3) must SLOW DOWN.
     run_simulation_step("TILTED RIGHT (+0.2 rad)", 0.2f, 0.0f, 0.0f);
 
     // Case 3: Tilted NOSE UP (Positive Pitch)
-    // Drone thinks nose is high. Needs to bring nose down.
-    // Rear motors (M2, M3) must generate MORE LIFT than Front motors (M1, M4).
+    // Controller wants to pitch DOWN.
+    // Rear motors (M2, M4) must SPEED UP.
+    // Front motors (M1, M3) must SLOW DOWN.
     run_simulation_step("NOSE UP (+0.2 rad)", 0.0f, 0.2f, 0.0f);
 
     printf("\nCheck these values against your frame layout before flying!\n");

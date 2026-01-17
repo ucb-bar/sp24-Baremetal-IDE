@@ -20,7 +20,8 @@
 #include <unistd.h> 
 #include "main.h"
 #include "chip_config.h"
-#include "icm42688.h" 
+#include "icm42688.h"
+#include "vl53l1x.h" 
 #include "uart.h"
 
 /* =========================================================================
@@ -136,6 +137,10 @@ void app_init() {
     I2C_InitType i2c_conf;
     i2c_conf.clock = 400000;
     i2c_init(I2C0, &i2c_conf);
+    i2c_init(I2C1, &i2c_conf);
+
+    //scan_i2c_bus(I2C0, CLINT, 10000, 0, 144);
+    //scan_i2c_bus(I2C1, CLINT, 10000, 0, 144);
 
     //QSPI0->SCKDIV = SYS_CLK_FREQ / (2 * 1000000) - 1;
 
@@ -147,7 +152,7 @@ void app_init() {
 }
 
 void app_main() {
-    printf("[1/2] Checking IMU (ICM-42688)...\n");
+    printf("[1/3] Checking IMU (ICM-42688)...\n");
     
     if (icm42688_init(I2C0, CLINT) != 0) {
         printf("ERROR: IMU Init Failed.\n");
@@ -167,7 +172,39 @@ void app_main() {
     
     msleep(1000);
 
-    printf("\n=== SAFETY MOTOR TEST START ===\n");
+    printf("[2/3] Checking TOF (VL53L1X)...\n");
+    
+    if (vl53l1x_init(I2C1, CLINT) != 0) {
+        printf("ERROR:VL53L1X Init Failed.\n");
+        while(1);
+    }
+
+    // Example: One-time Offset Calibration 
+    // Only run this if you know the drone is exactly 140mm from ground!
+    /*
+    int16_t offset;
+    printf("Calibrating ToF Offset (Target=140mm)...\n");
+    vl53l1x_calibrate_offset(I2C1, CLINT, 140, &offset);
+    printf("New Offset: %d\n", offset);
+    */
+
+    int16_t dist = vl53l1x_read_distance(I2C1, CLINT);
+    if (dist < 0) {
+        // Diagnostic prints
+        if (dist == -2) printf("Error: Timeout (No Data)\n");
+        else if (dist == -3) printf("Error: Signal Fail (Target too far/dark)\n");
+        else if (dist == -4) printf("Error: Out of Bounds\n");
+        else printf("Error: I2C Fail (%d)\n", dist);
+        while(1);
+    } else {
+        printf("SUCCESS: TOF Valid. Distance: %d mm\n", dist);
+    }
+    
+    msleep(1000);
+
+    printf("\n[3/3] === SAFETY MOTOR TEST START ===\n");
+
+    printf("\nMAKE SURE TO HOLD DOWN THE DRONE OR TAKE OFF PROPELLERS!\n");
 
     // Wait for user interaction to confirm they hear the beeping
     printf(">> Press 'c' to drop throttle and ARM motors <<\n");
@@ -182,7 +219,6 @@ void app_main() {
     // Effect: Beeping stops. ESCs play "Low-High" tones.
     //printf("2. Dropping to MIN THROTTLE (1000us / 38%%)...\n");
     //printf("   Expected: 'Musical Tone' (Arming Sequence).\n");
-    current_pulse_us = PULSE_MIN;
     set_all_motors_raw_duty(38);
     //soft_pwm_loop(5000);
     
@@ -197,7 +233,6 @@ void app_main() {
     // 1100us at 381Hz = ~42% Duty Cycle.
     printf("3. Spinning at IDLE (1100us / 42%%)...\n");
     //printf("   MOTORS SHOULD SPIN NOW.\n");
-    current_pulse_us = PULSE_SPIN;
     set_all_motors_raw_duty(58);
     //soft_pwm_loop(5000);
     
@@ -207,8 +242,7 @@ void app_main() {
     // ---------------------------------------------------------
     // STEP 4: SHUTDOWN
     // ---------------------------------------------------------
-    printf("4. Test Complete. Disarming.\n");
-    current_pulse_us = 1050;
+    printf("4. Taking Flight.\n");
     pwm_set_duty_cycle(PWM0_BASE, MOTOR3_PWM_CH, 58, 0);
     pwm_set_duty_cycle(PWM0_BASE, MOTOR1_PWM_CH, 55, 0);
     pwm_set_duty_cycle(PWM0_BASE, MOTOR2_PWM_CH, 70, 0);
@@ -220,6 +254,7 @@ void app_main() {
         uart_receive(UART0, c, 1, 100000); // Blocking wait
         if (s[0] != 's')
         {
+            printf("5. Test Complete. Disarming.\n");
             set_all_motors_raw_duty(38);
             return;
         }

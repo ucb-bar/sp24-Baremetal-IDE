@@ -22,7 +22,8 @@
 #include <unistd.h>
 #include "main.h"
 #include "chip_config.h"
-#include "icm42688.h" 
+#include "icm42688.h"
+#include "vl53l1x.h" 
 #include "uart.h" 
 
 /* =========================================================================
@@ -30,13 +31,13 @@
  * ========================================================================= */
 
 // Physics Constants
-const float mass = 35e-3f;
+const float mass = 260e-3f;
 const float gravity = 9.81f;
 const float inertia_xx = 16e-6f;
 const float inertia_yy = 16e-6f;
 const float inertia_zz = 29e-6f;
 const float rho = 0.15f;
-const float l = 33e-3f;
+const float l = 88.9e-3f;
 const float k = 0.01f;
 
 // PID / Control Constants
@@ -50,6 +51,16 @@ const float timeConst_horizVel = 0.5f;
 const float natFreq_height = 2.0f;
 const float dampingRatio_height = 0.7f;
 
+// IMU OFFSETS
+#define ACCEL_X_OFFSET 1.05f
+#define ACCEL_Y_OFFSET -7.33f
+#define ACCEL_Z_OFFSET 6.04f
+
+// IMU SCALING
+#define ACCEL_X_SCALE  1.0012f
+#define ACCEL_Y_SCALE  1.0015f
+#define ACCEL_Z_SCALE  1.0016f
+
 // Ardupilot Quad-X Motor Mapping
 // Ch0: Motor 1 (Front Right, CCW)
 // Ch1: Motor 2 (Rear Left, CCW)
@@ -59,6 +70,14 @@ const float dampingRatio_height = 0.7f;
 #define MOTOR2_PWM_CH 1
 #define MOTOR3_PWM_CH 2
 #define MOTOR4_PWM_CH 3
+
+// MOTOR MAPPING (The Fix)
+// Define the duty cycle (0.0 - 1.0) where each motor *actually* starts spinning.
+// You found: Two at 58% (0.58), Two at 50% (0.50). 
+const float MOTOR_START_DUTY[4] = {0.58f, 0.50f, 0.50f, 0.58f}; // Adjust order to match M1, M2, M3, M4
+const float MOTOR_MAX_DUTY = 0.8f;
+
+#define MOT_FREQ_HZ 381
 
 #define ACCEL_SCALE ((16.0f / 32768.0f) * 9.81f)
 #define GYRO_SCALE  ((2000.0f / 32768.0f) * (3.14159f / 180.0f))
@@ -106,6 +125,10 @@ static int init_flag = 0;
 static int descend_flag = 0;
 static int done_flag = 0;
 
+float gyro_bias_x = 0;
+float gyro_bias_y = 0;
+float gyro_bias_z = 0;
+
 // MIXING MATRIX (Ardupilot Quad-X)
 // Rows: M1(FR), M2(RL), M3(FL), M4(RR)
 // Cols: Thrust, Roll, Pitch, Yaw
@@ -121,8 +144,12 @@ const float M[4][4] = {
     {0.25f, -0.25f/l,  0.25f/l, -0.25f/k}  // M4: RR (Right, Rear, CW)  -> R-, P+, Y-
 };
 
+// MOMENT OF INERTIA (J)
+// Calculated based on 260g total mass, 7.15g motors, and measured hub dimensions.
 const float J[3][3] = {
-    {16e-6f, 0, 0}, {0, 16e-6f, 0}, {0, 0, 29e-6f}
+    {0.000370f, 0, 0}, // Ixx (Roll Inertia)
+    {0, 0.000239f, 0}, // Iyy (Pitch Inertia - Lower because body is narrower in Width)
+    {0, 0, 0.000497f}  // Izz (Yaw Inertia)
 };
 
 /* =========================================================================
@@ -135,6 +162,26 @@ float invSqrt(float x) { return 1.0f / sqrtf(x); }
  * SENSOR & FILTER
  * ========================================================================= */
 
+void calibrate_gyro_bias() {
+    printf("Calibrating Gyro... KEEP STILL!\n");
+    float sum_x = 0, sum_y = 0, sum_z = 0;
+    int samples = 200;
+    
+    for (int i = 0; i < samples; i++) {
+        icm42688_read_all(I2C0, CLINT, &imu_data);
+        sum_x += imu_data.gyro_x;
+        sum_y += imu_data.gyro_y;
+        sum_z += imu_data.gyro_z;
+        for(volatile int k=0; k<50000; k++); // Small delay
+    }
+    
+    gyro_bias_x = sum_x / samples;
+    gyro_bias_y = sum_y / samples;
+    gyro_bias_z = sum_z / samples;
+    
+    printf("Gyro Bias: X:%.1f Y:%.1f Z:%.1f\n", gyro_bias_x, gyro_bias_y, gyro_bias_z);
+}
+
 void sensor_init_all() {
     printf("Initializing Sensors...\n");
     if (icm42688_init(I2C0, CLINT) == 0) {
@@ -144,7 +191,10 @@ void sensor_init_all() {
         error_flag = 1; 
     }
 
-    if (vl53l1x_init(I2C0, CLINT) == 0) {
+    // If yaw drift is significant, run gyro calibration
+    //calibrate_gyro_bias();
+
+    if (vl53l1x_init(I2C1, CLINT) == 0) {
         printf("VL53L1X Init Success!\n");
 
         // Example: One-time Offset Calibration 
@@ -152,7 +202,7 @@ void sensor_init_all() {
         /*
         int16_t offset;
         printf("Calibrating ToF Offset (Target=140mm)...\n");
-        vl53l1x_calibrate_offset(I2C0, CLINT, 140, &offset);
+        vl53l1x_calibrate_offset(I2C1, CLINT, 140, &offset);
         printf("New Offset: %d\n", offset);
         */
        
@@ -164,17 +214,23 @@ void sensor_init_all() {
 
 void read_imu_burst(float *ax, float *ay, float *az, float *gx, float *gy, float *gz) {
     if (icm42688_read_all(I2C0, &imu_data, CLINT) == 0) {
-        *ax = imu_data.accel_x * ACCEL_SCALE;
-        *ay = imu_data.accel_y * ACCEL_SCALE;
-        *az = imu_data.accel_z * ACCEL_SCALE;
+        //*ax = imu_data.accel_x * ACCEL_SCALE;
+        //*ay = imu_data.accel_y * ACCEL_SCALE;
+        //*az = imu_data.accel_z * ACCEL_SCALE;
+        *ax = (imu_data.accel_x - ACCEL_X_OFFSET) * ACCEL_X_SCALE * (9.81f / 2048.0f);
+        *ay = (imu_data.accel_y - ACCEL_Y_OFFSET) * ACCEL_Y_SCALE * (9.81f / 2048.0f);
+        *az = (imu_data.accel_z - ACCEL_Z_OFFSET) * ACCEL_Z_SCALE * (9.81f / 2048.0f);
         *gx = imu_data.gyro_x * GYRO_SCALE;
         *gy = imu_data.gyro_y * GYRO_SCALE;
         *gz = imu_data.gyro_z * GYRO_SCALE;
+        // *gx = (imu_data.gyro_x - gyro_bias_x) * GYRO_SCALE;
+        // *gy = (imu_data.gyro_y - gyro_bias_y) * GYRO_SCALE;
+        // *gz = (imu_data.gyro_z - gyro_bias_z) * GYRO_SCALE;
     }
 }
 
 int16_t read_tof_distance() {
-    int16_t dist = vl53l1x_read_distance(I2C0, CLINT);
+    int16_t dist = vl53l1x_read_distance(I2C1, CLINT);
     if (dist < 0) return 0; // Return 0 on error
     return dist;
 }
@@ -224,32 +280,58 @@ void madgwick_update(MadgwickFilter *f, float gx, float gy, float gz, float ax, 
  * MOTOR CONTROL
  * ========================================================================= */
 
-int pwmCommandFromSpeed(float desiredSpeed_rad_per_sec) {
-    float a = -100.849f; float b = 0.1261846f;
-    return (int)(a + b * desiredSpeed_rad_per_sec);
-}
-
-float speedFromForce(float desiredForce_N) {
-    if (desiredForce_N <= 0) return 0.0f;
-    return sqrtf(desiredForce_N / 2.0e-08f);
-}
+// Motor Specs:
+// Max Thrust (100%): 165g -> 1.62N
+// Mid Thrust (50%):   63g -> 0.62N
+//
+// Linear model fails here (0.62 / 1.62 = 38%, but reality is 50%).
+// We use a Power Law approximation: Cmd = (Force / Max)^0.714
+#define MAX_THRUST_PER_MOTOR_N  1.62f 
 
 float forceToVoltage(float forceNewtons) {
-    float cmd = pwmCommandFromSpeed(speedFromForce(forceNewtons)) / 255.0f;
-    if (cmd > 1.0f) cmd = 1.0f; else if (cmd < 0.0f) cmd = 0.0f;
+    if (forceNewtons <= 0.0f) return 0.0f;
+    
+    // Normalized Force (0.0 - 1.0 relative to max capability)
+    float f_norm = forceNewtons / MAX_THRUST_PER_MOTOR_N;
+    
+    // Apply Power Law Curve to match 50% throttle point
+    // Exponent 0.714 derived from 63g @ 0.5 cmd
+    float cmd = powf(f_norm, 0.714f);
+    
+    if (cmd > 1.0f) cmd = 1.0f; 
+    else if (cmd < 0.0f) cmd = 0.0f;
+    
     return cmd;
 }
 
+// NEW: Map normalized command (0.0-1.0) to hardware duty cycle
+float map_motor_signal(float cmd, int motor_idx) {
+    if (cmd <= 0.0f) return 0.0f; // OFF
+    
+    // Scale: Output = Min + Cmd * (Max - Min)
+    // This ensures 0.01 cmd -> Just barely spinning
+    //              1.00 cmd -> Full power
+    float min = MOTOR_START_DUTY[motor_idx];
+    float max = MOTOR_MAX_DUTY;
+    
+    float mapped = min + cmd * (max - min);
+    return mapped;
+}
+
 void set_motors(float m1, float m2, float m3, float m4) {
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR1_PWM_CH, (uint32_t)(m1 * 100.0f), 0);
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR2_PWM_CH, (uint32_t)(m2 * 100.0f), 0);
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR3_PWM_CH, (uint32_t)(m3 * 100.0f), 0);
+    pwm_set_duty_cycle(PWM0_BASE, MOTOR2_PWM_CH, (uint32_t)(m1 * 100.0f), 0);
+    pwm_set_duty_cycle(PWM0_BASE, MOTOR3_PWM_CH, (uint32_t)(m2 * 100.0f), 0);
+    pwm_set_duty_cycle(PWM0_BASE, MOTOR1_PWM_CH, (uint32_t)(m3 * 100.0f), 0);
     pwm_set_duty_cycle(PWM0_BASE, MOTOR4_PWM_CH, (uint32_t)(m4 * 100.0f), 0);
 }
 
 /* =========================================================================
  * CONTROL LOOP
  * ========================================================================= */
+
+static float desHeight = 0.250f; // TARGET HEIGHT (Static so it remembers value)
+static float last_height = 0.0f;
+static uint32_t mission_timer_ms = 0;
 
 void control_step(float dt) {
     read_imu_burst(&state.accelX, &state.accelY, &state.accelZ, 
@@ -259,7 +341,16 @@ void control_step(float dt) {
     // to save I2C bus time, as ToF is slower than IMU.
     int16_t alt_mm = read_tof_distance();
     state.estHeight = alt_mm / 1000.0f; // Convert mm to meters
+
+    // 2. CALCULATE VERTICAL VELOCITY (Simple Derivative + Low Pass)
+    // We need velocity for the D-term to prevent oscillation!
+    float raw_vel = (state.estHeight - last_height) / dt;
+    // Simple Alpha filter for velocity (0.1 = smooth, 1.0 = raw)
+    state.estVel_3 = state.estVel_3 * 0.9f + raw_vel * 0.1f; 
+
+    last_height = state.estHeight;
     
+    // 3. ATTITUDE ESTIMATION
     float accRoll  = state.accelY / gravity;
     float accPitch = -state.accelX / gravity;
     
@@ -267,26 +358,38 @@ void control_step(float dt) {
     state.estPitch = (1.0f - rho) * (state.estPitch + dt * state.gyroY) + rho * accPitch;
     state.estYaw   = state.estYaw + dt * state.gyroZ;
 
+    // 4. SAFETY CUTOFF (Crash Detection)
     if (state.accelZ < -40.0f || state.accelZ > 40.0f) { error_flag = 1; }
 
-    float desHeight = 0.75f;
-    uint32_t now_ms = get_time_us() / 1000;
-    if (now_ms > 3000) init_flag = 1;
-    if (now_ms > 6000) descend_flag = 1;
-    if (now_ms > 10000) done_flag = 1;
+    // 5. FLIGHT PLAN STATE MACHINE
+    mission_timer_ms += (uint32_t)(dt * 1000);
+    if (mission_timer_ms < 10000) init_flag = 1;
+    if (mission_timer_ms > 10000) descend_flag = 1;
+    if (mission_timer_ms > 15000) done_flag = 1;
 
-    if (descend_flag) {
-        desHeight -= 0.3f * dt;
-        if (desHeight < -0.2f) desHeight = -0.2f;
-    } else {
-        desHeight -= 0.05f * dt;
+    // 6. UPDATE TARGET HEIGHT
+    if (init_flag && !descend_flag) {
+        // Hover Phase: Smoothly approach 0.75m if not there
+        // (Optional: You can just leave it at 0.75 static)
+        desHeight = 0.25f; 
+    }
+    else if (descend_flag) {
+        // Descent Phase: Decrease target by 0.2m per second
+        desHeight -= 0.2f * dt; 
+        if (desHeight < 0.05f) desHeight = 0.05f; // Floor at 5cm
     }
 
-    float desAcc1 = -(1.0f / timeConst_horizVel) * state.estVel_1;
-    float desAcc2 = -(1.0f / timeConst_horizVel) * state.estVel_2;
-    float desRoll = -desAcc2 / gravity;
-    float desPitch = desAcc1 / gravity;
-    float desYaw = state.estYaw;
+    //float desAcc1 = -(1.0f / timeConst_horizVel) * state.estVel_1;
+    //float desAcc2 = -(1.0f / timeConst_horizVel) * state.estVel_2;
+    //float desRoll = -desAcc2 / gravity;
+    //float desPitch = desAcc1 / gravity;
+    //float desYaw = state.estYaw;
+
+    // 7. ATTITUDE CONTROL
+    // Simple P-Controllers for Angle -> Rate -> Torque
+    float desRoll = 0; // Level
+    float desPitch = 0; // Level
+    float desYaw = 0; // Lock Yaw (Simple)
 
     float rollRate_tgt = (-1.0f / tau_roll) * (state.estRoll - desRoll);
     float pitchRate_tgt = (-1.0f / tau_pitch) * (state.estPitch - desPitch);
@@ -296,10 +399,19 @@ void control_step(float dt) {
     float pitchRate_cmd = (-1.0f / tau_pitchRate) * (state.gyroY - pitchRate_tgt);
     float yawRate_cmd = (-1.0f / tau_yawRate) * (state.gyroZ - yawRate_tgt);
 
+    // 8. POSITION CONTROL (Vertical)
+    // PD Controller for Height
     const float desAcc3 = -2.0f * dampingRatio_height * natFreq_height * state.estVel_3 
                           - natFreq_height * natFreq_height * (state.estHeight - desHeight);
+
+    // Convert to Thrust ( Gravity + PID correction ) / Tilt Correction
     float desNormalizedAcceleration = (gravity + desAcc3) / (cosf(state.estRoll) * cosf(state.estPitch));
     
+    // Clamp Thrust to prevent motor saturation
+    if (desNormalizedAcceleration < 0) desNormalizedAcceleration = 0;
+    if (desNormalizedAcceleration > 2.0f * gravity) desNormalizedAcceleration = 2.0f * gravity;
+    
+    // 9. MIXING
     float u[4] = {desNormalizedAcceleration * mass, 0, 0, 0};
     u[1] = rollRate_cmd * J[0][0];
     u[2] = pitchRate_cmd * J[1][1];
@@ -312,12 +424,17 @@ void control_step(float dt) {
         }
     }
 
-    motor_cmds[0] = forceToVoltage(0.9f * ctrl[1]);
-    motor_cmds[1] = forceToVoltage(0.9f * ctrl[2]);
-    motor_cmds[2] = forceToVoltage(0.9f * ctrl[3] * 0.87f);
-    motor_cmds[3] = forceToVoltage(0.9f * ctrl[0] * 0.87f);
+    motor_cmds[0] = forceToVoltage(0.9f * ctrl[0]);
+    motor_cmds[1] = forceToVoltage(0.9f * ctrl[1]);
+    motor_cmds[2] = forceToVoltage(0.9f * ctrl[2]);
+    motor_cmds[3] = forceToVoltage(0.9f * ctrl[3]);
 
+    // 10. OUTPUT
     if (init_flag && !done_flag && !error_flag) {
+        // Enforce Min Throttle (Idle Spin) to prevent motor stall
+        for(int i=0; i<4; i++) {
+            if (motor_cmds[i] < 0.05f) motor_cmds[i] = 0.05f; 
+        }
         set_motors(motor_cmds[0], motor_cmds[1], motor_cmds[2], motor_cmds[3]);
     } else {
         set_motors(0, 0, 0, 0);
@@ -329,8 +446,40 @@ void control_step(float dt) {
  * ========================================================================= */
 
 void app_init() {
+    GPIO_InitType gpio_init_config;
+    gpio_init_config.mode = GPIO_MODE_OUTPUT;
+    gpio_init_config.pull = GPIO_PULL_NONE;
+    gpio_init_config.drive_strength = GPIO_DS_STRONG;
+    gpio_init(GPIOC, &gpio_init_config, GPIO_PIN_0);
+    gpio_init(GPIOC, &gpio_init_config, GPIO_PIN_1);
+
+    PWM_InitType PWM_init_config;
+    PWM_init_config.pwmscale = 0;
+    PWM_init_config.RESERVED = 0;
+    PWM_init_config.pwmsticky = 0;
+    PWM_init_config.pwmzerocmp = 0;
+    PWM_init_config.pwmdeglitch = 0;
+    PWM_init_config.RESERVED1 = 0;
+    PWM_init_config.pwmenalways = 0;
+    PWM_init_config.pwmenoneshot = 0;
+    PWM_init_config.RESERVED2 = 0;
+    PWM_init_config.pwmcmp0center = 0;
+    PWM_init_config.pwmcmp1center = 0;
+    PWM_init_config.pwmcmp2center = 0;
+    PWM_init_config.pwmcmp3center = 0;
+    PWM_init_config.RESERVED3 = 0;
+    PWM_init_config.pwmcmp0gang = 0;
+    PWM_init_config.pwmcmp1gang = 0;
+    PWM_init_config.pwmcmp2gang = 0;
+    PWM_init_config.pwmcmp3gang = 0;
+    PWM_init_config.pwmcmp0ip = 0;
+    PWM_init_config.pwmcmp1ip = 0;
+    PWM_init_config.pwmcmp2ip = 0;
+    PWM_init_config.pwmcmp3ip = 0;
+    pwm_init(PWM0_BASE, &PWM_init_config);
+
     pwm_enable(PWM0_BASE);
-    pwm_set_frequency(PWM0_BASE, 0, 25000);
+    pwm_set_frequency(PWM0_BASE, 0, MOT_FREQ_HZ);
 
     UART_InitType UART0_init_config = {115200, UART_MODE_TX_RX, UART_STOPBITS_2};
     uart_init(UART0, &UART0_init_config);
@@ -341,24 +490,42 @@ void app_init() {
     I2C_InitType i2c_conf;
     i2c_conf.clock = 400000;
     i2c_init(I2C0, &i2c_conf);
+    i2c_init(I2C1, &i2c_conf);
     
     sensor_init_all();
     madgwick_init(&filter, 100.0f);
 
-    set_motors(0.1f, 0, 0, 0); msleep(250);
-    set_motors(0, 0.1f, 0, 0); msleep(250);
-    set_motors(0, 0, 0.1f, 0); msleep(250);
-    set_motors(0, 0, 0, 0.1f); msleep(250);
-    set_motors(0, 0, 0, 0);
+    //set_motors(0.1f, 0, 0, 0); 
+    //msleep(250);
+    //set_motors(0, 0.1f, 0, 0); 
+    //msleep(250);
+    //set_motors(0, 0, 0.1f, 0); 
+    //msleep(250);
+    //set_motors(0, 0, 0, 0.1f); 
+    //msleep(250);
+    //set_motors(0, 0, 0, 0);
     
     printf("Quad init done (Ardupilot Layout).\n");
 }
 
 void app_main() {
+    printf("\n=== FLIGHT READY ===\n");
+    printf("1. Place drone on level ground.\n");
+    printf("2. Stand back.\n");
+    printf(">> Press 'c' to ARM and START FLIGHT SEQUENCE <<\n");
+    set_motors(0.0f, 0.0f, 0.0f, 0.0f);
+    
+    char c[1];
+    uart_receive(UART0, c, 1, 10000000); // Wait forever (essentially)
+    if (c[0] != 'c') return;
+
     uint64_t last_control_us = get_time_us();
     uint64_t last_print_us = get_time_us();
     uint64_t now;
 
+    set_motors(0.38f, 0.38f, 0.38f, 0.38f); // Spin motors at idle to indicate ARMED
+    msleep(2000);
+    set_motors(0.5f, 0.5f, 0.5f, 0.5f);
     while(1) {
         now = get_time_us();
         if ((now - last_control_us) >= 10000) {
@@ -368,13 +535,27 @@ void app_main() {
             
              if (error_flag) gpio_write_pin(GPIOC, GPIO_PIN_0, 1); 
              else if (init_flag) gpio_write_pin(GPIOC, GPIO_PIN_1, 1);
+             else if (done_flag) {
+                set_motors(0.0f, 0.0f, 0.0f, 0.0f);
+                printf("Flight Complete. Motors off...\n");
+                break;
+             }
         }
 
         if ((now - last_print_us) >= 1000000) {
             last_print_us = now;
-            printf("R:%.2f P:%.2f H:%.2f | M:%.2f %.2f %.2f %.2f\n", 
-                state.estRoll, state.estPitch, state.estHeight,
-                motor_cmds[0], motor_cmds[1], motor_cmds[2], motor_cmds[3]);
+
+            // SAFE PRINTING: Cast to Int to avoid Balloc crash
+            int r_i = (int)(state.estRoll * 57.29f);
+            int p_i = (int)(state.estPitch * 57.29f);
+            int h_cm = (int)(state.estHeight * 100.0f);
+            int m1 = (int)(motor_cmds[0] * 100);
+            int m2 = (int)(motor_cmds[1] * 100);
+            int m3 = (int)(motor_cmds[2] * 100);
+            int m4 = (int)(motor_cmds[3] * 100);
+
+            printf("R:%d P:%d H:%dcm | M:%d %d %d %d\n", 
+                   r_i, p_i, h_cm, m1, m2, m3, m4);
         }
     }
 }

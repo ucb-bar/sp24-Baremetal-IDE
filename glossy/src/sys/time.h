@@ -40,3 +40,24 @@ __attribute__((weak)) int msleep(useconds_t msec);
  * @return 0 on success. On error, -1 is returned, with errno set to indicate the error.
  */
 __attribute__((weak)) int usleep(useconds_t usec);
+
+/**
+ * @brief Get time in milliseconds
+ * 
+ * @return Current time in milliseconds
+*/
+__attribute__((weak)) uint64_t get_time_ms();
+
+/**
+ * @brief Get time in microseconds
+ * 
+ * @return Current time in microseconds
+*/
+__attribute__((weak)) uint64_t get_time_us();
+
+/**
+ * @brief Get time in seconds
+ * 
+ * @return Current time in seconds
+*/
+__attribute__((weak)) uint64_t get_time();
