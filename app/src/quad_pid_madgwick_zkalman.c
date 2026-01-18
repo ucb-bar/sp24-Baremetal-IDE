@@ -1,7 +1,7 @@
 /* USER CODE BEGIN Header */
 /**
  ******************************************************************************
- * @file           : quad_pid.c
+ * @file           : quad_pid_madgwick_zkalman.c
  * @brief          : Main program body
  ******************************************************************************
  * @attention
@@ -54,7 +54,7 @@ const float kp_yaw   = 0.20f;  const float ki_yaw   = 0.05f; const float kd_yaw 
 
 // ANGLE LOOPS (Outer Loop - Stabilization)
 // Converts Angle Error -> Target Rate
-const float kp_angle = 4.0f; // If 10 deg error, command 40 deg/sec correction
+const float kp_angle = 4.0f; // If 10 deg error, command 60 deg/sec correction
 
 const float natFreq_height = 2.0f;
 const float dampingRatio_height = 0.7f;
@@ -68,6 +68,11 @@ const float dampingRatio_height = 0.7f;
 #define ACCEL_X_SCALE  1.0012f
 #define ACCEL_Y_SCALE  1.0015f
 #define ACCEL_Z_SCALE  1.0016f
+
+// INERTIAL FILTER GAINS (For Altitude Z)
+// Defines how strongly we correct Accel drift using ToF data
+const float z_k_h = 2.0f;   // Position correction gain
+const float z_k_v = 5.0f;   // Velocity correction gain
 
 // Ardupilot Quad-X Motor Mapping
 // Ch0: Motor 1 (Front Right, CCW)
@@ -110,14 +115,14 @@ typedef struct {
 
 typedef struct {
     float estRoll, estPitch, estYaw, estHeight;
-    float estVel_1, estVel_2, estVel_3;
-    float global_pos_x, global_pos_y;
-    int16_t global_pos_z_mm; 
-
-    float accelX, accelY, accelZ;
+    float estVel_3;
+    float accelX, accelY, accelZ; // Body Frame
     float gyroX, gyroY, gyroZ;
-    
-    int16_t motion_count_x, motion_count_y;
+    float accelZ_earth; // Earth Frame (Vertical Acceleration)
+    float global_pos_x, global_pos_y; // For future use with optical flow
+    int16_t global_pos_z_mm; // For future use with optical flow
+
+    int16_t motion_count_x, motion_count_y; // For future use with optical flow
 } DroneState;
 
 /* =========================================================================
@@ -232,27 +237,44 @@ void sensor_init_all() {
     }
 }
 
-void read_imu_burst(float *ax, float *ay, float *az, float *gx, float *gy, float *gz) {
+void read_imu_burst(float dt) {
     if (icm42688_read_all(I2C0, &imu_data, CLINT) == 0) {
-        //*ax = imu_data.accel_x * ACCEL_SCALE;
-        //*ay = imu_data.accel_y * ACCEL_SCALE;
-        //*az = imu_data.accel_z * ACCEL_SCALE;
-        *ax = (imu_data.accel_x - ACCEL_X_OFFSET) * ACCEL_X_SCALE * (9.81f / 2048.0f);
-        *ay = (imu_data.accel_y - ACCEL_Y_OFFSET) * ACCEL_Y_SCALE * (9.81f / 2048.0f);
-        *az = (imu_data.accel_z - ACCEL_Z_OFFSET) * ACCEL_Z_SCALE * (9.81f / 2048.0f);
-        *gx = imu_data.gyro_x * GYRO_SCALE;
-        *gy = imu_data.gyro_y * GYRO_SCALE;
-        *gz = imu_data.gyro_z * GYRO_SCALE;
-        // *gx = (imu_data.gyro_x - gyro_bias_x) * GYRO_SCALE;
-        // *gy = (imu_data.gyro_y - gyro_bias_y) * GYRO_SCALE;
-        // *gz = (imu_data.gyro_z - gyro_bias_z) * GYRO_SCALE;
+        state.accelX = (imu_data.accel_x - ACCEL_X_OFFSET) * ACCEL_X_SCALE * (9.81f / 2048.0f);
+        state.accelY = (imu_data.accel_y - ACCEL_Y_OFFSET) * ACCEL_Y_SCALE * (9.81f / 2048.0f);
+        state.accelZ = (imu_data.accel_z - ACCEL_Z_OFFSET) * ACCEL_Z_SCALE * (9.81f / 2048.0f);
+        state.gyroX  = imu_data.gyro_x * GYRO_SCALE;
+        state.gyroY  = imu_data.gyro_y * GYRO_SCALE;
+        state.gyroZ  = imu_data.gyro_z * GYRO_SCALE;
+        
+        // --- INERTIAL Z ESTIMATION (Simplified Kalman) ---
+        // 1. Rotate Body Accel Z to Earth Frame
+        // Approximation for small angles: Az_earth = Az_body - g (roughly)
+        // Better: Use Quaternion to rotate [0, 0, Az] to earth frame.
+        // Simplified Logic: 
+        // Earth Accel Z = (AccelZ * cos(Roll) * cos(Pitch)) - Gravity
+        // This removes the "tilt component" from the accelerometer.
+        float tilt_correction = cosf(state.estRoll) * cosf(state.estPitch);
+        state.accelZ_earth = (state.accelZ * tilt_correction) - gravity; 
+        
+        // 2. Predict (Inertial Integration)
+        state.estHeight += state.estVel_3 * dt;
+        state.estVel_3  += state.accelZ_earth * dt;
     }
 }
 
-int16_t read_tof_distance() {
-    int16_t dist = vl53l1x_read_distance(I2C1, CLINT);
-    if (dist < 0) return 0; // Return 0 on error
-    return dist;
+void update_tof_fusion(float dt) {
+    int16_t alt_mm = vl53l1x_read_distance(I2C1, CLINT);
+    if (alt_mm >= 0) {
+        float tof_h = alt_mm / 1000.0f;
+        
+        // 3. Correct (Fuse ToF with Inertial Estimate)
+        // Error = Measured - Predicted
+        float pos_err = tof_h - state.estHeight;
+        
+        // Apply Corrections
+        state.estHeight += z_k_h * pos_err * dt;
+        state.estVel_3  += z_k_v * pos_err * dt;
+    }
 }
 
 void madgwick_init(MadgwickFilter *f) {
@@ -370,36 +392,28 @@ static float last_height = 0.0f;
 static uint32_t mission_timer_ms = 0;
 
 void control_step(float dt) {
-    read_imu_burst(&state.accelX, &state.accelY, &state.accelZ, 
-                   &state.gyroX, &state.gyroY, &state.gyroZ);
+    // 1. SENSOR READ & PREDICTION
+    read_imu_burst(dt);       // Updates Accel/Gyro + Predicts Z
+    update_tof_fusion(dt);    // Corrects Z with ToF
 
-    // Note: In a real loop, you might only read this every 50ms (20Hz) 
-    // to save I2C bus time, as ToF is slower than IMU.
-    int16_t alt_mm = read_tof_distance();
-    state.estHeight = alt_mm / 1000.0f; // Convert mm to meters
+    // 2. MADGWICK UPDATE
+    madgwick_update(&filter, state.gyroX, state.gyroY, state.gyroZ, 
+                             state.accelX, state.accelY, state.accelZ, dt);
 
-    // 2. CALCULATE VERTICAL VELOCITY (Simple Derivative + Low Pass)
-    // We need velocity for the D-term to prevent oscillation!
-    float raw_vel = (state.estHeight - last_height) / dt;
-    // Simple Alpha filter for velocity (0.1 = smooth, 1.0 = raw)
-    state.estVel_3 = state.estVel_3 * 0.9f + raw_vel * 0.1f; 
+    // Convert Quaternion to Euler (Radians)
+    float sinr_cosp = 2.0f * (filter.q0 * filter.q1 + filter.q2 * filter.q3);
+    float cosr_cosp = 1.0f - 2.0f * (filter.q1 * filter.q1 + filter.q2 * filter.q2);
+    state.estRoll = atan2f(sinr_cosp, cosr_cosp);
 
-    last_height = state.estHeight;
-    
-    // 3. ATTITUDE ESTIMATION
-    // --- ROBUST ATTITUDE ESTIMATION (ATAN2) ---
-    // Calculates pitch/roll from gravity vector correctly for full 360 rotation
-    float accRoll  = atan2f(state.accelY, state.accelZ);
-    float accPitch = atan2f(-state.accelX, sqrtf(state.accelY*state.accelY + state.accelZ*state.accelZ));
-    
-    state.estRoll  = (1.0f - rho) * (state.estRoll + dt * state.gyroX)  + rho * accRoll;
-    state.estPitch = (1.0f - rho) * (state.estPitch + dt * state.gyroY) + rho * accPitch;
-    state.estYaw   = state.estYaw + dt * state.gyroZ;
+    float sinp = 2.0f * (filter.q0 * filter.q2 - filter.q3 * filter.q1);
+    if (fabs(sinp) >= 1) state.estPitch = copysignf(M_PI / 2, sinp); 
+    else state.estPitch = asinf(sinp);
 
-    // Normalize Yaw to -PI to +PI
-    state.estYaw = normalize_angle(state.estYaw);
+    float siny_cosp = 2.0f * (filter.q0 * filter.q3 + filter.q1 * filter.q2);
+    float cosy_cosp = 1.0f - 2.0f * (filter.q2 * filter.q2 + filter.q3 * filter.q3);
+    state.estYaw = atan2f(siny_cosp, cosy_cosp);
 
-    // 4. SAFETY CUTOFF (Crash Detection)
+    // 3. SAFETY CUTOFF (Crash Detection)
     if (state.accelZ < -40.0f || state.accelZ > 40.0f) { error_flag = 1; }
 
     // --- SAFETY CUTOFFS ---
@@ -408,13 +422,13 @@ void control_step(float dt) {
         error_flag = 1; 
     }
 
-    // 5. FLIGHT PLAN STATE MACHINE
+    // 4. FLIGHT PLAN STATE MACHINE
     mission_timer_ms += (uint32_t)(dt * 1000);
     if (mission_timer_ms < 10000) init_flag = 1;
     if (mission_timer_ms > 10000) descend_flag = 1;
     if (mission_timer_ms > 15000) done_flag = 1;
 
-    // 6. UPDATE TARGET HEIGHT
+    // 5. UPDATE TARGET HEIGHT
     if (init_flag && !descend_flag) {
         // Hover Phase: Smoothly approach 0.75m if not there
         // (Optional: You can just leave it at 0.75 static)
@@ -431,6 +445,16 @@ void control_step(float dt) {
     //float desRoll = -desAcc2 / gravity;
     //float desPitch = desAcc1 / gravity;
     //float desYaw = state.estYaw;
+
+    // 6. VERTICAL CONTROL (PID on Height + Vel)
+    // Note: We use our CLEAN filtered velocity here!
+    const float desAcc3 = -2.0f * dampingRatio_height * natFreq_height * state.estVel_3 
+                          - natFreq_height * natFreq_height * (state.estHeight - desHeight);
+    
+    float desNormalizedAcceleration = (gravity + desAcc3) / (cosf(state.estRoll) * cosf(state.estPitch));
+    
+    if (desNormalizedAcceleration < 0) desNormalizedAcceleration = 0;
+    if (desNormalizedAcceleration > 2.0f * gravity) desNormalizedAcceleration = 2.0f * gravity;
 
     // 7. ATTITUDE CONTROL
     // Simple P-Controllers for Angle -> Rate -> Torque
@@ -449,20 +473,8 @@ void control_step(float dt) {
     float roll_torque  = pid_update(&pid_roll,  rollRate_tgt - state.gyroX, dt, kp_roll, ki_roll, kd_roll) * J[0][0];
     float pitch_torque = pid_update(&pid_pitch, pitchRate_tgt - state.gyroY, dt, kp_pitch, ki_pitch, kd_pitch) * J[1][1];
     float yaw_torque   = pid_update(&pid_yaw,   yawRate_tgt - state.gyroZ,  dt, kp_yaw, ki_yaw, kd_yaw) * J[2][2];
-
-    // 8. POSITION CONTROL (Vertical)
-    // PD Controller for Height
-    const float desAcc3 = -2.0f * dampingRatio_height * natFreq_height * state.estVel_3 
-                          - natFreq_height * natFreq_height * (state.estHeight - desHeight);
-
-    // Convert to Thrust ( Gravity + PID correction ) / Tilt Correction
-    float desNormalizedAcceleration = (gravity + desAcc3) / (cosf(state.estRoll) * cosf(state.estPitch));
     
-    // Clamp Thrust to prevent motor saturation
-    if (desNormalizedAcceleration < 0) desNormalizedAcceleration = 0;
-    if (desNormalizedAcceleration > 2.0f * gravity) desNormalizedAcceleration = 2.0f * gravity;
-    
-    // 9. MIXING
+    // 8. MIXING
     float u[4] = {desNormalizedAcceleration * mass, roll_torque, pitch_torque, yaw_torque};
 
     float ctrl[4] = {0};
@@ -479,7 +491,7 @@ void control_step(float dt) {
     raw_cmds[2] = forceToVoltage(0.9f * ctrl[2]);
     raw_cmds[3] = forceToVoltage(0.9f * ctrl[3]);
 
-    // 10. OUTPUT
+    // 9. OUTPUT
     if (init_flag && !done_flag && !error_flag) {
         // Enforce Min Throttle (Idle Spin) to prevent motor stall
         for(int i=0; i<4; i++) {
@@ -616,13 +628,14 @@ void app_main() {
             int p_i = (int)(state.estPitch * 57.29f);
             int y_i = (int)(state.estYaw * 57.29f);
             int h_cm = (int)(state.estHeight * 100.0f);
+            int vz_cm = (int)(state.estVel_3 * 100.0f);
             int m1 = (int)(motor_cmds[0] * 100);
             int m2 = (int)(motor_cmds[1] * 100);
             int m3 = (int)(motor_cmds[2] * 100);
             int m4 = (int)(motor_cmds[3] * 100);
 
-            printf("R:%d P:%d Y:%d H:%dcm | M:%d %d %d %d\n", 
-                   r_i, p_i, y_i, h_cm, m1, m2, m3, m4);
+            printf("R:%d P:%d Y:%d H:%dcm V:%dcm/s | M:%d %d %d %d\n", 
+                   r_i, p_i, y_i, h_cm, vz_cm, m1, m2, m3, m4);
         }
     }
 }

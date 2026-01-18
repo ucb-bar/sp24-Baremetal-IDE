@@ -48,13 +48,13 @@ const float k = 0.01f;
 
 // RATE LOOPS (Inner Loop - Fast)
 // High P makes it feel "Locked in". High D stops bounce.
-const float kp_roll  = 0.15f;  const float ki_roll  = 0.10f; const float kd_roll  = 0.005f;
-const float kp_pitch = 0.15f;  const float ki_pitch = 0.10f; const float kd_pitch = 0.005f;
-const float kp_yaw   = 0.30f;  const float ki_yaw   = 0.05f; const float kd_yaw   = 0.00f;
+const float kp_roll  = 0.11f;  const float ki_roll  = 0.05f; const float kd_roll  = 0.005f;
+const float kp_pitch = 0.11f;  const float ki_pitch = 0.05f; const float kd_pitch = 0.005f;
+const float kp_yaw   = 0.20f;  const float ki_yaw   = 0.05f; const float kd_yaw   = 0.00f;
 
 // ANGLE LOOPS (Outer Loop - Stabilization)
 // Converts Angle Error -> Target Rate
-const float kp_angle = 6.0f; // If 10 deg error, command 60 deg/sec correction
+const float kp_angle = 4.0f; // If 10 deg error, command 40 deg/sec correction
 
 const float natFreq_height = 2.0f;
 const float dampingRatio_height = 0.7f;
@@ -621,13 +621,14 @@ void app_main() {
             int p_i = (int)(state.estPitch * 57.29f);
             int y_i = (int)(state.estYaw * 57.29f);
             int h_cm = (int)(state.estHeight * 100.0f);
+            int vz_cm = (int)(state.estVel_3 * 100.0f);
             int m1 = (int)(motor_cmds[0] * 100);
             int m2 = (int)(motor_cmds[1] * 100);
             int m3 = (int)(motor_cmds[2] * 100);
             int m4 = (int)(motor_cmds[3] * 100);
 
-            printf("R:%d P:%d Y:%d H:%dcm | M:%d %d %d %d\n", 
-                   r_i, p_i, y_i, h_cm, m1, m2, m3, m4);
+            printf("R:%d P:%d Y:%d H:%dcm V:%dcm/s | M:%d %d %d %d\n", 
+                   r_i, p_i, y_i, h_cm, vz_cm, m1, m2, m3, m4);
         }
     }
 }
