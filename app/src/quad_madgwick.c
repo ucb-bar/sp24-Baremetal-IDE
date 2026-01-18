@@ -1,7 +1,7 @@
 /* USER CODE BEGIN Header */
 /**
  ******************************************************************************
- * @file           : quad.c
+ * @file           : quad_madgwick.c
  * @brief          : Main program body
  ******************************************************************************
  * @attention
@@ -346,26 +346,31 @@ void control_step(float dt) {
     int16_t alt_mm = read_tof_distance();
     state.estHeight = alt_mm / 1000.0f; // Convert mm to meters
 
-    // 2. CALCULATE VERTICAL VELOCITY (Simple Derivative + Low Pass)
+    // 2. STATE ESTIMATION (MADGWICK REPLACES COMPLEMENTARY FILTER)
+    madgwick_update(&filter, state.gyroX, state.gyroY, state.gyroZ, 
+                             state.accelX, state.accelY, state.accelZ, dt);
+
+    // Convert Quaternion to Euler (Radians)
+    // This provides robust angles (-180 to +180) preventing flip-overs due to math errors
+    float sinr_cosp = 2.0f * (filter.q0 * filter.q1 + filter.q2 * filter.q3);
+    float cosr_cosp = 1.0f - 2.0f * (filter.q1 * filter.q1 + filter.q2 * filter.q2);
+    state.estRoll = atan2f(sinr_cosp, cosr_cosp);
+
+    float sinp = 2.0f * (filter.q0 * filter.q2 - filter.q3 * filter.q1);
+    if (fabs(sinp) >= 1) state.estPitch = copysignf(M_PI / 2, sinp); 
+    else state.estPitch = asinf(sinp);
+
+    float siny_cosp = 2.0f * (filter.q0 * filter.q3 + filter.q1 * filter.q2);
+    float cosy_cosp = 1.0f - 2.0f * (filter.q2 * filter.q2 + filter.q3 * filter.q3);
+    state.estYaw = atan2f(siny_cosp, cosy_cosp);
+    
+    // 3. CALCULATE VERTICAL VELOCITY (Simple Derivative + Low Pass)
     // We need velocity for the D-term to prevent oscillation!
     float raw_vel = (state.estHeight - last_height) / dt;
     // Simple Alpha filter for velocity (0.1 = smooth, 1.0 = raw)
     state.estVel_3 = state.estVel_3 * 0.9f + raw_vel * 0.1f; 
 
     last_height = state.estHeight;
-    
-    // 3. ATTITUDE ESTIMATION
-    // --- ROBUST ATTITUDE ESTIMATION (ATAN2) ---
-    // Calculates pitch/roll from gravity vector correctly for full 360 rotation
-    float accRoll  = atan2f(state.accelY, state.accelZ);
-    float accPitch = atan2f(-state.accelX, sqrtf(state.accelY*state.accelY + state.accelZ*state.accelZ));
-    
-    state.estRoll  = (1.0f - rho) * (state.estRoll + dt * state.gyroX)  + rho * accRoll;
-    state.estPitch = (1.0f - rho) * (state.estPitch + dt * state.gyroY) + rho * accPitch;
-    state.estYaw   = state.estYaw + dt * state.gyroZ;
-
-    // Normalize Yaw to -PI to +PI
-    state.estYaw = normalize_angle(state.estYaw);
 
     // 4. SAFETY CUTOFF (Crash Detection)
     if (state.accelZ < -40.0f || state.accelZ > 40.0f) { error_flag = 1; }

@@ -1,7 +1,7 @@
 /* USER CODE BEGIN Header */
 /**
  ******************************************************************************
- * @file           : quad.c
+ * @file           : quad_pid_madgwick.c
  * @brief          : Main program body
  ******************************************************************************
  * @attention
@@ -40,14 +40,22 @@ const float rho = 0.15f;
 const float l = 88.9e-3f;
 const float k = 0.01f;
 
-// PID / Control Constants
-const float tau_roll = 0.10f;
-const float tau_pitch = 0.10f;
-const float tau_yaw = 0.25f;
-const float tau_rollRate = 0.025f;
-const float tau_pitchRate = 0.025f;
-const float tau_yawRate = 0.05f;
-const float timeConst_horizVel = 0.5f;
+
+// --- PID GAINS ---
+// P = Strength of correction
+// I = Memory of error (Fixes drift/imbalance)
+// D = Damping (Stops oscillation)
+
+// RATE LOOPS (Inner Loop - Fast)
+// High P makes it feel "Locked in". High D stops bounce.
+const float kp_roll  = 0.15f;  const float ki_roll  = 0.10f; const float kd_roll  = 0.005f;
+const float kp_pitch = 0.15f;  const float ki_pitch = 0.10f; const float kd_pitch = 0.005f;
+const float kp_yaw   = 0.30f;  const float ki_yaw   = 0.05f; const float kd_yaw   = 0.00f;
+
+// ANGLE LOOPS (Outer Loop - Stabilization)
+// Converts Angle Error -> Target Rate
+const float kp_angle = 6.0f; // If 10 deg error, command 60 deg/sec correction
+
 const float natFreq_height = 2.0f;
 const float dampingRatio_height = 0.7f;
 
@@ -96,6 +104,11 @@ typedef struct {
 } MadgwickFilter;
 
 typedef struct {
+    float integral_err;
+    float last_err;
+} PID_State;
+
+typedef struct {
     float estRoll, estPitch, estYaw, estHeight;
     float estVel_1, estVel_2, estVel_3;
     float global_pos_x, global_pos_y;
@@ -114,6 +127,7 @@ typedef struct {
 static DroneState state;
 static MadgwickFilter filter;
 static ICM42688_Data imu_data;
+static PID_State pid_roll, pid_pitch, pid_yaw;
 
 static float motor_cmds[4] = {0};
 static float lastHeightMeas_meas = 0;
@@ -280,6 +294,24 @@ void madgwick_update(MadgwickFilter *f, float gx, float gy, float gz, float ax, 
     f->q0 *= recipNorm; f->q1 *= recipNorm; f->q2 *= recipNorm; f->q3 *= recipNorm;
 }
 
+float pid_update(PID_State *pid, float error, float dt, float kp, float ki, float kd) {
+    // 1. Proportional
+    float p_term = kp * error;
+    
+    // 2. Integral (Accumulate)
+    // Clamp integral to prevent windup (max 20% authority)
+    pid->integral_err += error * dt;
+    if (pid->integral_err > 2.0f) pid->integral_err = 2.0f;
+    if (pid->integral_err < -2.0f) pid->integral_err = -2.0f;
+    float i_term = ki * pid->integral_err;
+
+    // 3. Derivative (Change)
+    float d_term = kd * (error - pid->last_err) / dt;
+    pid->last_err = error;
+
+    return p_term + i_term + d_term;
+}
+
 /* =========================================================================
  * MOTOR CONTROL
  * ========================================================================= */
@@ -338,6 +370,7 @@ static float last_height = 0.0f;
 static uint32_t mission_timer_ms = 0;
 
 void control_step(float dt) {
+    // 1. SENSOR READ
     read_imu_burst(&state.accelX, &state.accelY, &state.accelZ, 
                    &state.gyroX, &state.gyroY, &state.gyroZ);
 
@@ -346,26 +379,30 @@ void control_step(float dt) {
     int16_t alt_mm = read_tof_distance();
     state.estHeight = alt_mm / 1000.0f; // Convert mm to meters
 
-    // 2. CALCULATE VERTICAL VELOCITY (Simple Derivative + Low Pass)
+    // 2. MADGWICK UPDATE
+    madgwick_update(&filter, state.gyroX, state.gyroY, state.gyroZ, 
+                             state.accelX, state.accelY, state.accelZ, dt);
+
+    // Convert Quaternion to Euler (Radians)
+    float sinr_cosp = 2.0f * (filter.q0 * filter.q1 + filter.q2 * filter.q3);
+    float cosr_cosp = 1.0f - 2.0f * (filter.q1 * filter.q1 + filter.q2 * filter.q2);
+    state.estRoll = atan2f(sinr_cosp, cosr_cosp);
+
+    float sinp = 2.0f * (filter.q0 * filter.q2 - filter.q3 * filter.q1);
+    if (fabs(sinp) >= 1) state.estPitch = copysignf(M_PI / 2, sinp); 
+    else state.estPitch = asinf(sinp);
+
+    float siny_cosp = 2.0f * (filter.q0 * filter.q3 + filter.q1 * filter.q2);
+    float cosy_cosp = 1.0f - 2.0f * (filter.q2 * filter.q2 + filter.q3 * filter.q3);
+    state.estYaw = atan2f(siny_cosp, cosy_cosp);
+
+    // 3. CALCULATE VERTICAL VELOCITY (Simple Derivative + Low Pass)
     // We need velocity for the D-term to prevent oscillation!
     float raw_vel = (state.estHeight - last_height) / dt;
     // Simple Alpha filter for velocity (0.1 = smooth, 1.0 = raw)
     state.estVel_3 = state.estVel_3 * 0.9f + raw_vel * 0.1f; 
 
     last_height = state.estHeight;
-    
-    // 3. ATTITUDE ESTIMATION
-    // --- ROBUST ATTITUDE ESTIMATION (ATAN2) ---
-    // Calculates pitch/roll from gravity vector correctly for full 360 rotation
-    float accRoll  = atan2f(state.accelY, state.accelZ);
-    float accPitch = atan2f(-state.accelX, sqrtf(state.accelY*state.accelY + state.accelZ*state.accelZ));
-    
-    state.estRoll  = (1.0f - rho) * (state.estRoll + dt * state.gyroX)  + rho * accRoll;
-    state.estPitch = (1.0f - rho) * (state.estPitch + dt * state.gyroY) + rho * accPitch;
-    state.estYaw   = state.estYaw + dt * state.gyroZ;
-
-    // Normalize Yaw to -PI to +PI
-    state.estYaw = normalize_angle(state.estYaw);
 
     // 4. SAFETY CUTOFF (Crash Detection)
     if (state.accelZ < -40.0f || state.accelZ > 40.0f) { error_flag = 1; }
@@ -406,17 +443,17 @@ void control_step(float dt) {
     float desPitch = 0; // Level
     float desYaw = 0; // Lock Yaw (Simple)
 
-    float rollRate_tgt = (-1.0f / tau_roll) * (state.estRoll - desRoll);
-    float pitchRate_tgt = (-1.0f / tau_pitch) * (state.estPitch - desPitch);
+    float rollRate_tgt = kp_angle * (desRoll - state.estRoll);
+    float pitchRate_tgt = kp_angle * (desPitch - state.estPitch);
+    
+    // Shortest path yaw
+    float yaw_err_ang = normalize_angle(desYaw - state.estYaw);
+    float yawRate_tgt = kp_angle * yaw_err_ang;
 
-    // Yaw Error Calculation (Shortest Path)
-    float yaw_err = normalize_angle(state.estYaw - desYaw);
-    float yawRate_tgt = (-1.0f / tau_yaw) * yaw_err;
-    //float yawRate_tgt = (-1.0f / tau_yaw) * (state.estYaw - desYaw);
-
-    float rollRate_cmd = (-1.0f / tau_rollRate) * (state.gyroX - rollRate_tgt);
-    float pitchRate_cmd = (-1.0f / tau_pitchRate) * (state.gyroY - pitchRate_tgt);
-    float yawRate_cmd = (-1.0f / tau_yawRate) * (state.gyroZ - yawRate_tgt);
+    // --- 3. RATE CONTROL (Inner Loop - PID) ---
+    float roll_torque  = pid_update(&pid_roll,  rollRate_tgt - state.gyroX, dt, kp_roll, ki_roll, kd_roll) * J[0][0];
+    float pitch_torque = pid_update(&pid_pitch, pitchRate_tgt - state.gyroY, dt, kp_pitch, ki_pitch, kd_pitch) * J[1][1];
+    float yaw_torque   = pid_update(&pid_yaw,   yawRate_tgt - state.gyroZ,  dt, kp_yaw, ki_yaw, kd_yaw) * J[2][2];
 
     // 8. POSITION CONTROL (Vertical)
     // PD Controller for Height
@@ -431,10 +468,7 @@ void control_step(float dt) {
     if (desNormalizedAcceleration > 2.0f * gravity) desNormalizedAcceleration = 2.0f * gravity;
     
     // 9. MIXING
-    float u[4] = {desNormalizedAcceleration * mass, 0, 0, 0};
-    u[1] = rollRate_cmd * J[0][0];
-    u[2] = pitchRate_cmd * J[1][1];
-    u[3] = yawRate_cmd * J[2][2];
+    float u[4] = {desNormalizedAcceleration * mass, roll_torque, pitch_torque, yaw_torque};
 
     float ctrl[4] = {0};
     for (int i = 0; i < 4; i++) {

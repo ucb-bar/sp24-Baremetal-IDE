@@ -246,7 +246,7 @@ void app_main() {
     pwm_set_duty_cycle(PWM0_BASE, MOTOR3_PWM_CH, 58, 0);
     pwm_set_duty_cycle(PWM0_BASE, MOTOR1_PWM_CH, 55, 0);
     pwm_set_duty_cycle(PWM0_BASE, MOTOR2_PWM_CH, 70, 0);
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR4_PWM_CH, 64, 0);
+    pwm_set_duty_cycle(PWM0_BASE, MOTOR4_PWM_CH, 60, 0);
 
     printf(">> Press 's' to drop throttle and DISARM motors <<\n");
     while(1) {
