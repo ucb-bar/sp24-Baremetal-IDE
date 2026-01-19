@@ -48,13 +48,13 @@ const float k = 0.01f;
 
 // RATE LOOPS (Inner Loop - Fast)
 // High P makes it feel "Locked in". High D stops bounce.
-const float kp_roll  = 0.11f;  const float ki_roll  = 0.05f; const float kd_roll  = 0.005f;
-const float kp_pitch = 0.11f;  const float ki_pitch = 0.05f; const float kd_pitch = 0.005f;
-const float kp_yaw   = 0.20f;  const float ki_yaw   = 0.05f; const float kd_yaw   = 0.00f;
+const float kp_roll  = 0.13f;  const float ki_roll  = 0.1f; const float kd_roll  = 0.005f;
+const float kp_pitch = 0.13f;  const float ki_pitch = 0.1f; const float kd_pitch = 0.005f;
+const float kp_yaw   = 0.20f;  const float ki_yaw   = 0.1f; const float kd_yaw   = 0.00f;
 
 // ANGLE LOOPS (Outer Loop - Stabilization)
 // Converts Angle Error -> Target Rate
-const float kp_angle = 4.0f; // If 10 deg error, command 60 deg/sec correction
+const float kp_angle = 3.0f; // If 10 deg error, command 60 deg/sec correction
 
 const float natFreq_height = 2.0f;
 const float dampingRatio_height = 0.7f;
@@ -88,7 +88,7 @@ const float z_k_v = 5.0f;   // Velocity correction gain
 // Define the duty cycle (0.0 - 1.0) where each motor *actually* starts spinning.
 // You found: Two at 58% (0.58), Two at 50% (0.50). 
 const float MOTOR_START_DUTY[4] = {0.54f, 0.54f, 0.54f, 0.54f}; // Adjust order to match M1, M2, M3, M4
-const float MOTOR_MAX_DUTY = 0.8f;
+const float MOTOR_MAX_DUTY = 0.75f;
 
 #define MOT_FREQ_HZ 381
 
@@ -316,13 +316,16 @@ void madgwick_update(MadgwickFilter *f, float gx, float gy, float gz, float ax, 
     f->q0 *= recipNorm; f->q1 *= recipNorm; f->q2 *= recipNorm; f->q3 *= recipNorm;
 }
 
-float pid_update(PID_State *pid, float error, float dt, float kp, float ki, float kd) {
+float pid_update(PID_State *pid, float error, float dt, float kp, float ki, float kd, int airborne) {
     // 1. Proportional
     float p_term = kp * error;
     
     // 2. Integral (Accumulate)
     // Clamp integral to prevent windup (max 20% authority)
+    // ANTI-WINDUP: Only integrate if airborne!
+    // This prevents the "Flip on Takeoff" due to ground windup.
     pid->integral_err += error * dt;
+    // Hard limit on I-term (max 15% authority)
     if (pid->integral_err > 2.0f) pid->integral_err = 2.0f;
     if (pid->integral_err < -2.0f) pid->integral_err = -2.0f;
     float i_term = ki * pid->integral_err;
@@ -414,7 +417,7 @@ void control_step(float dt) {
     state.estYaw = atan2f(siny_cosp, cosy_cosp);
 
     // 3. SAFETY CUTOFF (Crash Detection)
-    if (state.accelZ < -40.0f || state.accelZ > 40.0f) { error_flag = 1; }
+    if (state.accelZ < -30.0f || state.accelZ > 30.0f) { error_flag = 1; }
 
     // --- SAFETY CUTOFFS ---
     // If tilt > 60 degrees (approx 1.0 rad), Kill motors.
@@ -422,11 +425,15 @@ void control_step(float dt) {
         error_flag = 1; 
     }
 
+    if (state.estHeight < -0.5f || state.estHeight > 0.5f) { 
+        error_flag = 1; 
+    }
+
     // 4. FLIGHT PLAN STATE MACHINE
     mission_timer_ms += (uint32_t)(dt * 1000);
-    if (mission_timer_ms < 10000) init_flag = 1;
-    if (mission_timer_ms > 10000) descend_flag = 1;
-    if (mission_timer_ms > 15000) done_flag = 1;
+    if (mission_timer_ms < 7000) init_flag = 1;
+    if (mission_timer_ms > 7000) descend_flag = 1;
+    if (mission_timer_ms > 12000) done_flag = 1;
 
     // 5. UPDATE TARGET HEIGHT
     if (init_flag && !descend_flag) {
@@ -445,6 +452,10 @@ void control_step(float dt) {
     //float desRoll = -desAcc2 / gravity;
     //float desPitch = desAcc1 / gravity;
     //float desYaw = state.estYaw;
+
+    // Determine "Airborne" state for Integral Logic
+    // If we are above 5cm, or if motors are commanding > 20% thrust
+    int is_airborne = (state.estHeight > 0.05f);
 
     // 6. VERTICAL CONTROL (PID on Height + Vel)
     // Note: We use our CLEAN filtered velocity here!
@@ -470,9 +481,9 @@ void control_step(float dt) {
     float yawRate_tgt = kp_angle * yaw_err_ang;
 
     // --- 3. RATE CONTROL (Inner Loop - PID) ---
-    float roll_torque  = pid_update(&pid_roll,  rollRate_tgt - state.gyroX, dt, kp_roll, ki_roll, kd_roll) * J[0][0];
-    float pitch_torque = pid_update(&pid_pitch, pitchRate_tgt - state.gyroY, dt, kp_pitch, ki_pitch, kd_pitch) * J[1][1];
-    float yaw_torque   = pid_update(&pid_yaw,   yawRate_tgt - state.gyroZ,  dt, kp_yaw, ki_yaw, kd_yaw) * J[2][2];
+    float roll_torque  = pid_update(&pid_roll,  rollRate_tgt - state.gyroX, dt, kp_roll, ki_roll, kd_roll, is_airborne) * J[0][0];
+    float pitch_torque = pid_update(&pid_pitch, pitchRate_tgt - state.gyroY, dt, kp_pitch, ki_pitch, kd_pitch, is_airborne) * J[1][1];
+    float yaw_torque   = pid_update(&pid_yaw,   yawRate_tgt - state.gyroZ,  dt, kp_yaw, ki_yaw, kd_yaw, is_airborne) * J[2][2];
     
     // 8. MIXING
     float u[4] = {desNormalizedAcceleration * mass, roll_torque, pitch_torque, yaw_torque};
@@ -598,7 +609,7 @@ void app_main() {
 
     set_motors(0.38f, 0.38f, 0.38f, 0.38f); // Spin motors at idle to indicate ARMED
     msleep(5000);
-    set_motors(0.55f, 0.61f, 0.56f, 0.64f);
+    set_motors(0.55f, 0.62f, 0.57f, 0.64f);
     while(1) {
         now = get_time_us();
         if ((now - last_control_us) >= 1000) {

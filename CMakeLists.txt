@@ -102,6 +102,22 @@ add_executable(quad
   app/src/quad.c
 )
 
+add_executable(quad_madgwick
+  app/src/quad_madgwick.c
+)
+
+add_executable(quad_pid
+  app/src/quad_pid.c
+)
+
+add_executable(quad_pid_madgwick
+  app/src/quad_pid_madgwick.c
+)
+
+add_executable(quad_pid_madgwick_zkalman
+  app/src/quad_pid_madgwick_zkalman.c
+)
+
 add_executable(quad_simple_test
   app/src/quad_simple_test.c
 )
@@ -120,6 +136,10 @@ add_executable(imu_cal
 
 target_include_directories(app PUBLIC app/include)
 target_include_directories(quad PUBLIC app/include)
+target_include_directories(quad_madgwick PUBLIC app/include)
+target_include_directories(quad_pid PUBLIC app/include)
+target_include_directories(quad_pid_madgwick PUBLIC app/include)
+target_include_directories(quad_pid_madgwick_zkalman PUBLIC app/include)
 target_include_directories(quad_simple_test PUBLIC app/include)
 target_include_directories(test_sensor_fusion PUBLIC app/include)
 target_include_directories(quad_sitl PUBLIC app/include)
@@ -143,6 +163,22 @@ target_link_libraries(quad PRIVATE
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
 )
 
+target_link_libraries(quad_madgwick PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
+)
+
+target_link_libraries(quad_pid PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
+)
+
+target_link_libraries(quad_pid_madgwick PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
+)
+
+target_link_libraries(quad_pid_madgwick_zkalman PRIVATE 
+  -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
+)
+
 target_link_libraries(quad_simple_test PRIVATE 
   -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive m
 )
@@ -161,6 +197,14 @@ target_link_libraries(imu_cal PRIVATE
 
 target_link_libraries(quad PUBLIC icm42688)
 target_link_libraries(quad PUBLIC vl53l1x)
+target_link_libraries(quad_madgwick PUBLIC icm42688)
+target_link_libraries(quad_madgwick PUBLIC vl53l1x)
+target_link_libraries(quad_pid PUBLIC icm42688)
+target_link_libraries(quad_pid PUBLIC vl53l1x)
+target_link_libraries(quad_pid_madgwick PUBLIC icm42688)
+target_link_libraries(quad_pid_madgwick PUBLIC vl53l1x)
+target_link_libraries(quad_pid_madgwick_zkalman PUBLIC icm42688)
+target_link_libraries(quad_pid_madgwick_zkalman PUBLIC vl53l1x)
 target_link_libraries(quad_simple_test PUBLIC icm42688)
 target_link_libraries(quad_simple_test PUBLIC vl53l1x)
 target_link_libraries(test_sensor_fusion PUBLIC icm42688)
