@@ -31,14 +31,14 @@
  * ========================================================================= */
 
 // Physics Constants
-const float mass = 260e-3f;
+const float mass = 255e-3f;
 const float gravity = 9.81f;
 const float inertia_xx = 37e-5f;
 const float inertia_yy = 23.9e-5f;
 const float inertia_zz = 49.7e-5f;
 const float rho = 0.15f;
 const float l = 88.9e-3f;
-const float k = 0.01f;
+const float k = 0.1f;
 
 
 // --- PID GAINS ---
@@ -48,13 +48,13 @@ const float k = 0.01f;
 
 // RATE LOOPS (Inner Loop - Fast)
 // High P makes it feel "Locked in". High D stops bounce.
-const float kp_roll  = 0.13f;  const float ki_roll  = 0.1f; const float kd_roll  = 0.005f;
-const float kp_pitch = 0.13f;  const float ki_pitch = 0.1f; const float kd_pitch = 0.005f;
-const float kp_yaw   = 0.20f;  const float ki_yaw   = 0.1f; const float kd_yaw   = 0.00f;
+const float kp_roll  = 0.13f;  const float ki_roll  = 0.005f; const float kd_roll  = 0.00f;
+const float kp_pitch = 0.13f;  const float ki_pitch = 0.005f; const float kd_pitch = 0.00f;
+const float kp_yaw   = 0.07f;  const float ki_yaw   = 0.005f; const float kd_yaw   = 0.00f;
 
 // ANGLE LOOPS (Outer Loop - Stabilization)
 // Converts Angle Error -> Target Rate
-const float kp_angle = 3.0f; // If 10 deg error, command 60 deg/sec correction
+const float kp_angle = 1.0f; // If 10 deg error, command 60 deg/sec correction
 
 const float natFreq_height = 2.0f;
 const float dampingRatio_height = 0.7f;
@@ -88,7 +88,7 @@ const float z_k_v = 5.0f;   // Velocity correction gain
 // Define the duty cycle (0.0 - 1.0) where each motor *actually* starts spinning.
 // You found: Two at 58% (0.58), Two at 50% (0.50). 
 const float MOTOR_START_DUTY[4] = {0.54f, 0.54f, 0.54f, 0.54f}; // Adjust order to match M1, M2, M3, M4
-const float MOTOR_MAX_DUTY = 0.75f;
+const float MOTOR_MAX_DUTY = 0.95f;
 
 #define MOT_FREQ_HZ 381
 
@@ -143,9 +143,19 @@ static int init_flag = 0;
 static int descend_flag = 0;
 static int done_flag = 0;
 
-float gyro_bias_x = 0;
-float gyro_bias_y = 0;
-float gyro_bias_z = 0;
+float gyro_bias_x = 0.0f;
+float gyro_bias_y = 0.0f;
+float gyro_bias_z = 0.0f;
+
+float accel_bias_x = 0.0f;
+float accel_bias_y = 0.0f;
+float accel_bias_z = 0.0f;
+
+static float last_tof_h = 0.0f;
+static int tof_valid = 0;
+
+static int lpf_inited = 0;
+static float ax_f, ay_f, az_f;
 
 // MIXING MATRIX (Ardupilot Quad-X)
 // Rows: M1(FR), M2(RL), M3(FL), M4(RR)
@@ -193,7 +203,7 @@ void calibrate_gyro_bias() {
     int samples = 200;
     
     for (int i = 0; i < samples; i++) {
-        icm42688_read_all(I2C0, CLINT, &imu_data);
+        icm42688_read_all(I2C0, &imu_data, CLINT);
         sum_x += imu_data.gyro_x;
         sum_y += imu_data.gyro_y;
         sum_z += imu_data.gyro_z;
@@ -204,7 +214,27 @@ void calibrate_gyro_bias() {
     gyro_bias_y = sum_y / samples;
     gyro_bias_z = sum_z / samples;
     
-    printf("Gyro Bias: X:%.1f Y:%.1f Z:%.1f\n", gyro_bias_x, gyro_bias_y, gyro_bias_z);
+    printf("Gyro Bias: X:%.4f Y:%.4f Z:%.4f\n", gyro_bias_x, gyro_bias_y, gyro_bias_z);
+}
+
+void calibrate_accel_bias() {
+    printf("Calibrating Accelerometer... KEEP STILL!\n");
+    float sum_x = 0, sum_y = 0, sum_z = 0;
+    int samples = 200;
+    
+    for (int i = 0; i < samples; i++) {
+        icm42688_read_all(I2C0, &imu_data, CLINT);
+        sum_x += imu_data.accel_x;
+        sum_y += imu_data.accel_y;
+        sum_z += imu_data.accel_z;
+        for(volatile int k=0; k<50000; k++); // Small delay
+    }
+    
+    accel_bias_x = sum_x / samples;
+    accel_bias_y = sum_y / samples;
+    accel_bias_z = (sum_z / samples) - (gravity/ACCEL_SCALE); // Remove gravity component from Z bias
+    
+    printf("Accelerometer Bias: X:%.4f Y:%.4f Z:%.4f\n", accel_bias_x, accel_bias_y, accel_bias_z);
 }
 
 void sensor_init_all() {
@@ -217,7 +247,10 @@ void sensor_init_all() {
     }
 
     // If yaw drift is significant, run gyro calibration
-    //calibrate_gyro_bias();
+    calibrate_gyro_bias();
+
+    //1-D Accel bias calculation
+    calibrate_accel_bias();
 
     if (vl53l1x_init(I2C1, CLINT) == 0) {
         printf("VL53L1X Init Success!\n");
@@ -239,12 +272,20 @@ void sensor_init_all() {
 
 void read_imu_burst(float dt) {
     if (icm42688_read_all(I2C0, &imu_data, CLINT) == 0) {
-        state.accelX = (imu_data.accel_x - ACCEL_X_OFFSET) * ACCEL_X_SCALE * (9.81f / 2048.0f);
-        state.accelY = (imu_data.accel_y - ACCEL_Y_OFFSET) * ACCEL_Y_SCALE * (9.81f / 2048.0f);
-        state.accelZ = (imu_data.accel_z - ACCEL_Z_OFFSET) * ACCEL_Z_SCALE * (9.81f / 2048.0f);
-        state.gyroX  = imu_data.gyro_x * GYRO_SCALE;
-        state.gyroY  = imu_data.gyro_y * GYRO_SCALE;
-        state.gyroZ  = imu_data.gyro_z * GYRO_SCALE;
+        state.accelX = (imu_data.accel_x - ACCEL_X_OFFSET - accel_bias_x) * ACCEL_X_SCALE * (9.81f / 2048.0f);
+        state.accelY = (imu_data.accel_y - ACCEL_Y_OFFSET - accel_bias_y) * ACCEL_Y_SCALE * (9.81f / 2048.0f);
+        state.accelZ = (imu_data.accel_z - ACCEL_Z_OFFSET - accel_bias_z) * ACCEL_Z_SCALE * (9.81f / 2048.0f);
+        //printf("Accelerations (m/s^2): X: %.3f Y: %.3f Z: %.3f\n", state.accelX, state.accelY, state.accelZ);
+        //state.gyroX  = imu_data.gyro_x * GYRO_SCALE;
+        //state.gyroY  = imu_data.gyro_y * GYRO_SCALE;
+        //state.gyroZ  = imu_data.gyro_z * GYRO_SCALE;
+
+        state.gyroX = (imu_data.gyro_x - gyro_bias_x) * GYRO_SCALE;
+        state.gyroY = (imu_data.gyro_y - gyro_bias_y) * GYRO_SCALE;
+        state.gyroZ = (imu_data.gyro_z - gyro_bias_z) * GYRO_SCALE;
+        //printf("Gyro (rad/s): Y: %.3f\n", state.gyroY);
+
+
         
         // --- INERTIAL Z ESTIMATION (Simplified Kalman) ---
         // 1. Rotate Body Accel Z to Earth Frame
@@ -253,17 +294,17 @@ void read_imu_burst(float dt) {
         // Simplified Logic: 
         // Earth Accel Z = (AccelZ * cos(Roll) * cos(Pitch)) - Gravity
         // This removes the "tilt component" from the accelerometer.
-        float tilt_correction = cosf(state.estRoll) * cosf(state.estPitch);
-        state.accelZ_earth = (state.accelZ * tilt_correction) - gravity; 
+        //float tilt_correction = cosf(state.estRoll) * cosf(state.estPitch);
+        //state.accelZ_earth = (state.accelZ * tilt_correction) - gravity; 
         
         // 2. Predict (Inertial Integration)
-        state.estHeight += state.estVel_3 * dt;
-        state.estVel_3  += state.accelZ_earth * dt;
+        //state.estHeight += state.estVel_3 * dt;
+        //state.estVel_3  += state.accelZ_earth * dt;
     }
 }
 
 void update_tof_fusion(float dt) {
-    int16_t alt_mm = vl53l1x_read_distance(I2C1, CLINT);
+    /*int16_t alt_mm = vl53l1x_read_distance(I2C1, CLINT);
     if (alt_mm >= 0) {
         float tof_h = alt_mm / 1000.0f;
         
@@ -274,46 +315,150 @@ void update_tof_fusion(float dt) {
         // Apply Corrections
         state.estHeight += z_k_h * pos_err * dt;
         state.estVel_3  += z_k_v * pos_err * dt;
+    }*/
+
+    int16_t alt_mm = vl53l1x_read_distance(I2C1, CLINT);
+    if (alt_mm < 0) return;
+
+    float raw_h = alt_mm / 1000.0f;
+
+    // Tilt compensation: convert slant range to vertical height
+    float cos_tilt = cosf(state.estRoll) * cosf(state.estPitch);
+
+    // Guard against crazy tilt / division noise
+    if (cos_tilt < 0.5f) {   // ~60 deg
+        // Too tilted: ToF vertical estimate unreliable; either ignore or heavily filter
+        return;
     }
+
+    float h = raw_h * cos_tilt;  // vertical height estimate
+
+    // 1) Low-pass height (cut jitter)
+    const float alpha_h = 0.2f; // 0..1 (higher = less filtering)
+    if (!tof_valid) {
+        state.estHeight = h;
+        last_tof_h = h;
+        tof_valid = 1;
+        state.estVel_3 = 0.0f;
+        return;
+    }
+    state.estHeight = (1.0f - alpha_h) * state.estHeight + alpha_h * h;
+
+    // 2) Velocity from ToF derivative + low-pass
+    float v_meas = (h - last_tof_h) / dt;
+    last_tof_h = h;
+
+    const float alpha_v = 0.15f;
+    state.estVel_3 = (1.0f - alpha_v) * state.estVel_3 + alpha_v * v_meas;
 }
 
 void madgwick_init(MadgwickFilter *f) {
-    f->beta = 0.1f; f->q0 = 1.0f; f->q1 = 0.0f; f->q2 = 0.0f; f->q3 = 0.0f;
+    f->beta = 0.02f; f->q0 = 1.0f; f->q1 = 0.0f; f->q2 = 0.0f; f->q3 = 0.0f;
 }
 
-void madgwick_update(MadgwickFilter *f, float gx, float gy, float gz, float ax, float ay, float az, float dt) {
+// Safe inv sqrt (prevents NaN/Inf when x -> 0)
+static inline float invSqrt_safe(float x) {
+    if (x <= 0.0f) return 0.0f;
+    return 1.0f / sqrtf(x);
+}
+
+// Canonical Madgwick IMU-only update (gyro + accel, no mag).
+// gx,gy,gz must be in rad/s. ax,ay,az can be in m/s^2 or g's (only direction matters).
+void madgwick_update_imu(MadgwickFilter *f,
+                         float gx, float gy, float gz,
+                         float ax, float ay, float az,
+                         float dt)
+{
     float recipNorm;
     float s0, s1, s2, s3;
-    float qDot1, qDot2, qDot3, qDot4;
-    float _2q0, _2q1, _2q2, _2q3, _4q0, _4q1, _4q2 ,_8q1, _8q2, q0q0, q1q1, q2q2, q3q3;
+    float qDot0, qDot1, qDot2, qDot3;
 
-    qDot1 = 0.5f * (-f->q1 * gx - f->q2 * gy - f->q3 * gz);
-    qDot2 = 0.5f * (f->q0 * gx + f->q2 * gz - f->q3 * gy);
-    qDot3 = 0.5f * (f->q0 * gy - f->q1 * gz + f->q3 * gx);
-    qDot4 = 0.5f * (f->q0 * gz + f->q1 * gy - f->q2 * gx);
+    // Short name local vars
+    float q0 = f->q0;
+    float q1 = f->q1;
+    float q2 = f->q2;
+    float q3 = f->q3;
 
-    if(!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
-        recipNorm = invSqrt(ax * ax + ay * ay + az * az);
-        ax *= recipNorm; ay *= recipNorm; az *= recipNorm;
+    // Rate of change of quaternion from gyro (qDot = 0.5 * q ⊗ ω)
+    qDot0 = 0.5f * (-q1 * gx - q2 * gy - q3 * gz);
+    qDot1 = 0.5f * ( q0 * gx + q2 * gz - q3 * gy);
+    qDot2 = 0.5f * ( q0 * gy - q1 * gz + q3 * gx);
+    qDot3 = 0.5f * ( q0 * gz + q1 * gy - q2 * gx);
 
-        _2q0 = 2.0f * f->q0; _2q1 = 2.0f * f->q1; _2q2 = 2.0f * f->q2; _2q3 = 2.0f * f->q3;
-        _4q0 = 4.0f * f->q0; _4q1 = 4.0f * f->q1; _4q2 = 4.0f * f->q2;
-        _8q1 = 8.0f * f->q1; _8q2 = 8.0f * f->q2;
-        q0q0 = f->q0 * f->q0; q1q1 = f->q1 * f->q1; q2q2 = f->q2 * f->q2; q3q3 = f->q3 * f->q3;
+    // Compute feedback only if accel measurement is valid
+    // (avoids NaN in normalization)
+    float a_norm = ax*ax + ay*ay + az*az;
+    if (a_norm > 1e-12f) {
+        recipNorm = invSqrt_safe(a_norm);
+        ax *= recipNorm;
+        ay *= recipNorm;
+        az *= recipNorm;
 
+        // Auxiliary variables to avoid repeated arithmetic
+        float _2q0 = 2.0f * q0;
+        float _2q1 = 2.0f * q1;
+        float _2q2 = 2.0f * q2;
+        float _2q3 = 2.0f * q3;
+        float _4q0 = 4.0f * q0;
+        float _4q1 = 4.0f * q1;
+        float _4q2 = 4.0f * q2;
+        float _8q1 = 8.0f * q1;
+        float _8q2 = 8.0f * q2;
+        float q0q0 = q0 * q0;
+        float q1q1 = q1 * q1;
+        float q2q2 = q2 * q2;
+        float q3q3 = q3 * q3;
+
+        // Gradient descent corrective step (IMU-only reference)
         s0 = _4q0 * q2q2 + _2q2 * ax + _4q0 * q1q1 - _2q1 * ay;
-        s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * f->q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2q2 + _4q1 * az;
-        s2 = 4.0f * q0q0 * f->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2q2 + _4q2 * az;
-        s3 = 4.0f * q1q1 * f->q3 - _2q1 * ax + 4.0f * q2q2 * f->q3 - _2q2 * ay;
-        recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); 
-        s0 *= recipNorm; s1 *= recipNorm; s2 *= recipNorm; s3 *= recipNorm;
+        s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * q1 - _2q0 * ay
+           - _4q1 + _8q1 * q1q1 + _8q1 * q2q2 + _4q1 * az;
+        s2 = 4.0f * q0q0 * q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay
+           - _4q2 + _8q2 * q1q1 + _8q2 * q2q2 + _4q2 * az;
+        s3 = 4.0f * q1q1 * q3 - _2q1 * ax + 4.0f * q2q2 * q3 - _2q2 * ay;
 
-        qDot1 -= f->beta * s0; qDot2 -= f->beta * s1; qDot3 -= f->beta * s2; qDot4 -= f->beta * s3;
+        // Normalize step magnitude (critical guard!)
+        float s_norm = s0*s0 + s1*s1 + s2*s2 + s3*s3;
+        if (s_norm > 1e-12f) {
+            recipNorm = invSqrt_safe(s_norm);
+            s0 *= recipNorm;
+            s1 *= recipNorm;
+            s2 *= recipNorm;
+            s3 *= recipNorm;
+
+            // Apply feedback step
+            qDot0 -= f->beta * s0;
+            qDot1 -= f->beta * s1;
+            qDot2 -= f->beta * s2;
+            qDot3 -= f->beta * s3;
+        }
+        // else: skip accel correction this cycle (already aligned / step too small)
     }
- 
-    f->q0 += qDot1 * dt; f->q1 += qDot2 * dt; f->q2 += qDot3 * dt; f->q3 += qDot4 * dt;
-    recipNorm = invSqrt(f->q0 * f->q0 + f->q1 * f->q1 + f->q2 * f->q2 + f->q3 * f->q3);
-    f->q0 *= recipNorm; f->q1 *= recipNorm; f->q2 *= recipNorm; f->q3 *= recipNorm;
+
+    // Integrate to yield quaternion
+    q0 += qDot0 * dt;
+    q1 += qDot1 * dt;
+    q2 += qDot2 * dt;
+    q3 += qDot3 * dt;
+
+    // Normalize quaternion
+    float q_norm = q0*q0 + q1*q1 + q2*q2 + q3*q3;
+    if (q_norm > 1e-12f) {
+        recipNorm = invSqrt_safe(q_norm);
+        q0 *= recipNorm;
+        q1 *= recipNorm;
+        q2 *= recipNorm;
+        q3 *= recipNorm;
+    } else {
+        // Hard reset if something went catastrophically wrong
+        q0 = 1.0f; q1 = 0.0f; q2 = 0.0f; q3 = 0.0f;
+    }
+
+    // Write back
+    f->q0 = q0;
+    f->q1 = q1;
+    f->q2 = q2;
+    f->q3 = q3;
 }
 
 float pid_update(PID_State *pid, float error, float dt, float kp, float ki, float kd, int airborne) {
@@ -324,10 +469,13 @@ float pid_update(PID_State *pid, float error, float dt, float kp, float ki, floa
     // Clamp integral to prevent windup (max 20% authority)
     // ANTI-WINDUP: Only integrate if airborne!
     // This prevents the "Flip on Takeoff" due to ground windup.
-    pid->integral_err += error * dt;
-    // Hard limit on I-term (max 15% authority)
-    if (pid->integral_err > 2.0f) pid->integral_err = 2.0f;
-    if (pid->integral_err < -2.0f) pid->integral_err = -2.0f;
+    if (!airborne) {
+        pid->integral_err = 0.0f;
+    } else {
+        pid->integral_err += error * dt;
+        if (pid->integral_err > 2.0f) pid->integral_err = 2.0f;
+        if (pid->integral_err < -2.0f) pid->integral_err = -2.0f;
+    }
     float i_term = ki * pid->integral_err;
 
     // 3. Derivative (Change)
@@ -380,9 +528,9 @@ float map_motor_signal(float cmd, int motor_idx) {
 }
 
 void set_motors(float m1, float m2, float m3, float m4) {
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR2_PWM_CH, (uint32_t)(m1 * 100.0f), 0);
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR3_PWM_CH, (uint32_t)(m2 * 100.0f), 0);
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR1_PWM_CH, (uint32_t)(m3 * 100.0f), 0);
+    pwm_set_duty_cycle(PWM0_BASE, MOTOR1_PWM_CH, (uint32_t)(m1 * 100.0f), 0);
+    pwm_set_duty_cycle(PWM0_BASE, MOTOR2_PWM_CH, (uint32_t)(m2 * 100.0f), 0);
+    pwm_set_duty_cycle(PWM0_BASE, MOTOR3_PWM_CH, (uint32_t)(m3 * 100.0f), 0);
     pwm_set_duty_cycle(PWM0_BASE, MOTOR4_PWM_CH, (uint32_t)(m4 * 100.0f), 0);
 }
 
@@ -390,18 +538,45 @@ void set_motors(float m1, float m2, float m3, float m4) {
  * CONTROL LOOP
  * ========================================================================= */
 
-static float desHeight = 0.250f; // TARGET HEIGHT (Static so it remembers value)
+static float desHeight = 0.100f; // TARGET HEIGHT (Static so it remembers value)
 static float last_height = 0.0f;
 static uint32_t mission_timer_ms = 0;
 
 void control_step(float dt) {
+
     // 1. SENSOR READ & PREDICTION
     read_imu_burst(dt);       // Updates Accel/Gyro + Predicts Z
-    update_tof_fusion(dt);    // Corrects Z with ToF
+    //printf("Finish read imu %d\n", clint_get_time(CLINT));
+    //update_tof_fusion(dt);    // Corrects Z with ToF
+    //printf("Finish ToF fusion %d\n", clint_get_time(CLINT));
+
+    const float fc = 20.0f;  // Hz, start 10–30
+    float alpha = (2.0f * 3.14159f * fc * dt) / (1.0f + 2.0f * 3.14159f * fc * dt);
+
+    if (!lpf_inited) {
+        ax_f = state.accelX;
+        ay_f = state.accelY;
+        az_f = state.accelZ;
+        lpf_inited = 1;
+    } else {
+        ax_f += alpha * (state.accelX - ax_f);
+        ay_f += alpha * (state.accelY - ay_f);
+        az_f += alpha * (state.accelZ - az_f);
+    }
+    //printf("Accelerations LPF (m/s^2): X: %.3f Y: %.3f Z: %.3f\n", ax_f, ay_f, az_f);
+
+    madgwick_update_imu(&filter, state.gyroX, state.gyroY, state.gyroZ,
+                            ax_f, ay_f, az_f, dt);
 
     // 2. MADGWICK UPDATE
-    madgwick_update(&filter, state.gyroX, state.gyroY, state.gyroZ, 
-                             state.accelX, state.accelY, state.accelZ, dt);
+    //madgwick_update_imu(&filter, state.gyroX, state.gyroY, state.gyroZ, 
+    //                        state.accelX, state.accelY, state.accelZ, dt);
+
+    float q0=filter.q0, q1=filter.q1, q2=filter.q2, q3=filter.q3;
+    float gx = 2.0f*(q1*q3 - q0*q2);
+    float gy = 2.0f*(q0*q1 + q2*q3);
+    float gz = q0*q0 - q1*q1 - q2*q2 + q3*q3;
+    //printf("g_body: %.2f %.2f %.2f\n", gx, gy, gz);
 
     // Convert Quaternion to Euler (Radians)
     float sinr_cosp = 2.0f * (filter.q0 * filter.q1 + filter.q2 * filter.q3);
@@ -409,42 +584,79 @@ void control_step(float dt) {
     state.estRoll = atan2f(sinr_cosp, cosr_cosp);
 
     float sinp = 2.0f * (filter.q0 * filter.q2 - filter.q3 * filter.q1);
-    if (fabs(sinp) >= 1) state.estPitch = copysignf(M_PI / 2, sinp); 
+    if (fabsf(sinp) >= 1.0f) state.estPitch = copysignf(M_PI / 2.0f, sinp);
     else state.estPitch = asinf(sinp);
 
     float siny_cosp = 2.0f * (filter.q0 * filter.q3 + filter.q1 * filter.q2);
     float cosy_cosp = 1.0f - 2.0f * (filter.q2 * filter.q2 + filter.q3 * filter.q3);
     state.estYaw = atan2f(siny_cosp, cosy_cosp);
+    //printf("Finish Madgwick Step %d\n", clint_get_time(CLINT));
+
+    /*printf("q:%.3f %.3f %.3f %.3f | g:%.2f %.2f %.2f | RPY:%.1f %.1f %.1f\n",
+       filter.q0, filter.q1, filter.q2, filter.q3,
+       gx, gy, gz,
+       state.estRoll*57.2958f, state.estPitch*57.2958f, state.estYaw*57.2958f);*/
+
+    // After madgwick_update() and after filter.q* are updated
+    q0 = filter.q0, q1 = filter.q1, q2 = filter.q2, q3 = filter.q3;
+
+    // Rotation matrix body->earth (R)
+    // Earth-frame z component of a_body:
+    //float aZ_e = 2.0f*(q1*q3 - q0*q2)*state.accelX
+    //        + 2.0f*(q0*q1 + q2*q3)*state.accelY
+    //        + (q0*q0 - q1*q1 - q2*q2 + q3*q3)*state.accelZ;
+
+    // subtract gravity to get "specific force" -> net vertical acceleration (m/s^2)
+    //state.accelZ_earth = aZ_e - gravity;
+
 
     // 3. SAFETY CUTOFF (Crash Detection)
-    if (state.accelZ < -30.0f || state.accelZ > 30.0f) { error_flag = 1; }
+    //if (state.accelZ < -60.0f || state.accelZ > 60.0f) { 
+    //    printf("Error: Excessive Vertical Accel! Az: %.2f\n", state.accelZ);
+    //    error_flag = 1;
+    //    return; 
+    //}
 
     // --- SAFETY CUTOFFS ---
     // If tilt > 60 degrees (approx 1.0 rad), Kill motors.
-    if (fabs(state.estRoll) > 1.0f || fabs(state.estPitch) > 1.0f) { 
+    if (fabs(state.estRoll) > 1.0f || fabs(state.estPitch) > 1.0f) {
+        printf("Error: Excessive Tilt! Roll: %.2f Pitch: %.2f\n", state.estRoll, state.estPitch); 
         error_flag = 1; 
+        return;
     }
 
-    if (state.estHeight < -0.5f || state.estHeight > 0.5f) { 
+    /*if (state.estHeight < -0.5f || state.estHeight > 0.5f) {
+        printf("Error: Unreasonable Height! H: %.2f\n", state.estHeight); 
         error_flag = 1; 
-    }
+        return;
+    }*/
 
     // 4. FLIGHT PLAN STATE MACHINE
     mission_timer_ms += (uint32_t)(dt * 1000);
-    if (mission_timer_ms < 7000) init_flag = 1;
-    if (mission_timer_ms > 7000) descend_flag = 1;
-    if (mission_timer_ms > 12000) done_flag = 1;
+    //printf("Mission Timer: %d ms\n", mission_timer_ms);
+    if (mission_timer_ms < 10000) init_flag = 1;
+    if (mission_timer_ms > 10000) descend_flag = 1;
+    if (mission_timer_ms > 20000) {
+        done_flag = 1;
+        set_motors(0, 0, 0, 0);
+        return;
+    }
 
     // 5. UPDATE TARGET HEIGHT
     if (init_flag && !descend_flag) {
         // Hover Phase: Smoothly approach 0.75m if not there
         // (Optional: You can just leave it at 0.75 static)
-        desHeight = 0.25f; 
+        //desHeight = 0.10f; 
     }
     else if (descend_flag) {
         // Descent Phase: Decrease target by 0.2m per second
-        desHeight -= 0.2f * dt; 
-        if (desHeight < 0.05f) desHeight = 0.05f; // Floor at 5cm
+        //desHeight -= 0.02f * dt; 
+        //if (desHeight < 0.05f) desHeight = 0.05f; // Floor at 5cm
+        //if (desHeight < 0.01f) {
+        //    done_flag = 1; // If we go below 1cm, consider mission complete
+        //    set_motors(0, 0, 0, 0);
+        //    return;
+        //}
     }
 
     //float desAcc1 = -(1.0f / timeConst_horizVel) * state.estVel_1;
@@ -455,38 +667,66 @@ void control_step(float dt) {
 
     // Determine "Airborne" state for Integral Logic
     // If we are above 5cm, or if motors are commanding > 20% thrust
-    int is_airborne = (state.estHeight > 0.05f);
+    //int is_airborne = (state.estHeight > 0.02f);
+    int is_airborne = 1;
 
     // 6. VERTICAL CONTROL (PID on Height + Vel)
     // Note: We use our CLEAN filtered velocity here!
-    const float desAcc3 = -2.0f * dampingRatio_height * natFreq_height * state.estVel_3 
-                          - natFreq_height * natFreq_height * (state.estHeight - desHeight);
+    //printf("Start VERT PID Step %d\n", clint_get_time(CLINT));
+    //const float desAcc3 = -2.0f * dampingRatio_height * natFreq_height * state.estVel_3 
+    //                      - natFreq_height * natFreq_height * (state.estHeight - desHeight);
     
-    float desNormalizedAcceleration = (gravity + desAcc3) / (cosf(state.estRoll) * cosf(state.estPitch));
+    //float desNormalizedAcceleration = (gravity + desAcc3) / (cosf(state.estRoll) * cosf(state.estPitch));
     
-    if (desNormalizedAcceleration < 0) desNormalizedAcceleration = 0;
-    if (desNormalizedAcceleration > 2.0f * gravity) desNormalizedAcceleration = 2.0f * gravity;
+    //if (desNormalizedAcceleration < 0) desNormalizedAcceleration = 0;
+    //if (desNormalizedAcceleration > 2.0f * gravity) desNormalizedAcceleration = 2.0f * gravity;
 
     // 7. ATTITUDE CONTROL
     // Simple P-Controllers for Angle -> Rate -> Torque
+    //printf("Start ANGLE PID Step %d\n", clint_get_time(CLINT));
     float desRoll = 0; // Level
     float desPitch = 0; // Level
     float desYaw = 0; // Lock Yaw (Simple)
 
     float rollRate_tgt = kp_angle * (desRoll - state.estRoll);
     float pitchRate_tgt = kp_angle * (desPitch - state.estPitch);
+    //printf("pitch tgt: %.3f, roll tgt: %.3f\n", pitchRate_tgt, rollRate_tgt);
     
     // Shortest path yaw
     float yaw_err_ang = normalize_angle(desYaw - state.estYaw);
     float yawRate_tgt = kp_angle * yaw_err_ang;
+    //printf("yaw tgt: %.3f\n", yawRate_tgt);
 
     // --- 3. RATE CONTROL (Inner Loop - PID) ---
-    float roll_torque  = pid_update(&pid_roll,  rollRate_tgt - state.gyroX, dt, kp_roll, ki_roll, kd_roll, is_airborne) * J[0][0];
-    float pitch_torque = pid_update(&pid_pitch, pitchRate_tgt - state.gyroY, dt, kp_pitch, ki_pitch, kd_pitch, is_airborne) * J[1][1];
-    float yaw_torque   = pid_update(&pid_yaw,   yawRate_tgt - state.gyroZ,  dt, kp_yaw, ki_yaw, kd_yaw, is_airborne) * J[2][2];
-    
+    //printf("Start PID Inner Loop Step %d\n", clint_get_time(CLINT));
+    /*printf("Errors Inner PID: Roll: %.3f, Pitch: %.3f, Yaw: %.3f\n", 
+        rollRate_tgt - state.gyroX, 
+        pitchRate_tgt - state.gyroY, 
+        yawRate_tgt - state.gyroZ);*/
+    float roll_torque  = pid_update(&pid_roll,  rollRate_tgt - state.gyroX, dt, kp_roll, ki_roll, kd_roll, is_airborne);
+    float pitch_torque = pid_update(&pid_pitch, pitchRate_tgt - state.gyroY, dt, kp_pitch, ki_pitch, kd_pitch, is_airborne);
+    float yaw_torque   = pid_update(&pid_yaw,   yawRate_tgt - state.gyroZ,  dt, kp_yaw, ki_yaw, kd_yaw, is_airborne);
+    //printf("Finish PID Inner Loop Step %d\n", clint_get_time(CLINT));
+    //printf("Torques: Pitch: %.4f\n", pitch_torque);
+
     // 8. MIXING
-    float u[4] = {desNormalizedAcceleration * mass, roll_torque, pitch_torque, yaw_torque};
+    //float u[4] = {desNormalizedAcceleration * mass, roll_torque, pitch_torque, yaw_torque};
+    float u[4] = {gravity * mass, roll_torque, pitch_torque, yaw_torque};
+
+    // ===== MIXER TEST MODE =====
+    float T = mass * gravity;   // total thrust (N), not important for the pattern
+    float tau = 0.01f;          // small torque (N*m) start tiny
+
+    // Choose ONE test at a time:
+    // Roll+
+    //float u[4] = {T, +tau, 0.0f, 0.0f};
+
+    // Pitch+
+    //float u[4] = {T, 0.0f, +tau, 0.0f};
+
+    // Yaw+
+    //float u[4] = {T, 0.0f, 0.0f, +tau};
+
 
     float ctrl[4] = {0};
     for (int i = 0; i < 4; i++) {
@@ -494,20 +734,26 @@ void control_step(float dt) {
             ctrl[i] += M[i][j] * u[j];
         }
     }
+    //printf("Control Outputs (N or N*m): M1: %.3f, M2: %.3f, M3: %.3f, M4: %.3f\n", ctrl[0], ctrl[1], ctrl[2], ctrl[3]);
+
+    //printf("Finish Mixing Step %d\n", clint_get_time(CLINT));
 
     // Calculate Desired Throttle (0.0 to 1.0)
     float raw_cmds[4];
-    raw_cmds[0] = forceToVoltage(0.9f * ctrl[0]);
-    raw_cmds[1] = forceToVoltage(0.9f * ctrl[1]);
-    raw_cmds[2] = forceToVoltage(0.9f * ctrl[2]);
-    raw_cmds[3] = forceToVoltage(0.9f * ctrl[3]);
+    raw_cmds[0] = forceToVoltage(ctrl[0]);
+    raw_cmds[1] = forceToVoltage(ctrl[1]);
+    raw_cmds[2] = forceToVoltage(ctrl[2]);
+    raw_cmds[3] = forceToVoltage(ctrl[3]);
+
+    //printf("Raw Motor Commands (0.0-1.0): M1: %.3f, M2: %.3f, M3: %.3f, M4: %.3f\n", 
+    //    raw_cmds[0], raw_cmds[1], raw_cmds[2], raw_cmds[3]);
 
     // 9. OUTPUT
     if (init_flag && !done_flag && !error_flag) {
         // Enforce Min Throttle (Idle Spin) to prevent motor stall
         for(int i=0; i<4; i++) {
-            if (raw_cmds[i] < 0.5f) raw_cmds[i] = 0.5f;
-            if (raw_cmds[i] > 0.8f) raw_cmds[i] = 0.8f;
+            if (raw_cmds[i] < 0.01f) raw_cmds[i] = 0.01f;
+            if (raw_cmds[i] > 1.0f) raw_cmds[i] = 1.0f;
         }
         // APPLY HARDWARE MAPPING (The Fix)
         // This converts 0.05 command -> 0.58 Duty Cycle (Start Spin)
@@ -517,6 +763,8 @@ void control_step(float dt) {
         motor_cmds[3] = map_motor_signal(raw_cmds[3], 3);
 
         set_motors(motor_cmds[0], motor_cmds[1], motor_cmds[2], motor_cmds[3]);
+        //set_motors(0, 0, 0, 0);
+        //printf("Finish Motor Set %d\n", clint_get_time(CLINT));
     } else {
         set_motors(0, 0, 0, 0);
     }
@@ -565,13 +813,15 @@ void app_init() {
     UART_InitType UART0_init_config = {115200, UART_MODE_TX_RX, UART_STOPBITS_2};
     uart_init(UART0, &UART0_init_config);
 
-    UART_InitType UART1_init_config = {115200, UART_MODE_TX_RX, UART_STOPBITS_1};
+    UART_InitType UART1_init_config = {9600, UART_MODE_TX_RX, UART_STOPBITS_1};
     uart_init(UART1, &UART1_init_config);
 
-    I2C_InitType i2c_conf;
-    i2c_conf.clock = 400000;
-    i2c_init(I2C0, &i2c_conf);
-    i2c_init(I2C1, &i2c_conf);
+    I2C_InitType i2c_fmplus_conf;
+    I2C_InitType i2c_fm_conf;
+    i2c_fm_conf.clock = 400000;
+    i2c_fmplus_conf.clock = 1000000;
+    i2c_init(I2C0, &i2c_fmplus_conf);
+    i2c_init(I2C1, &i2c_fm_conf);
     
     sensor_init_all();
     madgwick_init(&filter);
@@ -597,38 +847,46 @@ void app_main() {
     set_motors(0.38f, 0.38f, 0.38f, 0.38f);
     
     char c[1];
-    uart_receive(UART0, c, 1, 10000000); // Wait forever (essentially)
+    uart_receive(UART1, c, 1, 10000000); // Wait forever (essentially)
     if (c[0] != 'c') return;
+
+    init_flag = 0; descend_flag = 0; done_flag = 0;
+    //desHeight = 0.10f;
+
+    set_motors(0.38f, 0.38f, 0.38f, 0.38f); // Spin motors at idle to indicate ARMED
+    msleep(5000);
+    set_motors(0.55f, 0.55f, 0.55f, 0.55f);
 
     uint64_t last_control_us = get_time_us();
     uint64_t last_print_us = get_time_us();
     uint64_t now;
 
-    init_flag = 0; descend_flag = 0; done_flag = 0;
-    desHeight = 0.25f;
+    // also reset PID memories to avoid weird first-step transients
+    pid_roll.integral_err = pid_roll.last_err = 0.0f;
+    pid_pitch.integral_err = pid_pitch.last_err = 0.0f;
+    pid_yaw.integral_err = pid_yaw.last_err = 0.0f;
 
-    set_motors(0.38f, 0.38f, 0.38f, 0.38f); // Spin motors at idle to indicate ARMED
-    msleep(5000);
-    set_motors(0.55f, 0.62f, 0.57f, 0.64f);
     while(1) {
         now = get_time_us();
         if ((now - last_control_us) >= 1000) {
             float dt = (float)(now - last_control_us) / 1000000.0f;
             last_control_us = now;
+            //printf("Enter Control Step %d\n", clint_get_time(CLINT));
             control_step(dt);
+            //printf("Exit Control Step %d\n", clint_get_time(CLINT));
             
              if (error_flag){
                 gpio_write_pin(GPIOC, GPIO_PIN_0, 1);
                 set_motors(0.0f, 0.0f, 0.0f, 0.0f);
                 printf("ERROR DETECTED! Motors off...\n");
                 break; 
-            } 
-             else if (init_flag) gpio_write_pin(GPIOC, GPIO_PIN_1, 1);
-             else if (done_flag) {
+            }
+            if (done_flag) {
                 set_motors(0.0f, 0.0f, 0.0f, 0.0f);
                 printf("Flight Complete. Motors off...\n");
                 break;
-             }
+            } 
+            if (init_flag) { gpio_write_pin(GPIOC, GPIO_PIN_1, 1); }
         }
 
         if ((now - last_print_us) >= 1000) {
@@ -638,15 +896,17 @@ void app_main() {
             int r_i = (int)(state.estRoll * 57.29f);
             int p_i = (int)(state.estPitch * 57.29f);
             int y_i = (int)(state.estYaw * 57.29f);
-            int h_cm = (int)(state.estHeight * 100.0f);
-            int vz_cm = (int)(state.estVel_3 * 100.0f);
+            //int h_cm = (int)(state.estHeight * 100.0f);
+            //int vz_cm = (int)(state.estVel_3 * 100.0f);
             int m1 = (int)(motor_cmds[0] * 100);
             int m2 = (int)(motor_cmds[1] * 100);
             int m3 = (int)(motor_cmds[2] * 100);
             int m4 = (int)(motor_cmds[3] * 100);
 
-            printf("R:%d P:%d Y:%d H:%dcm V:%dcm/s | M:%d %d %d %d\n", 
-                   r_i, p_i, y_i, h_cm, vz_cm, m1, m2, m3, m4);
+            /*printf("P:%d R:%d Y:%d H:%dcm V:%dcm/s | M:%d %d %d %d\n", 
+                   p_i, r_i, y_i, h_cm, vz_cm, m1, m2, m3, m4);*/
+            printf("P:%d R:%d Y:%d | M:%d %d %d %d\n", 
+                   p_i, r_i, y_i, m1, m2, m3, m4);
         }
     }
 }

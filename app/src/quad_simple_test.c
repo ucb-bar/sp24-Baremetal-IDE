@@ -75,10 +75,10 @@ void stop_all_motors() {
 // Helper to update all motors with raw Integer duty (0-100)
 // This bypasses the float math errors in your original 'set_motor_throttle'
 void set_all_motors_raw_duty(uint32_t duty) {
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR1_PWM_CH, duty, 0); //MOT 3
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR2_PWM_CH, duty, 0); //MOT 1
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR3_PWM_CH, duty, 0); //MOT 2
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR4_PWM_CH, duty, 0); //MOT 4
+    pwm_set_duty_cycle(PWM0_BASE, MOTOR1_PWM_CH, duty, 0); //MOT 1
+    //pwm_set_duty_cycle(PWM0_BASE, MOTOR2_PWM_CH, duty, 0); //MOT 2
+    //pwm_set_duty_cycle(PWM0_BASE, MOTOR3_PWM_CH, duty, 0); //MOT 3
+    //pwm_set_duty_cycle(PWM0_BASE, MOTOR4_PWM_CH, duty, 0); //MOT 4
 }
 
 void handle_sigint(int sig) { 
@@ -131,7 +131,7 @@ void app_init() {
     UART_InitType UART0_init_config = {115200, UART_MODE_TX_RX, UART_STOPBITS_2};
     uart_init(UART0, &UART0_init_config);
 
-    UART_InitType UART1_init_config = {115200, UART_MODE_TX_RX, UART_STOPBITS_1};
+    UART_InitType UART1_init_config = {9600, UART_MODE_TX_RX, UART_STOPBITS_1};
     uart_init(UART1, &UART1_init_config);
 
     I2C_InitType i2c_conf;
@@ -209,7 +209,7 @@ void app_main() {
     // Wait for user interaction to confirm they hear the beeping
     printf(">> Press 'c' to drop throttle and ARM motors <<\n");
     char c[1];
-    uart_receive(UART0, c, 1, 100000); // Blocking wait
+    uart_receive(UART1, c, 1, 100000); // Blocking wait
     if (c[0] != 'c') return;
 
     // ---------------------------------------------------------
@@ -233,7 +233,7 @@ void app_main() {
     // 1100us at 381Hz = ~42% Duty Cycle.
     printf("3. Spinning at IDLE (1100us / 42%%)...\n");
     //printf("   MOTORS SHOULD SPIN NOW.\n");
-    set_all_motors_raw_duty(58);
+    set_all_motors_raw_duty(62);
     //soft_pwm_loop(5000);
     
     // Spin for 3 seconds
@@ -243,15 +243,15 @@ void app_main() {
     // STEP 4: SHUTDOWN
     // ---------------------------------------------------------
     printf("4. Taking Flight.\n");
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR3_PWM_CH, 58, 0);
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR1_PWM_CH, 55, 0);
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR2_PWM_CH, 70, 0);
-    pwm_set_duty_cycle(PWM0_BASE, MOTOR4_PWM_CH, 60, 0);
+    pwm_set_duty_cycle(PWM0_BASE, MOTOR1_PWM_CH, 54, 0);
+    //pwm_set_duty_cycle(PWM0_BASE, MOTOR2_PWM_CH, 55, 0);
+    //pwm_set_duty_cycle(PWM0_BASE, MOTOR3_PWM_CH, 58, 0);
+    //pwm_set_duty_cycle(PWM0_BASE, MOTOR4_PWM_CH, 60, 0);
 
     printf(">> Press 's' to drop throttle and DISARM motors <<\n");
     while(1) {
         char s[1];
-        uart_receive(UART0, c, 1, 100000); // Blocking wait
+        uart_receive(UART1, s, 1, 100000); // Blocking wait
         if (s[0] != 's')
         {
             printf("5. Test Complete. Disarming.\n");

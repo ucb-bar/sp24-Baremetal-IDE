@@ -542,7 +542,7 @@ void app_init() {
     UART_InitType UART0_init_config = {115200, UART_MODE_TX_RX, UART_STOPBITS_2};
     uart_init(UART0, &UART0_init_config);
 
-    UART_InitType UART1_init_config = {115200, UART_MODE_TX_RX, UART_STOPBITS_1};
+    UART_InitType UART1_init_config = {9600, UART_MODE_TX_RX, UART_STOPBITS_1};
     uart_init(UART1, &UART1_init_config);
 
     I2C_InitType i2c_conf;
