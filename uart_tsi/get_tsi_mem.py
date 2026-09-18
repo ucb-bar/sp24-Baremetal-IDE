@@ -4,7 +4,7 @@ import serial
 from tqdm import tqdm
 
 from uart_tsi import *
-from motor_interface import *
+from uart_tsi.motor_interface import *
 
 port = "/dev/tty.usbserial-0ABC011"
 # port = "/dev/tty.usbserial-101"
