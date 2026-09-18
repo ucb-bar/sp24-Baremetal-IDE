@@ -1,7 +1,27 @@
 # Define the list of benchmarks
+option (EMBENCH_ENABLE_TRACE_PRINT "Enable trace print for benchmarks" OFF)
+option (EMBENCH_ENABLE_TRACE_DMA "Enable trace dma for benchmarks" OFF)
+
+if (EMBENCH_ENABLE_TRACE_PRINT)
+    add_definitions(-DUSE_L_TRACE)
+    add_definitions(-DUSE_L_TRACE_PRINT)
+endif()
+
+if (EMBENCH_ENABLE_TRACE_DMA)
+    add_definitions(-DUSE_L_TRACE)
+    add_definitions(-DUSE_L_TRACE_DMA)
+endif()
+
+if (EMBENCH_ENABLE_LBR)
+    add_definitions(-DTIMER_INTERRUPT)
+    add_definitions(-DUSE_LBR)
+endif()
+
 set(BENCHMARKS
+    dummy
     wikisort
     nettle-sha256
+    huffbench
     # Add other benchmarks here
 )
 
@@ -25,4 +45,7 @@ foreach(benchmark ${BENCHMARKS})
         PUBLIC l_trace_encoder
         PRIVATE -L${CMAKE_BINARY_DIR}/glossy -Wl,--whole-archive glossy -Wl,--no-whole-archive -lm
     )
+    if (PROF_COV)
+        target_link_libraries(${benchmark} PRIVATE gcov)
+    endif()
 endforeach()

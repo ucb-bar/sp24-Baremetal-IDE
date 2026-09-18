@@ -1024,6 +1024,7 @@
 #define CAUSE_SUPERVISOR_ECALL      0x9
 #define CAUSE_HYPERVISOR_ECALL      0xa
 #define CAUSE_MACHINE_ECALL         0xb
+
 #endif /* __RV_ENCODING_H */
 
 #ifdef DECLARE_INSN
